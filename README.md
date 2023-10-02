@@ -19,5 +19,6 @@ To run the Docker:
 ```
 docker run -it -v $(realpath '$HOME_PATH'):/tf/home -v $(realpath $DATA_PATH):/tf/data -p 8888:8888 --gpus all $DOCKER_NAME
 ```
-where $HOME_PATH is the path that will be linked to the Dockers Home dir (/tf/home) this should have access to DCTR.py and the Notebooks.
+where $HOME_PATH is the path that will be linked to the Dockers Home dir (/tf/home) this should have access to DCTR.py and the Notebooks
+
 and   $DATA_PATH is linked to Dockers Data dir (/tf/data), this is where the lhe (or converted .npz) files should be located.
