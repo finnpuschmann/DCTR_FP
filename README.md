@@ -13,7 +13,7 @@ To set up the Docker, in the Terminal run:
 cd path/to/Dockerfile
 docker build ./ -t $DOCKER_NAME
 ```
-where $DOCKER_NAME is any name you want to give the 
+where $DOCKER_NAME is any name you want to give the created docker container
 
 To run the Docker:
 ```
