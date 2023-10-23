@@ -20,7 +20,7 @@ import multiprocessing as mp
 # standard numerical library imports
 import numpy as np
 from scipy import stats
-from math import sqrt, atan2, log
+from math import atan2
 import matplotlib.pyplot as plt
 from hist import intervals
 import mplhep
@@ -74,19 +74,11 @@ def process_file(filename, maxJetParts, theta):
     countRapidity = 0
 
     for event in lhe1: # goes through the lhe file, event by event
-        try:
-            eventVector, rapidity = process_event(event, maxJetParts, theta) # calls the process_event function for every event in lhe file. 
-        # if there is a problem with process_event it means the tt-pair pseudorapidity could not be calculated, countEta is updated to keep track of how many events were skipped because of this.
-        except ValueError: 
-            countEta += 1
-            continue
-        except ZeroDivisionError:
-            countEta += 1
-            continue
-        
-        # append current event vectors to the rest of the event vectors of the lhe file
-        lheVector.append(eventVector)
-        countRapidity += rapidity
+        eventVector, rapidity, eta = process_event(event, maxJetParts, theta) # calls the process_event function for every event in lhe file. 
+        countEta += eta
+        if eventVector is not None: # append current event vectors to the rest of the event vectors of the lhe file
+            lheVector.append(eventVector)
+            countRapidity += rapidity
 
     return lheVector, countRapidity, countEta
 
@@ -94,8 +86,14 @@ def process_file(filename, maxJetParts, theta):
 def pseudorapidity(particle):
     pz = particle.pz
     p = np.sqrt(np.power(particle.px, 2) + np.power(particle.py, 2) + np.power(particle.pz, 2))
-    pseudorapidity = 0.5*math.log((p-pz)/(p+pz)) # if this has a domain error, it is caught by process_file() and a counter for failed pseudorapidities is kept.
-    return pseudorapidity
+    if (p-pz) == 0.0:
+        raise Exception("Error calaculating pseudorapidity (divide by zero)")
+    elif ((p+pz)/(p-pz)) <= 0.0:
+
+        raise Exception("Error calaculating pseudorapidity (log of negative number)")
+    else:
+        pseudorapidity = 0.5*math.log((p+pz)/(p-pz))
+        return pseudorapidity
 
 
 def check_rapidity(particle):
@@ -125,24 +123,54 @@ def process_event(event, maxJetParts, theta):
     ptop = FourMomentum(0, 0, 0, 0)
     pantitop = FourMomentum(0, 0, 0, 0)
     pjet = FourMomentum(0, 0, 0, 0)
+    top_eta = 0
+    antitop_eta = 0
+    jet_eta = 0
     eventVector = []
     eventJetVector = []
     countRapidity = 0
+    countEta = 0
     
     # particle processing
     for particle in event: # loops through every particle in event
+        jet_eta = 0
         if (particle.status==2): # particle.status = 2: unstable particles, here only the top or anti-top are saved, W Bosons are ignored
             if particle.pid==6: # top quark
                 if check_rapidity(particle)==True: # if rapidity is fine
-                    ptop = FourMomentum(particle) # create FourMomentum for top
+                    try:
+                        top_eta=pseudorapidity(particle)
+                        if top_eta <= 1e6:
+                                ptop = FourMomentum(particle) # create FourMomentum for top
+                        else:
+                                ptop = None
+                                countEta += 1
+                                continue
+                    except:
+                        ptop = None
+                        countEta += 1
+                        continue
                 else:
+                    ptop = None
                     countRapidity += 1
                     continue
                 
             elif particle.pid==-6: # anti-top quark
                 if check_rapidity(particle)==True: # if rapidity is fine
-                    pantitop = FourMomentum(particle) # create FourMomentum for anti-top
+                    try:
+                        antitop_eta=pseudorapidity(particle)
+                        if antitop_eta <= 1e6:
+                                pantitop = FourMomentum(particle) # create FourMomentum for anti-top
+                        else:
+                                pantitop = None
+                                countEta += 1
+                                continue
+                    except:
+                        pantitop = None
+                        countEta += 1
+                        continue
+                    
                 else:
+                    pantitop = None
                     countRapidity += 1
                     continue
                 
@@ -152,8 +180,15 @@ def process_event(event, maxJetParts, theta):
             if ((particle.pid<6 and particle.pid>-6) or particle.pid==21): # only quarks and glouns are saved
                 if len(eventJetVector) < maxJetParts: #limit to maxJetParts particles per event, to avoid ragged arrays, if the event has less particles than the rest is filled with zeros
                     if check_rapidity(particle)==True: # if rapidity is fine
-                        pjet=FourMomentum(particle) # FourMomentum of particle in Jet
-                        eventJetVector.append([pjet.pt, pjet.rapidity, phi(pjet), pjet.mass, pseudorapidity(pjet), pjet.E, particle.pid, w, theta]) # add particle to Jet Vector of event
+                        try: 
+                            jet_eta=pseudorapidity(particle)
+                            if jet_eta <= 1e6:
+                                    pjet=FourMomentum(particle) # FourMomentum of particle in Jet
+                                    eventJetVector.append([pjet.pt, pjet.rapidity, phi(pjet), pjet.mass, jet_eta, pjet.E, particle.pid, w, theta]) # add particle to Jet Vector of event
+                        except:
+                            countEta += 1
+                            continue
+                        
                     else:
                         countRapidity += 1
                         continue
@@ -164,35 +199,39 @@ def process_event(event, maxJetParts, theta):
         
         else: continue
     
-    # Top pair processing
-    p_tt = ptop + pantitop # create madgraph FourMomentum of tt-pair
+    # check if top or antitop 4-momentum is set to None -> Error in pseudorpaidity
+    if (ptop is not None) and (pantitop is not None):
+            # Top pair processing
+            try: # pseudorapidity for tt-pair
+                p_tt = ptop + pantitop # create madgraph FourMomentum of tt-pair
+                tt_eta=pseudorapidity(p_tt)
+                
+                # for each event: 1. tt-pair, 2. top, 3. anti-top, followed by maxJetParts of jet particles
+                eventVector.append([p_tt.pt,     p_tt.rapidity,     phi(p_tt),     p_tt.mass,     tt_eta,      p_tt.E,      0, w, theta]) # add tt-pair to output array
+                eventVector.append([ptop.pt,     ptop.rapidity,     phi(ptop),     ptop.mass,     top_eta,     ptop.E,      6, w, theta]) # add top quark to event vector
+                eventVector.append([pantitop.pt, pantitop.rapidity, phi(pantitop), pantitop.mass, antitop_eta, pantitop.E, -6, w, theta]) # add anti-top quark to event vector
+                
+                if len(eventJetVector) >= maxJetParts: # check length of eventJetVector to avoid ragged arrays
+                    eventJetVector[:maxJetParts]
+                else:
+                    for i in range(maxJetParts):
+                        if len(eventJetVector) < maxJetParts:
+                            eventJetVector.append([0, 0, 0, 0, 0, 0, 0, 0, 0]) # pad eventJetVector to length of max particles to avoid ragged arrays
+                        else: continue
+                    eventVector.extend(eventJetVector) # extend the event vector with the maxJetParts length jet vector
+                    
+                    return eventVector, countRapidity, countEta
+                
+            except:
+                countEta += 1
     
-    # pseudorapidity
-    tt_pseudorapidity = pseudorapidity(p_tt)
-    top_pseudorapidity = pseudorapidity(ptop)
-    anti_pseudorapidity = pseudorapidity(pantitop)
-
-    # for each event: 1. tt-pair, 2. top, 3. anti-top, followed by maxJetParts of jet particles
-    eventVector.append([p_tt.pt,     p_tt.rapidity,     phi(p_tt),     p_tt.mass,     tt_pseudorapidity,   p_tt.E,      0, w, theta]) # add tt-pair to output array
-    eventVector.append([ptop.pt,     ptop.rapidity,     phi(ptop),     ptop.mass,     top_pseudorapidity,  ptop.E,      6, w, theta]) # add top quark to event vector
-    eventVector.append([pantitop.pt, pantitop.rapidity, phi(pantitop), pantitop.mass, anti_pseudorapidity, pantitop.E, -6, w, theta]) # add anti-top quark to event vector
-    
-    if len(eventJetVector) == maxJetParts: # check length of eventJetVector to avoid ragged arrays
-        eventVector.extend(eventJetVector) # extend the event vector with the maxJetParts length jet vector
-    else: 
-        for i in range(maxJetParts):
-            if len(eventJetVector) < maxJetParts:
-                eventJetVector.append([0, 0, 0, 0, 0, 0, 0, 0, 0]) # pad eventJetVector to length of max particles to avoid ragged arrays
-            else: continue
-        eventVector.extend(eventJetVector) # extend the event vector with the maxJetParts length jet vector
-
-    return eventVector, countRapidity
+    return None, None, countEta
 
 
 def process_file_wrapper(args):
     '''
-    wrapper for multiprocessing inside convert lhe
-    simply calls the process_file function
+    wrapper for multiprocessing inside convert_lhe()
+    simply calls the process_file() function
     '''
     filename, maxJetParts, theta = args
     return process_file(filename, maxJetParts, theta)
@@ -256,7 +295,7 @@ def convert_lhe(inputFolder, outputFolder, theta, outLabel=None, maxJetParts=8, 
         countEta += eta
 
     print("discarded particles: " + str(countRapidity) + ", due to rapidity domain error")
-    print("discarded events: " + str(countEta) + ", due to tt-pair pseudorapidity domain error")
+    print("discarded events: " + str(countEta) + ", due to pseudorapidity domain error")
     
     # X0 = np.squeeze(np.array(X0))
     X0 = np.array(X0)
@@ -285,13 +324,17 @@ def load_dataset(filePath): # simply uses np.load to load and return saved datas
     return X
 
 
-def trim_datasets(X, Y):
+def trim_datasets(X, Y, shuffle=True):
     '''
     returns inputs X and Y trimed to the length of the shorter of the two
     '''
-    minimum = min(len(X[:,0]),len(Y[:,0]))
-    X = X[0:minimum,:]
-    Y = Y[0:minimum,:]
+    if shuffle == True:
+        rng = np.random.default_rng()
+        rng.shuffle(X, axis=0)
+        rng.shuffle(Y, axis=0)
+    minimum = min(len(X),len(Y))
+    X = X[0:minimum,...]
+    Y = Y[0:minimum,...]
     return X, Y
 
 
@@ -319,19 +362,21 @@ def remap_pid(X, pid_i=6):
 def norm(X, ln=False):
     if ln == True:
         X = np.log(np.clip(X, a_min = 1e-6, a_max = None))
-    mean = np.mean(X)
-    std = np.std(X)
+    mean = np.nanmean(X[:,1])
+    std = np.nanstd(X[:,1])
     norm = (mean, std, ln)
     X -= mean
     X /= std
     return X, norm
 
+
+
 def norm_2(X, Y, ln=False):
     if ln == True:
         X = np.log(np.clip(X, a_min = 1e-6, a_max = None))
         Y = np.log(np.clip(Y, a_min = 1e-6, a_max = None))
-    mean = np.mean(np.concatenate((X, Y)))
-    std = np.std(np.concatenate((X, Y)))
+    mean = np.nanmean(np.concatenate((X[:,1], Y[:,1])))
+    std = np.nanstd(np.concatenate((X[:,1], Y[:,1])))
     norm = (mean, std, ln)
     X -= mean
     X /= std
@@ -339,6 +384,7 @@ def norm_2(X, Y, ln=False):
     Y -= mean
     Y /= std
     return X, Y, norm
+
 
 def un_norm(X, norm):
     mean, std, ln = norm
@@ -371,14 +417,12 @@ def normalize_data(X, pt=True, rapidity=True,  phi=True, mass=True,
                    PID=True, wgt=True, pseudorapidity=True, energy=True):
     
     norm_dict = {}
-    norm_pt = (0.0, 1.0, True)
+    norm_pt = (0.0, 1.0, False)
     norm_rapidity = (0.0, 1.0, False)
     norm_phi = (0.0, 1.0, False)
-    norm_mass = (0.0, 1.0, True)
+    norm_mass = (0.0, 1.0, False)
     norm_pseudorapidity = (0.0, 1.0, False)
     norm_e = (0.0, 1.0, False)
-    
-    num_parts = len(X[0,:,0])
     
     # [pt, rapidity, phi, mass, pseudorapidity, E, PID, w, theta]
     # [0 , 1       , 2  , 3   , 4             , 5, 6  , 7, 8    ]
@@ -387,7 +431,7 @@ def normalize_data(X, pt=True, rapidity=True,  phi=True, mass=True,
         X[...,0], norm_pt = norm(X[...,0], ln=True)
     
     if rapidity==True: # 1
-        r_std = np.std(X[:,1,1])
+        r_std = np.std(X[:,0,1])
         X[...,1] = np.divide(X[...,1], r_std)
         norm_rapidity = (0.0, r_std, False)
         
@@ -399,8 +443,8 @@ def normalize_data(X, pt=True, rapidity=True,  phi=True, mass=True,
         X[...,3], norm_mass = norm(X[...,3], ln=True)
     
     if pseudorapidity==True: # 4
-        pr_std = np.std(X[:,1,4])
-        X[...,4] = np.divide(X[...,1], pr_std)
+        pr_std = 4
+        X[...,4] = np.divide(X[...,4], pr_std)
         norm_pseudorapidity  = (0.0, pr_std, False)
     
     if energy==True: # 5
@@ -412,7 +456,7 @@ def normalize_data(X, pt=True, rapidity=True,  phi=True, mass=True,
                                'or you are trying to remap PIDs of a someting other than Quarks or Gluons')
     
     if wgt==True: # 7
-            X[...,7] = norm_wgt(X[:,0,7]) * num_parts
+            X[...,7] = norm_wgt(X[:,0,7])[:, np.newaxis]
     
     norm_dict = {'pt':             norm_pt,
                  'rapidity':       norm_rapidity,
@@ -438,14 +482,12 @@ def normalize_data_2(X, Y, pt=True, rapidity=True,  phi=True, mass=True,
     # [pt, rapidity, phi, mass, pseudorapidity, E, PID, w, theta]
     # [0 , 1       , 2  , 3   , 4             , 5, 6  , 7, 8    ]
     
-    num_parts_X = len(X[0,:,0])
-    num_parts_Y = len(Y[0,:,0])
     
     if pt==True: # 0
         X[...,0], Y[...,0], norm_pt = norm_2(X[...,0], Y[...,0], ln=True)
     
     if rapidity==True: # 1
-        r_std = np.std(np.concatenate((X[:,1,1], Y[:,1,1])) )
+        r_std = np.std(np.concatenate((X[:,0,1], Y[:,0,1])) )
         X[...,1] = np.divide(X[...,1], r_std)
         Y[...,1] = np.divide(Y[...,1], r_std)
         norm_rapidity = (0.0, r_std, False)
@@ -459,9 +501,9 @@ def normalize_data_2(X, Y, pt=True, rapidity=True,  phi=True, mass=True,
         X[...,3], Y[...,3], norm_mass = norm_2(X[...,3], Y[...,3], ln=True)
     
     if pseudorapidity==True: # 4
-        pr_std = np.std(np.concatenate((X[:,1,4], Y[:,1,4])) )
-        X[...,4] = np.divide(X[...,1], pr_std)
-        Y[...,4] = np.divide(Y[...,1], pr_std)
+        pr_std = 4
+        X[...,4] = np.divide(X[...,4], pr_std)
+        Y[...,4] = np.divide(Y[...,4], pr_std)
         norm_pseudorapidity  = (0.0, pr_std, False)
     
     if energy==True: # 5
@@ -476,8 +518,8 @@ def normalize_data_2(X, Y, pt=True, rapidity=True,  phi=True, mass=True,
                                'or you are trying to remap PIDs of a someting other than Quarks or Gluons')
     
     if wgt==True: # 7
-            X[...,7] = np.transpose([norm_wgt(X[:,0,7])] * num_parts_X)
-            Y[...,7] = np.transpose([norm_wgt(Y[:,0,7])] * num_parts_Y)
+            X[...,7] = norm_wgt(X[:,0,7])[:, np.newaxis]
+            Y[...,7] = norm_wgt(Y[:,0,7])[:, np.newaxis]
     
     norm_dict = {'pt':             norm_pt,
                  'rapidity':       norm_rapidity,
@@ -487,6 +529,75 @@ def normalize_data_2(X, Y, pt=True, rapidity=True,  phi=True, mass=True,
                  'energy':         norm_e}
     
     return X, Y, norm_dict
+
+
+def norm_per(X, ln=False):
+    if ln == True:
+        X = np.log(np.clip(X, a_min = 1e-6, a_max = None))
+    mean = np.nanmean(X)
+    std = np.nanstd(X)
+    X -= mean
+    X /= std
+    return X
+
+
+def norm2_per(X, Y, ln=False):
+    if ln == True:
+        X = np.log(np.clip(X, a_min = 1e-6, a_max = None))
+        Y = np.log(np.clip(Y, a_min = 1e-6, a_max = None))
+    mean = np.nanmean(np.concatenate((X, Y)))
+    std = np.nanstd(np.concatenate((X, Y)))
+    X -= mean
+    X /= std
+    
+    Y -= mean
+    Y /= std
+    return X, Y
+
+
+def normalize_data_per_particle(X):
+
+    # [pt, rapidity, phi, mass, pseudorapidity, E, PID, w, theta]
+    # [0 , 1       , 2  , 3   , 4             , 5, 6  , 7, 8    ]
+    
+    for particle in range(len(X[0,:,0])):
+        for arg in range(6):
+            if arg == 0 or arg == 3 or arg == 5:    
+                X[:,particle, arg] = norm_per(X[:,particle, arg], ln=True)
+            else:
+                X[:,particle, arg] = norm_per(X[:,particle, arg], ln=False)
+                
+    # wgt
+    X[:,:,7] /= stats.mode(np.abs(X[0,0,7]), keepdims=False)[0]
+    # PID
+    try: X = remap_pid(X)
+    except KeyError: print('remap PID KeyError intercepted. Maybe the PIDs were already remaped,'+
+                           'or you are trying to remap PIDs of a someting other than Quarks or Gluons')
+    return X
+
+def normalize_data2_per_particle(X, Y):
+
+    # [pt, rapidity, phi, mass, pseudorapidity, E, PID, w, theta]
+    # [0 , 1       , 2  , 3   , 4             , 5, 6  , 7, 8    ]
+    
+    for particle in range(len(X[0,:,0])):
+        for arg in range(6):
+            if arg == 0 or arg == 3 or arg == 5:    
+                X[:,particle, arg], Y[:,particle, arg] = norm2_per(X[:,particle, arg], Y[:,particle, arg], ln=True)
+            else:
+                X[:,particle, arg], Y[:,particle, arg] = norm2_per(X[:,particle, arg], Y[:,particle, arg], ln=False)
+    
+    # wgt
+    X[:,:,7] /= stats.mode(np.abs(X[0,0,7]), keepdims=False)[0]
+    Y[:,:,7] /= stats.mode(np.abs(Y[0,0,7]), keepdims=False)[0]
+    #PID
+    try: 
+        X = remap_pid(X)
+        Y = remap_pid(Y)
+    except KeyError: print('remap PID KeyError intercepted. Maybe the PIDs were already remaped,'+
+                           'or you are trying to remap PIDs of a someting other than Quarks or Gluons')
+    
+    return X, Y
 
 
 def un_normalize_data(X, norm_dict):
@@ -515,8 +626,8 @@ def prep_arrays(X0, X1, val=0.15, shuffle=True, use_class_weights=False):
     Y0 = []
     Y1 = []
     # classifier array takes theta parameter from dataset
-    Y0 = X0[:,0,8] 
-    Y1 = X1[:,0,8]
+    Y0 = X0[:,0,-1] 
+    Y1 = X1[:,0,-1]
     
     # removing theta as it was already used to create the classifier arrays Y0 and Y1
     X0 = np.delete(X0, -1, -1) # theta paramater is last argument in last axis
@@ -532,30 +643,35 @@ def prep_arrays(X0, X1, val=0.15, shuffle=True, use_class_weights=False):
     class_wgt = 1
     if use_class_weights==True:
         class_wgt=len(X0)/len(X1)
-        X0[...,7] /= class_wgt
-    weights_array = X[:,0,7] 
+        X0[...,-1] /= class_wgt
+    weights_array = X[:,0,-1]
     
     # removing weights as it was already used to create the weights_array
     X = np.delete(X, -1, -1) # event weight paramater is last argument (after theta is removed) in last axis for both all particles and tt-pair arrays
     
     X_train, X_val, Y_train, Y_val, wgt_train, wgt_val = data_split(X, Y, weights_array, train=-1, test=val, shuffle=shuffle)
     
+    with tf.device('/cpu:0'):
+        X_train = tf.convert_to_tensor(X_train)
+        Y_train = tf.convert_to_tensor(Y_train)
+        X_val = tf.convert_to_tensor(X_val)
+        Y_val = tf.convert_to_tensor(Y_val)
+    
     return  X_train, X_val, Y_train, Y_val, np.array(wgt_train), np.array(wgt_val)
 
 
-def remove_jet_parts(X0, X1, maxJetParts = 0):
+def remove_jet_parts(X, maxJetParts = 0):
     '''
     remove (any number of) jet particles from array. By default removes all jet_parts (maxJetParts=0)
     returns input arrays X0 and X1 with all but maxJetParts particles removed from them
     '''
     try: 
-        jetParts = len(X0[0,:,0]) - 3 # the subtracted 3 particles are the tt-pair, top and anti-top
+        jetParts = len(X[0,:,0]) - 3 # the subtracted 3 particles are the tt-pair, top and anti-top
         for i in range(jetParts - maxJetParts):
-            X0 = np.delete(X0, -1, axis=1)
-            X1 = np.delete(X1, -1, axis=1)
+            X = np.delete(X, -1, axis=1)
     except: # if this function is called on an array with a different shape, it was probaly done by mistake
         print('Cant remove jet parts, likely wrong shape?')
-    return X0, X1
+    return X
 
 
 
@@ -585,20 +701,20 @@ def setup_nn(input_dim=7, Phi_sizes = (100,100,128), F_sizes = (100,100,100),
     def custom_loss(y_true, y_pred):
         pred = K.clip(y_pred, 0.000001, 0.9999999)
         rwgt = tf.divide(pred, tf.add(1.0, -pred))
-        rwgt_penalty = K.mean(K.pow(K.log(rwgt), 10))
+        rwgt_penalty = K.mean(K.pow(K.log(K.pow(rwgt, 0.5)), 4))
         
-        my_loss =  (1 + 0.001*rwgt_penalty + 0.1*focal_loss(y_true, y_pred)) * cce_loss(y_true, y_pred) # (1 + focal_loss(y_true, y_pred, sample_weights)) *
+        my_loss =  (1 + 0.1*rwgt_penalty) * (1 + cce_loss(y_true, y_pred)) * (1 + 2*focal_loss(y_true, y_pred))
         
         return K.mean(my_loss)
     
-    loss = custom_loss
+
     
-    # if use_custom_loss == True:
-        # loss = custom_loss
-    # elif use_focal == True:
-        # loss = focal_loss
-    # else:
-        # loss = cce_loss
+    if use_custom_loss == True:
+        loss = custom_loss
+    elif use_focal == True:
+        loss = focal_loss
+    else:
+        loss = cce_loss
     
     
     def scheduler(epoch, learning_rate):
@@ -692,7 +808,7 @@ def train(dctr, callbacks, X_train, Y_train, X_val, Y_val, wgt_train=1.0, wgt_va
     plt.show()
 
 
-def predict_weights(dctr, X0, X1, batch_size=8192, clip=0.0001):
+def predict_weights(dctr, X0, X1, batch_size=8192, clip=0.0001, verbose=1):
     '''
     generates weights for reweighing X0 to X1: weights_0
                   and for reweighing X1 to X0: weights_1
@@ -702,8 +818,8 @@ def predict_weights(dctr, X0, X1, batch_size=8192, clip=0.0001):
     predics_0 = np.clip(dctr.predict(X0, batch_size=batch_size), 0+clip, 1-clip)
     predics_1 = np.clip(dctr.predict(X1, batch_size=batch_size), 0+clip, 1-clip)
     
-    weights_0 = predics_0[:,1]/(1-predics_0[:,1])
-    weights_1 = predics_1[:,0]/(1-predics_1[:,0])
+    weights_0 = predics_0[:,1]/(1-predics_0[:,1], verbose=verbose)
+    weights_1 = predics_1[:,0]/(1-predics_1[:,0], verbose=verbose)
     
     return weights_0, weights_1
 
