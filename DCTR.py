@@ -7,7 +7,7 @@
 
 # energyflow dependencies import
 from __future__ import absolute_import, division, print_function
-import tensorflow.keras.backend as K
+# import tensorflow.keras.backend as K
 import tensorflow as tf
 
 # system modules
@@ -22,7 +22,7 @@ import numpy as np
 from scipy import stats
 from math import atan2
 import matplotlib.pyplot as plt
-from hist import intervals
+# from hist import intervals
 import mplhep
 import pandas as pd
 
@@ -35,7 +35,7 @@ sys.path.append('/tf/madgraph/MG5_aMC_v2_9_16')
 try:
     from madgraph.various.lhe_parser import FourMomentum, EventFile
 except ModuleNotFoundError:
-    print('Madgraph was not found in PATH or in docker /tf/madgraph/MG5_aMC_v2_9_16 dir \n you can added temporarily with sys.path.append(\'path/to/madgraph\')')
+    print('Madgraph was not found in PATH or in docker /tf/madgraph/MG5_aMC_v2_9_16 dir \n can be added temporarily with sys.path.append(\'path/to/madgraph\')')
 
 # create variable of current working directory
 currentPath = str(os.getcwd()+'/') # used as default training save/load dir
@@ -55,7 +55,205 @@ def phi(particle): # calculates the angle phi of a particle from it's fourMoment
     return atan2(particle.py, particle.px)
 
 
-def process_file(filename, maxJetParts, theta):
+def pseudorapidity(particle):
+    pz = particle.pz
+    p = np.sqrt(np.power(particle.px, 2) + np.power(particle.py, 2) + np.power(particle.pz, 2))
+    if (p-pz) == 0.0:
+        raise Exception("Error calculating pseudorapidity (divide by zero)")
+    elif ((p+pz)/(p-pz)) <= 0.0:
+        raise Exception("Error calculating pseudorapidity (log of negative number)")
+    else:
+        pseudorapidity = 0.5*math.log((p+pz)/(p-pz))
+        return pseudorapidity
+
+
+def check_pseudorapidity(particle):
+    pz = particle.pz
+    p = np.sqrt(np.power(particle.px, 2) + np.power(particle.py, 2) + np.power(particle.pz, 2))
+    if (p-pz) == 0.0:
+        return False
+    elif ((p+pz)/(p-pz)) <= 0.0:
+        return False
+    else: 
+        return True
+
+
+def check_rapidity(particle):
+    '''
+    checks if calculating rapidity would give you a calculation error. 
+    returns True if calculating is no problem, returns False otherwise
+    '''
+    if (particle.E - particle.pz) == 0: # can't have a devide by zero
+        return False
+    if (particle.E + particle.pz)/(particle.E - particle.pz) <= 0: # the log of this is calculated for rapidity; can't take the log of zero or a negative number
+        return False
+    else: return True
+
+
+def process_event(event, maxJetParts, theta, double_jet=False):
+    '''
+    is called by process_file for every event in its LHE file
+    inherits filename, maxJetParts and theta from process_file and thus from convertLHE
+    
+    goes through an event particle by particle, adding the top, anti-top,
+    as well as up to maxJetParts other quarks and gluons in an event to arrays.
+    Calculates some properties for the particles, like phi and pseudorapidity and discards
+    some particles and events if it comes to domainErrors.
+    
+    returns the eventVector with all particles including tt-pair of the event
+    '''
+    w = event.wgt
+    ptop = FourMomentum(0, 0, 0, 0)
+    pantitop = FourMomentum(0, 0, 0, 0)
+    pjet = FourMomentum(0, 0, 0, 0)
+    top_eta = 0
+    antitop_eta = 0
+    jet_eta = 0
+    eventVector = []
+    eventJetVector = []
+    countRapidity = 0
+    countEta = 0
+    
+    # particle processing
+    for particle in event:  # loops through every particle in event
+        try:
+            # top and anti-top
+            if particle.status == 2:  # particle.status = 2: unstable particles, here only the top or anti-top are saved, W Bosons are ignored
+                if particle.pid == 6:  # top quark
+                    if check_rapidity(particle) == True:  # if rapidity is fine
+                        try:
+                            top_eta = pseudorapidity(particle)
+                            if top_eta <= 1e6:
+                                ptop = FourMomentum(particle)  # create FourMomentum for top
+                            else:
+                                print('top 4-moment error')
+                                ptop = None
+                                countEta += 1
+                                continue
+                        except:
+                            print('top 4-moment error')
+                            ptop = None
+                            countEta += 1
+                            continue
+                    else:
+                        print('top 4-moment error')
+                        ptop = None
+                        countRapidity += 1
+                        continue
+
+                elif particle.pid == -6:  # anti-top quark
+                    if check_rapidity(particle) == True:  # if rapidity is fine
+                        try:
+                            antitop_eta = pseudorapidity(particle)
+                            if antitop_eta <= 1e6:
+                                pantitop = FourMomentum(particle)  # create FourMomentum for anti-top
+                            else:
+                                print('antitop 4-moment error')
+                                pantitop = None
+                                countEta += 1
+                                continue
+                        except:
+                            print('antitop 4-moment error')
+                            pantitop = None
+                            countEta += 1
+                            continue
+
+                    else:
+                        print('antitop 4-moment error')
+                        pantitop = None
+                        countRapidity += 1
+                        continue
+
+                else:
+                    continue
+
+            # jet particles
+            jet_eta = 0
+            if len(eventJetVector) < maxJetParts:  # limit to maxJetParts particles per event,
+                # to avoid ragged arrays, if the event has fewer particles than the rest is filled with zeros
+                if particle.status == 1:  # particle.status = 1: stable particles, here only jet particles (quarks and gluons) considered
+                    if ((particle.pid < 6 and particle.pid > -6) or particle.pid == 21):  # only quarks and gluons are saved
+                        if check_rapidity(particle) == True:  # if rapidity is fine
+                            if check_pseudorapidity(particle) == True:
+                                jet_eta = pseudorapidity(particle)
+                                if jet_eta <= 1e6:
+                                    pjet = FourMomentum(particle)  # FourMomentum of particle in Jet
+                                    double_jet_prob = 0.6907047702952649  # number of two quark pairs/number of at least 1 quark in all MiNNLO Datasets
+                                    if (double_jet == True and np.random.uniform() <= double_jet_prob):
+                                        rng_split = np.clip(np.random.normal(0.5, scale=0.01), 0, 1)
+                                        part_0 = rng_split * pjet
+                                        part_1 = (1 - rng_split) * pjet
+                                        while (check_pseudorapidity(part_0) == False or check_pseudorapidity(part_1) == False):  # redo split until correct pseudorapidities are created
+                                            rng_split = np.clip(np.random.normal(0.5, scale=0.01), 0, 1)
+                                            part_0 = rng_split * pjet
+                                            part_1 = (1 - rng_split) * pjet
+
+                                        eta0 = pseudorapidity(part_0)
+                                        eta1 = pseudorapidity(part_1)
+                                        eventJetVector.append(
+                                            [part_0.pt, part_0.rapidity, phi(part_0), part_0.mass, eta0, part_0.E,
+                                             particle.pid, w, theta])  # add particle to Jet Vector of event
+                                        eventJetVector.append(
+                                            [part_1.pt, part_1.rapidity, phi(part_1), part_1.mass, eta1, part_1.E,
+                                             particle.pid, w, theta])  # add particle to Jet Vector of event
+
+                                    else:
+                                        eventJetVector.append(
+                                            [pjet.pt, pjet.rapidity, phi(pjet), pjet.mass, jet_eta, pjet.E, particle.pid,
+                                             w, theta])  # add particle to Jet Vector of event
+
+                                else:
+                                    countEta += 1
+                                    continue
+                            else:
+                                countEta += 1
+                                continue
+                        else:
+                            countRapidity += 1
+                            continue
+
+                    else:
+                        continue
+
+                else:
+                    continue
+
+            else:
+                continue
+
+        except:
+            continue
+
+    # sort eventJetVector so that Gluons come first, followed by the heavier quarks and ends with lightest quarks. -> decreasing absolute value of PID (arg 6)
+    eventJetVector.sort(key=lambda x: (abs(x[6]), x[6]), reverse=True)
+
+    # check if top or antitop 4-momentum is set to None -> Error in pseudorpaidity
+    if (ptop is not None) and (pantitop is not None):
+        p_tt = ptop + pantitop  # create madgraph FourMomentum of tt-pair
+        # Top pair processing
+        try:  # pseudorapidity for tt-pair
+            tt_eta = pseudorapidity(p_tt)
+
+            # for each event: 1. tt-pair, 2. top, 3. anti-top, followed by maxJetParts of jet particles
+            eventVector.append(
+                [p_tt.pt, p_tt.rapidity, phi(p_tt), p_tt.mass, tt_eta, p_tt.E, 0, w, theta])  # add tt-pair to output array
+            eventVector.append(
+                [ptop.pt, ptop.rapidity, phi(ptop), ptop.mass, top_eta, ptop.E, 6, w, theta])  # add top quark to event vector
+            eventVector.append(
+                [pantitop.pt, pantitop.rapidity, phi(pantitop), pantitop.mass, antitop_eta, pantitop.E, -6, w, theta])  # add anti-top quark to event vector
+            
+            # make sure eventJetVector has length of maxJetParts:
+            eventJetVector = eventJetVector[:maxJetParts] + [[0, 0, 0, 0, 0, 0, 0, 0, 0]] * (maxJetParts - len(eventJetVector))
+            eventVector.extend(eventJetVector)
+            
+            return eventVector, countRapidity, countEta
+
+        except:
+            countEta += 1
+    
+    return None, None, countEta
+
+def process_file(filename, maxJetParts, theta, double_jet = False):
     '''
     is called by convertLHE for every LHE file in it's inputFolder
     inherits filename, maxJetParts and theta from convertLHE
@@ -74,7 +272,7 @@ def process_file(filename, maxJetParts, theta):
     countRapidity = 0
 
     for event in lhe1: # goes through the lhe file, event by event
-        eventVector, rapidity, eta = process_event(event, maxJetParts, theta) # calls the process_event function for every event in lhe file. 
+        eventVector, rapidity, eta = process_event(event, maxJetParts, theta, double_jet ) # calls the process_event function for every event in lhe file. 
         countEta += eta
         if eventVector is not None: # append current event vectors to the rest of the event vectors of the lhe file
             lheVector.append(eventVector)
@@ -83,161 +281,16 @@ def process_file(filename, maxJetParts, theta):
     return lheVector, countRapidity, countEta
 
 
-def pseudorapidity(particle):
-    pz = particle.pz
-    p = np.sqrt(np.power(particle.px, 2) + np.power(particle.py, 2) + np.power(particle.pz, 2))
-    if (p-pz) == 0.0:
-        raise Exception("Error calaculating pseudorapidity (divide by zero)")
-    elif ((p+pz)/(p-pz)) <= 0.0:
-
-        raise Exception("Error calaculating pseudorapidity (log of negative number)")
-    else:
-        pseudorapidity = 0.5*math.log((p+pz)/(p-pz))
-        return pseudorapidity
-
-
-def check_rapidity(particle):
-    '''
-    checks if calculating rapidity would give you a calculation error. 
-    returns True if calculating is no problem, returns False otherwise
-    '''
-    if (particle.E - particle.pz) == 0: # can't have a devide by zero
-        return False
-    if (particle.E + particle.pz)/(particle.E - particle.pz) <= 0: # the log of this is calculated for rapidity; can't take the log of zero or a negative number
-        return False
-    else: return True
-
-def process_event(event, maxJetParts, theta):
-    '''
-    is called by process_file for every event in it's LHE file
-    inherits filename, maxJetParts and theta from process_file and thus from convertLHE
-    
-    goes through an event particle by particle, adding the top, anti-top,
-    as well as upto maxJetParts other quarks and glouns in an event to arrays.
-    Callculates some properties for the particles, like phi and pseudorapidity and discards
-    some particles and events if it comes to domainErrors.
-    
-    returns the eventVector with all particles including tt-pair of the event
-    '''
-    w = event.wgt
-    ptop = FourMomentum(0, 0, 0, 0)
-    pantitop = FourMomentum(0, 0, 0, 0)
-    pjet = FourMomentum(0, 0, 0, 0)
-    top_eta = 0
-    antitop_eta = 0
-    jet_eta = 0
-    eventVector = []
-    eventJetVector = []
-    countRapidity = 0
-    countEta = 0
-    
-    # particle processing
-    for particle in event: # loops through every particle in event
-        jet_eta = 0
-        if (particle.status==2): # particle.status = 2: unstable particles, here only the top or anti-top are saved, W Bosons are ignored
-            if particle.pid==6: # top quark
-                if check_rapidity(particle)==True: # if rapidity is fine
-                    try:
-                        top_eta=pseudorapidity(particle)
-                        if top_eta <= 1e6:
-                                ptop = FourMomentum(particle) # create FourMomentum for top
-                        else:
-                                ptop = None
-                                countEta += 1
-                                continue
-                    except:
-                        ptop = None
-                        countEta += 1
-                        continue
-                else:
-                    ptop = None
-                    countRapidity += 1
-                    continue
-                
-            elif particle.pid==-6: # anti-top quark
-                if check_rapidity(particle)==True: # if rapidity is fine
-                    try:
-                        antitop_eta=pseudorapidity(particle)
-                        if antitop_eta <= 1e6:
-                                pantitop = FourMomentum(particle) # create FourMomentum for anti-top
-                        else:
-                                pantitop = None
-                                countEta += 1
-                                continue
-                    except:
-                        pantitop = None
-                        countEta += 1
-                        continue
-                    
-                else:
-                    pantitop = None
-                    countRapidity += 1
-                    continue
-                
-            else: continue
-        
-        if (particle.status==1): # particle.status = 1: stable particles, here only jet particles (quarks and gluons) considered
-            if ((particle.pid<6 and particle.pid>-6) or particle.pid==21): # only quarks and glouns are saved
-                if len(eventJetVector) < maxJetParts: #limit to maxJetParts particles per event, to avoid ragged arrays, if the event has less particles than the rest is filled with zeros
-                    if check_rapidity(particle)==True: # if rapidity is fine
-                        try: 
-                            jet_eta=pseudorapidity(particle)
-                            if jet_eta <= 1e6:
-                                    pjet=FourMomentum(particle) # FourMomentum of particle in Jet
-                                    eventJetVector.append([pjet.pt, pjet.rapidity, phi(pjet), pjet.mass, jet_eta, pjet.E, particle.pid, w, theta]) # add particle to Jet Vector of event
-                        except:
-                            countEta += 1
-                            continue
-                        
-                    else:
-                        countRapidity += 1
-                        continue
-                    
-                else: continue
-
-            else: continue
-        
-        else: continue
-    
-    # check if top or antitop 4-momentum is set to None -> Error in pseudorpaidity
-    if (ptop is not None) and (pantitop is not None):
-            # Top pair processing
-            try: # pseudorapidity for tt-pair
-                p_tt = ptop + pantitop # create madgraph FourMomentum of tt-pair
-                tt_eta=pseudorapidity(p_tt)
-                
-                # for each event: 1. tt-pair, 2. top, 3. anti-top, followed by maxJetParts of jet particles
-                eventVector.append([p_tt.pt,     p_tt.rapidity,     phi(p_tt),     p_tt.mass,     tt_eta,      p_tt.E,      0, w, theta]) # add tt-pair to output array
-                eventVector.append([ptop.pt,     ptop.rapidity,     phi(ptop),     ptop.mass,     top_eta,     ptop.E,      6, w, theta]) # add top quark to event vector
-                eventVector.append([pantitop.pt, pantitop.rapidity, phi(pantitop), pantitop.mass, antitop_eta, pantitop.E, -6, w, theta]) # add anti-top quark to event vector
-                
-                if len(eventJetVector) >= maxJetParts: # check length of eventJetVector to avoid ragged arrays
-                    eventJetVector[:maxJetParts]
-                else:
-                    for i in range(maxJetParts):
-                        if len(eventJetVector) < maxJetParts:
-                            eventJetVector.append([0, 0, 0, 0, 0, 0, 0, 0, 0]) # pad eventJetVector to length of max particles to avoid ragged arrays
-                        else: continue
-                    eventVector.extend(eventJetVector) # extend the event vector with the maxJetParts length jet vector
-                    
-                    return eventVector, countRapidity, countEta
-                
-            except:
-                countEta += 1
-    
-    return None, None, countEta
-
-
 def process_file_wrapper(args):
     '''
     wrapper for multiprocessing inside convert_lhe()
     simply calls the process_file() function
     '''
-    filename, maxJetParts, theta = args
-    return process_file(filename, maxJetParts, theta)
+    filename, maxJetParts, theta, double_jet = args
+    return process_file(filename, maxJetParts, theta, double_jet)
 
 
-def convert_lhe(inputFolder, outputFolder, theta, outLabel=None, maxJetParts=8, label='converted_lhe', recursive=True):
+def convert_lhe(inputFolder, outputFolder, theta, outLabel=None, maxJetParts=8, label='converted_lhe', recursive=True, double_jet = False):
     '''
     main method to call to convert a bunch of lhe files in the inputFolder directory to two numpy arrays and save them to disk.
     
@@ -285,10 +338,10 @@ def convert_lhe(inputFolder, outputFolder, theta, outLabel=None, maxJetParts=8, 
 
     num_processes = (mp.cpu_count()-1)  # number of CPU threads to use for the conversion
     pool = mp.Pool(processes=num_processes)
-    results = pool.map(process_file_wrapper, zip(lista, [maxJetParts] * len(lista), [theta] * len (lista))) # using multiprocessing, call process_file for each lhe in list, with maxJetParts and theta arguments passed along
+    results = pool.map(process_file_wrapper, zip(lista, [maxJetParts] * len(lista), [theta] * len(lista), [double_jet]*len(lista))) # using multiprocessing, call process_file for each lhe in list, with maxJetParts and theta arguments passed along
     pool.close()
     pool.join()
-
+    
     for lheVector, rapidity, eta in results: # go through the results of calling process_file above and create the arrays to be saved to disk. Also enumartes how many particles or events were skipped due to domain errors
         X0.extend(lheVector)
         countRapidity += rapidity
@@ -311,6 +364,7 @@ def convert_lhe(inputFolder, outputFolder, theta, outLabel=None, maxJetParts=8, 
     results = []
     lheVector = []
 
+
 #################################################################################
 '''
 converted data processing and utilities
@@ -318,20 +372,22 @@ converted data processing and utilities
 #################################################################################
 
 
-def load_dataset(filePath): # simply uses np.load to load and return saved datasets 
-    dataset=np.load(filePath)
-    X=dataset['a']
-    return X
+def load_dataset(filePath, i=None): # simply uses np.load to load and return saved datasets 
+    with np.load(filePath) as dataset:
+        if i is not None:
+            return dataset['a'][:, :i, :]
+        else:
+            return dataset['a']
 
 
-def trim_datasets(X, Y, shuffle=True):
+def trim_datasets(X, Y, shuffle=False):
     '''
     returns inputs X and Y trimed to the length of the shorter of the two
     '''
     if shuffle == True:
         rng = np.random.default_rng()
-        rng.shuffle(X, axis=0)
-        rng.shuffle(Y, axis=0)
+        rng.shuffle(X)
+        rng.shuffle(Y)
     minimum = min(len(X),len(Y))
     X = X[0:minimum,...]
     Y = Y[0:minimum,...]
@@ -537,7 +593,8 @@ def norm_per(X, ln=False):
     mean = np.nanmean(X)
     std = np.nanstd(X)
     X -= mean
-    X /= std
+    if std >= 1e-2: # mostly for mass less gluons not causing divide by zero error
+        X /= std
     return X
 
 
@@ -548,10 +605,11 @@ def norm2_per(X, Y, ln=False):
     mean = np.nanmean(np.concatenate((X, Y)))
     std = np.nanstd(np.concatenate((X, Y)))
     X -= mean
-    X /= std
-    
     Y -= mean
-    Y /= std
+    if std >= 1e-2: # mostly for massless gluons not causing divide by zero error
+        X /= std
+        Y /= std
+ 
     return X, Y
 
 
@@ -562,13 +620,18 @@ def normalize_data_per_particle(X):
     
     for particle in range(len(X[0,:,0])):
         for arg in range(6):
-            if arg == 0 or arg == 3 or arg == 5:    
-                X[:,particle, arg] = norm_per(X[:,particle, arg], ln=True)
+            if arg == 0 or arg == 3 or arg == 5:
+                if particle == 0: # don't use log for nrming top-pair mass
+                    X[:,particle, arg] = norm_per(X[:,particle, arg], ln=False)
+                else: # use log for pt and E
+                    X[:,particle, arg] = norm_per(X[:,particle, arg], ln=True) 
             else:
                 X[:,particle, arg] = norm_per(X[:,particle, arg], ln=False)
                 
     # wgt
-    X[:,:,7] /= stats.mode(np.abs(X[0,0,7]), keepdims=False)[0]
+    X[X[:,:,7] > 0, 7] = 1 #  masks positive weights and sets them = 1
+    X[X[:,:,7] < 0, 7] = -1 # masks negative weights and sets them = -1
+    
     # PID
     try: X = remap_pid(X)
     except KeyError: print('remap PID KeyError intercepted. Maybe the PIDs were already remaped,'+
@@ -582,14 +645,21 @@ def normalize_data2_per_particle(X, Y):
     
     for particle in range(len(X[0,:,0])):
         for arg in range(6):
-            if arg == 0 or arg == 3 or arg == 5:    
-                X[:,particle, arg], Y[:,particle, arg] = norm2_per(X[:,particle, arg], Y[:,particle, arg], ln=True)
+            if arg == 0 or arg == 5: # pt and energy
+                if particle == 0: # don't use log for nrming top-pair mass
+                    X[:,particle, arg], Y[:,particle, arg] = norm2_per(X[:,particle, arg], Y[:,particle, arg], ln=False)
+                else:
+                    X[:,particle, arg], Y[:,particle, arg] = norm2_per(X[:,particle, arg], Y[:,particle, arg], ln=True)
             else:
                 X[:,particle, arg], Y[:,particle, arg] = norm2_per(X[:,particle, arg], Y[:,particle, arg], ln=False)
     
     # wgt
-    X[:,:,7] /= stats.mode(np.abs(X[0,0,7]), keepdims=False)[0]
-    Y[:,:,7] /= stats.mode(np.abs(Y[0,0,7]), keepdims=False)[0]
+    X[X[:,:,7] > 0, 7] = 1 #  masks positive weights and sets them = 1
+    X[X[:,:,7] < 0, 7] = -1 # masks negative weights and sets them = -1
+    
+    Y[Y[:,:,7] > 0, 7] = 1 #  masks positive weights and sets them = 1
+    Y[Y[:,:,7] < 0, 7] = -1 # masks negative weights and sets them = -1
+    
     #PID
     try: 
         X = remap_pid(X)
@@ -626,11 +696,11 @@ def prep_arrays(X0, X1, val=0.15, shuffle=True, use_class_weights=False):
     Y0 = []
     Y1 = []
     # classifier array takes theta parameter from dataset
-    Y0 = X0[:,0,-1] 
+    Y0 = X0[:,0,-1] # theta is last parameter
     Y1 = X1[:,0,-1]
     
     # removing theta as it was already used to create the classifier arrays Y0 and Y1
-    X0 = np.delete(X0, -1, -1) # theta paramater is last argument in last axis
+    X0 = np.delete(X0, -1, -1)
     X1 = np.delete(X1, -1, -1)
     
     X = []
@@ -644,10 +714,12 @@ def prep_arrays(X0, X1, val=0.15, shuffle=True, use_class_weights=False):
     if use_class_weights==True:
         class_wgt=len(X0)/len(X1)
         X0[...,-1] /= class_wgt
-    weights_array = X[:,0,-1]
+    
+    # create weights array from dataset
+    weights_array = X[:,0,-1] # weigts are last paramter after removing theta
     
     # removing weights as it was already used to create the weights_array
-    X = np.delete(X, -1, -1) # event weight paramater is last argument (after theta is removed) in last axis for both all particles and tt-pair arrays
+    X = np.delete(X, -1, -1) 
     
     X_train, X_val, Y_train, Y_val, wgt_train, wgt_val = data_split(X, Y, weights_array, train=-1, test=val, shuffle=shuffle)
     
@@ -686,56 +758,40 @@ Also generates weights for reweighing one dataset into another
 
 
 def setup_nn(input_dim=7, Phi_sizes = (100,100,128), F_sizes = (100,100,100),
-             use_custom_loss=False, dropout=0.0, l2_reg=0.0, learning_rate=0.001,
-             patience=10, use_scheduler=True, use_focal=False, gamma=1.1,
-             monitor='val_loss', mode='min', savePath=currentPath,
-             saveLabel='DCTR_training', summary=False):
-    '''
-    l2_reg range that worked well: (1e-7, 5e-6)
-    Uses energyflows Particle Flow Network (PFN) architecture to setup the DCTR neural network. 
-    '''
+             loss = 'cce', dropout=0.0, l2_reg=0.0, Phi_acts='relu', F_acts='relu', output_act='softmax',
+             learning_rate=0.001, patience=10, use_scheduler=True, monitor='val_loss', 
+             mode='min', savePath=currentPath, saveLabel='DCTR_training', summary=False):
     
-    focal_loss=tf.keras.losses.BinaryFocalCrossentropy(gamma=gamma)
+    # supported losses
     cce_loss = tf.keras.losses.CategoricalCrossentropy()
-    
-    def custom_loss(y_true, y_pred):
-        pred = K.clip(y_pred, 0.000001, 0.9999999)
-        rwgt = tf.divide(pred, tf.add(1.0, -pred))
-        rwgt_penalty = K.mean(K.pow(K.log(K.pow(rwgt, 0.5)), 4))
-        
-        my_loss =  (1 + 0.1*rwgt_penalty) * (1 + cce_loss(y_true, y_pred)) * (1 + 2*focal_loss(y_true, y_pred))
-        
-        return K.mean(my_loss)
-    
+    mse_loss = tf.keras.losses.MeanSquaredError()
 
-    
-    if use_custom_loss == True:
-        loss = custom_loss
-    elif use_focal == True:
-        loss = focal_loss
+    if loss == 'mse':
+        loss = mse_loss
     else:
         loss = cce_loss
     
+    # activation functions: if string is unsuppported, fallback to 'relu'
+    supported_acts = ['relu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh', 'selu', 'elu', 'exponential']
+    if Phi_acts not in supported_acts:
+        print(f"unrecognized Phi activation '{Phi_acts}', falling back to 'relu'")
+        Phi_acts = 'relu'
+    if F_acts not in supported_acts:
+        print(f"unrecognized F activation '{F_acts}', falling back to 'relu'")
+        F_acts = 'relu'
+    if output_act not in supported_acts:
+        print(f"unrecognized output activation '{F_acts}', falling back to 'softmax'")
+        F_acts = 'softmax'
     
-    def scheduler(epoch, learning_rate):
-        if use_scheduler==False:
-            return learning_rate
-        elif epoch < 10:
-            return learning_rate
-        elif epoch > 20:
-            return learning_rate * tf.math.exp(-0.02)
-        elif epoch > 40:
-            return learning_rate * tf.math.exp(-0.03)
-        else:
-            return learning_rate * tf.math.exp(-0.01)
     
+    # optimizer
     adam=tf.keras.optimizers.Adam(learning_rate=learning_rate)
     
-    # defines dctr as a particle flow network with given input_dim, Phi_sizes and F_sizes
+    # defines dctr as a particle flow network with given paramterization
     dctr = PFN(input_dim=input_dim, Phi_sizes=Phi_sizes, F_sizes=F_sizes,
                Phi_l2_regs=l2_reg, F_l2_regs=l2_reg, latent_dropout=dropout,
                F_dropouts=dropout, summary=summary, optimizer=adam,
-               loss=loss) 
+               loss=loss, Phi_acts=Phi_acts, F_acts=F_acts) 
     
     
     # sets up keras checkpoints with monitoring of given metric. monitors 'val_loss' with mode 'min' by default 
@@ -755,6 +811,19 @@ def setup_nn(input_dim=7, Phi_sizes = (100,100,128), F_sizes = (100,100,100),
                                                      verbose = 1,
                                                      restore_best_weights = True)
     
+    # training schedule, reduces learning rate as training commences
+    def scheduler(epoch, learning_rate):
+        if use_scheduler==False:
+            return learning_rate
+        elif epoch < 10:
+            return learning_rate
+        elif epoch > 20:
+            return learning_rate * tf.math.exp(-0.02)
+        elif epoch > 40:
+            return learning_rate * tf.math.exp(-0.03)
+        else:
+            return learning_rate * tf.math.exp(-0.01)
+    # scheduler callback
     learn_schedule = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=0)
     
     callbacks = [checkpoint, CSVLogger, EarlyStopping, learn_schedule]
@@ -769,15 +838,7 @@ def train(dctr, callbacks, X_train, Y_train, X_val, Y_val, wgt_train=1.0, wgt_va
     allows for passing along sample_weights for training and validation. These can be positive and/or negative. If no wgt_train or wgt_val are given, then the weights are set to 1 by default
     plots and saves a figure of loss and accuracy throughout the Epochs
     '''
-
-    # check weights
-    if isinstance(wgt_train, np.ndarray) == False:
-        wgt_train = np.array([wgt_train]*len(X_train))
-        
-    if isinstance(wgt_val, np.ndarray) == False:
-        wgt_val = np.array([wgt_val]*len(X_val))
-
-    print('Starting training')
+    
     history = dctr.fit(X_train, Y_train,
                        sample_weight = pd.Series(wgt_train).to_frame('w_t'), # pd.Series makes the training initialize much, much faster than passing just the weight
                        epochs = epochs,
@@ -808,18 +869,21 @@ def train(dctr, callbacks, X_train, Y_train, X_val, Y_val, wgt_train=1.0, wgt_va
     plt.show()
 
 
-def predict_weights(dctr, X0, X1, batch_size=8192, clip=0.0001, verbose=1):
+def predict_weights(dctr, X0, X1, batch_size=8192, clip=0.00001, verbose=1):
     '''
     generates weights for reweighing X0 to X1: weights_0
                   and for reweighing X1 to X0: weights_1
     from the predictions made by DCTR
     and returns the reweighing arrays
     '''
-    predics_0 = np.clip(dctr.predict(X0, batch_size=batch_size), 0+clip, 1-clip)
-    predics_1 = np.clip(dctr.predict(X1, batch_size=batch_size), 0+clip, 1-clip)
+    predics_0 = np.clip(dctr.predict(X0, batch_size=batch_size, verbose=verbose), 0+clip, 1-clip)
+    predics_1 = np.clip(dctr.predict(X1, batch_size=batch_size, verbose=verbose), 0+clip, 1-clip)
     
-    weights_0 = predics_0[:,1]/(1-predics_0[:,1], verbose=verbose)
-    weights_1 = predics_1[:,0]/(1-predics_1[:,0], verbose=verbose)
+    weights_0 = predics_0[:,1]/(1-predics_0[:,1])
+    weights_1 = predics_1[:,0]/(1-predics_1[:,0])
+    
+    weights_0 /= np.mean(weights_0) # adjust weights so that mean is 1
+    weights_1 /= np.mean(weights_1) # adjust weights so that mean is 1
     
     return weights_0, weights_1
 
@@ -841,13 +905,10 @@ from matplotlib import rc
 mplhep.style.use('CMS')
 
 rc('text', usetex=True)
-rc('font', size=22)
-rc('xtick', labelsize=15)
-rc('ytick', labelsize=15)
-rc('legend', fontsize=15)
-
-plot_style_0 = {'histtype':'step', 'color':'black', 'linewidth':2, 'linestyle':'--', 'density':True}
-plot_style_1 = {'alpha':0.5, 'density':True}
+rc('font', size=14)
+rc('xtick', labelsize=10)
+rc('ytick', labelsize=10)
+rc('legend', fontsize=10)
 
 # define dicts of arguments and particles
 # [pt, rapidity, phi, mass, pseudorapidity, E, PID, w, theta]
@@ -858,144 +919,168 @@ particles = {0: r'$t\bar{t}$ pair',
              2: r'$\bar{t}$'} 
 
 args_dict = {0: r'$p_{T}$ [GeV]',
-                 1: r'$\gamma$ rapidity',
-                 2: r'$\phi$',
-                 3: r'mass [GeV]',
-                 4: r'$\eta$ pseudorapidity',
-                 5: r'Energy [GeV]',
-                 6: r'PID'}
-
-# all particles array
-def plot_3_ratio(X0, X1, X2, arg_index, X0_label = 'X0 POWHEG hvq gen', X1_label = 'X1 MiNNLO gen', X2_label = 'POWHEG reweighted', title = '',
-                  part_index = 0, X0_wgt = 1,  X1_wgt = 1, X2_wgt = 1, start = -1.2, stop = 1.2, div = 35, ratio_ylim=[0.9,1.1]):
-        
-    # check weights
-    if isinstance(X0_wgt, np.ndarray) == False:
-        X0_wgt = [X0_wgt]*len(X0)
-    if isinstance(X1_wgt, np.ndarray) == False:
-        X1_wgt = [X1_wgt]*len(X1)
-    if isinstance(X2_wgt, np.ndarray) == False:
-        X2_wgt = [X2_wgt]*len(X2)
-    
-    fig, (ax1, ax2) = plt.subplots(nrows=2, figsize=(12,10))
-    fig.tight_layout(pad=2)
-
-    bins = np.linspace(start, stop, div)
-    n0, bins, patches = ax1.hist(X0[:,part_index, arg_index], bins = bins, weights = X0_wgt, label = X0_label, **plot_style_1, color='orange')
-    n1, bins, patches = ax1.hist(X1[:,part_index, arg_index], bins = bins, weights = X1_wgt, label = X1_label, **plot_style_1, color='blue')
-    n2, bins, patches = ax1.hist(X2[:,part_index, arg_index], bins = bins, weights = X2_wgt, label = X2_label, **plot_style_0)
-    
-    
-    ax1.set_title(str(particles[part_index])+ ': ' + str(args_dict[arg_index]) +' ' +title)
-    ax1.set_xlabel(str(args_dict[arg_index])+'['+str(particles[part_index])+']')
-    ax1.set_ylabel('probability density')
-    ax1.set_xlim([start, stop])
-    ax1.legend()
-    
-    n0 = np.append(n0, n0[-1])
-    n1 = np.append(n1, n1[-1])
-    n2 = np.append(n2, n2[-1])
-    
-    num_evts = 0
-    tot_evts = len(X2)
-    for i in range(tot_evts):
-        if (start <= X0[i, 0, arg_index]<= stop):
-            num_evts += 1
-    
-    print(f'{num_evts}out of {tot_evts} events ({np.round(100*num_evts/tot_evts, decimals=2)}%) are between {args_dict[arg_index]} {start} and {stop}')
-    
-    width = abs(stop - start)/div
-    num = n2 * num_evts * width
-    denom = n1 * num_evts * width
-    
-    with np.errstate(divide="ignore", invalid="ignore"):
-        ratio = num/denom
-        ratio_variance = num * np.power(denom, -2.0)
-        ratio_uncert = np.abs(intervals.poisson_interval(ratio, ratio_variance) - ratio)
-    
-    ax2.set_title('ratio plot')
-    ax2.step(bins, (n0/n1), alpha=0.5, color='orange', where='post')
-    ax2.fill_between(bins, n0/n1, 1, label = X0_label, alpha=0.5, color='orange', step='post')
-    
-    ax2.step(bins, (n2/n1), alpha=0.5, color='green', where='post')
-    ax2.fill_between(bins, n2/n1, 1, label = X2_label, alpha=0.5, color='green', step='post')
-    
-    ax2.hlines(1,start, stop, color='black', linewidth=3, linestyles='dashed', label=str(X1_label)+' baseline')
-    ax2.fill_between(bins, ratio_uncert[0,]+1, 1-ratio_uncert[1,], label = 'statistical uncertainty',step='post', alpha=0.2, color='red')
-    
-    
-    ax2.set_ylim(ratio_ylim)
-    ax2.set_xlim([start, stop])
-    ax2.set_ylabel('ratio')
-    ax2.legend()
-    
-    plt.show()
-   
-
-def plot_2(X0, X1, arg_index, X0_label = 'X0 POWHEG hvq gen', X1_label = 'X1 MiNNLO gen', title = '',
-            part_index = 0, X0_wgt = 1,  X1_wgt = 1, start = -1.2, stop = 1.2, div = 35):
-    
-    # check weights
-    if isinstance(X0_wgt, np.ndarray) == False:
-        X0_wgt = [X0_wgt]*len(X0)
-    if isinstance(X1_wgt, np.ndarray) == False:
-        X1_wgt = [X1_wgt]*len(X1)
-    
-    fig, ax1 = plt.subplots(nrows=1, figsize=(7,7))
-    
-    bins = np.linspace(start, stop, div)
-    ax1.hist(X0[:,part_index, arg_index], bins = bins, weights = X0_wgt, label = X0_label, **plot_style_1, color='orange')
-    ax1.hist(X1[:,part_index, arg_index], bins = bins, weights = X1_wgt, label = X1_label, **plot_style_1, color='blue')
-    
-    ax1.set_title(str(particles[part_index])+ ': ' + str(args_dict[arg_index])+' ' +title)
-    ax1.set_xlabel(str(args_dict[arg_index])+'['+str(particles[part_index])+']')
-    ax1.set_ylabel('probability density')
-    ax1.set_xlim([start, stop])
-    ax1.legend()
-    
-    plt.show()
+             1: r'$y$ rapidity',
+             2: r'$\phi$',
+             3: r'mass [GeV]',
+             4: r'$\eta$ pseudorapidity',
+             5: r'Energy [GeV]',
+             6: r'PID'}
 
 
-def plot_3(X0, X1, X2, arg_index, X0_label = 'X0 POWHEG hvq gen', X1_label = 'X1 MiNNLO gen', X2_label = 'POWHEG reweighted', title = '',
-            part_index = 0, X0_wgt = 1,  X1_wgt = 1, X2_wgt = 1, start = -1.2, stop = 1.2, div = 35):
-    
-    # check weights
-    if isinstance(X0_wgt, np.ndarray) == False:
-        X0_wgt = [X0_wgt]*len(X0)
-    if isinstance(X1_wgt, np.ndarray) == False:
-        X1_wgt = [X1_wgt]*len(X1)
-    if isinstance(X2_wgt, np.ndarray) == False:
-        X2_wgt = [X2_wgt]*len(X2)
-        
-    fig, ax1 = plt.subplots(nrows=1, figsize=(7,7))
-    
-    bins = np.linspace(start, stop, div)
-    ax1.hist(X0[:,part_index, arg_index], bins = bins, weights = X0_wgt, label = X0_label, **plot_style_1, color='orange')
-    ax1.hist(X1[:,part_index, arg_index], bins = bins, weights = X1_wgt, label = X1_label, **plot_style_1, color='blue')
-    ax1.hist(X2[:,part_index, arg_index], bins = bins, weights = X2_wgt, label = X2_label, **plot_style_0)
-    
-    ax1.set_title(str(particles[part_index])+ ': ' + str(args_dict[arg_index])+' ' +title)
-    ax1.set_xlabel(str(args_dict[arg_index])+'['+str(particles[part_index])+']')
-    ax1.set_ylabel('probability density')
-    ax1.set_xlim([start, stop])
-    ax1.legend()
-    
-    plt.show()
- 
-    
-    
-def plot_weights(wgt_0, wgt_1, start = 0, stop = 2, div = 21, title = ''):
+def plot_weights(wgts, start = -1.5, stop = 2.5, div = 31, title = None):
     bins = np.linspace(start, stop, div)
     plt.figure(figsize=(4,4))
     
-    plt.hist(np.clip(wgt_0, start, stop), bins = bins, label = 'weights 0', color='orange', density =True, alpha=0.5)
-    plt.hist(np.clip(wgt_1, start, stop), bins = bins, label = 'weights 1', color='green', density =True, alpha=0.5)
-
-    plt.title('predicted reweighing weights '+title)
-    plt.xlabel('')
-    plt.ylabel('probability density')
+    for (wgt, label) in wgts:
+        plt.hist(np.clip(wgt, start, stop), bins = bins, label = label, alpha=0.3)
+        
+    if title is None:
+        plt.title('weights')
+    else: plt.title(title) 
+    
+    plt.xlabel(r'weights')
+    plt.ylabel(r'counts (log)')
     plt.xlim([start, stop])
+    plt.yscale('log')
     plt.legend()
-    #plt.yscale('log')
     plt.show()
     
+    
+def plot_ratio(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, 
+               bins = None, optimal_bins = False, start = None, stop = None, div = 35, 
+               ratio_ylim=[0.9,1.1], figsize=(8,8), layout='rows', stats_only=False):
+    
+    # binning: prio: passed bins, calculated optimal bins, linear bins from start, stop, div
+    if bins is not None: 
+        bins = bins
+    elif optimal_bins == True: # 2. prio: calculate optimal bins
+        if args[0][0].ndim > 1: # check whether full array
+            bins = np.histogram_bin_edges(args[0][0][:,part_index, arg_index], bins = 'auto')
+        else:
+            bins = np.histogram_bin_edges(args[0][0], bins = 'auto')
+    else: # no passed bins, nor optimal bins
+        if start is None: # was startstop given?
+            if args[0][0].ndim > 1: # check whether full array
+                start = np.min(args[0][0][:,part_index, arg_index])
+            else:
+                start = np.min(args[0][0])
+                
+        if stop is None:
+            if args[0][0].ndim > 1: # check whether full array
+                stop = np.max(args[0][0][:,part_index, arg_index])
+            else:
+                stop = np.max(args[0][0])
+                
+        bins = np.linspace(start, stop, div)
+    
+    start = bins[0]
+    stop = bins[-1]
+    div = len(bins)
+    # width = bins[1] - bins [0]
+    
+    if stats_only == False:
+        if layout == 'cols':
+            fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=figsize)
+        else: fig, (ax1, ax2) = plt.subplots(nrows=2, figsize=figsize)
+        fig.tight_layout(pad=2)
+    
+    n_list = [] # list of histogram bin counts
+    n_sum_list = [] # list of total counts in all bins: used for normalizing
+    uncert_list = [] # list of uncertainties sqrt(n) for each bin in each histogram
+    mae_list = []
+    chi2_list = []
+    p_list = []
+    
+    for i, (X, wgt, label) in enumerate(args):
+        # check wheter full dataset is passed or 1D dataset, that can be plotted as is
+        if X.ndim > 1:
+            n, bins = np.histogram(X[:,part_index, arg_index], bins = bins, weights = wgt)
+            bin_indices = np.digitize(X[:,part_index, arg_index], bins = bins)
+        else: 
+            n, bins = np.histogram(X, bins = bins, weights = wgt)
+            bin_indices = np.digitize(X, bins = bins)
+        
+        # statistics
+        # uncert: sqrt of the square of all weights in each bin
+        uncert = np.array([np.sqrt(np.sum(wgt[bin_indices == bin_index]**2)) for bin_index in range(1, len(bins))])
+        uncert_list.append(uncert)
+        uncert_nrm = uncert/n
+        uncert_nrm = np.append(uncert_nrm, uncert_nrm[-1]) # extend list by last element for plotting
+        
+        # normalize so that all counts are equal to first passed X
+        n_sum = np.sum(n)
+        n_sum_list.append(n_sum)
+        n *= (n_sum_list[0] / n_sum)
+        n_list.append(n)
+        # calculate MAE statistics and chi^2
+        mae = np.nanmean(np.absolute(n_list[0] - n))
+        chi2 = np.nansum(np.power(n_list[0] - n, 2)/(np.power(uncert, 2) + np.power(uncert_list[0], 2)))
+        p = stats.chi2.sf(chi2, len(bins) - 2)
+        print(f'{label}: \n Mean Absolute Error {mae} \n chi square of {chi2} with p {p} \n compared to {args[0][2]}')
+        mae_list.append(mae)
+        chi2_list.append(chi2)
+        p_list.append(p)
+        # plotting
+        if stats_only == False:
+            if len(args) == 3: # use custom styles for 3 datasets
+                line_colors = ['orange', 'blue', 'black']
+                line_color = line_colors[i%len(line_colors)]
+                line_styles = ['None', 'None', 'dashed']
+                line_style = line_styles[i%len(line_styles)]
+                ratio_colors = ['orange', 'blue', 'black']
+                ratio_color = ratio_colors[i%len(ratio_colors)]
+                ratio_styles = ['solid', 'dotted', 'dashed']
+                ratio_style = ratio_styles[i%len(ratio_styles)]
+                alphas = [0.4, 0.4, 0.0]
+                alpha = alphas[i%len(alphas)]
+                labels = ['', '', f'{args[i][2]}']
+                label_ = labels[i%len(labels)]
+                fill_labels = [f'{args[i][2]}', f'{args[i][2]}', '']
+                fill_label = fill_labels[i%len(fill_labels)]
+            else: # use colors for any datasets
+                line_color = f'C{i}'  # Use different colors
+                line_styles = ['solid', 'dashed', 'dotted', 'dashdot']
+                line_style = line_styles[i%len(line_styles)]
+                ratio_style = line_style
+                ratio_color = line_color
+                alpha=0.2
+                fill_label = f'{args[i][2]}'
+                label_ = ''
+            hist = np.append(n, n[-1])
+            ax1.step(bins, hist, label = label_, where = 'post', color=line_color, linestyle=line_style)
+            ax1.fill_between(bins, hist, label = fill_label, step='post', alpha=alpha, color=line_color)
+            hist = []
+            # ratio
+            ratio = n/n_list[0] 
+            ratio = np.append(ratio, ratio[-1])
+            ax2.step(bins, ratio, label = f'{args[i][2]}', where='post', color=ratio_color, linestyle=ratio_style)  # plot ratio compared to first input
+            ax2.fill_between(bins, ratio * (1 - uncert_nrm), ratio * (1 + uncert_nrm), alpha=0.3, step='post', color=ratio_color) 
+            ratio = []
+        
+    if stats_only == False:
+        if title is None:
+            ax1.set_title(str(particles.get(part_index, 'Jet'))+ ': ' + str(args_dict.get(arg_index, 'Jet')))
+        else: ax1.set_title(title)
+        
+        if x_label is None:
+            ax1.set_xlabel(str(str(particles.get(part_index, 'Jet'))+': '+args_dict.get(arg_index, 'Jet')))
+        else: ax1.set_xlabel(x_label)
+            
+        if y_label is None:
+            ax1.set_ylabel(f'counts normalized to {args[0][2]}')
+        else: ax1.set_ylabel(y_label)
+        
+        ax1.set_xlim([start, stop])
+        ax1.set_ylim(bottom=0)
+        ax1.legend()
+        
+        ax2.set_title('ratio plot')
+        ax2.set_xlim([start, stop])
+        ax2.set_ylim(ratio_ylim)
+        ax2.set_ylabel('ratio')
+        ax2.legend()
+        
+        plt.show()
+    
+    return mae_list, chi2_list, p_list
+
