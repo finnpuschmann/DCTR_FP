@@ -1,0 +1,7 @@
+input_dim=5,
+Phi_sizes = (100,100,128),
+F_sizes = (128,100,100),
+loss = 'mse',
+Phi_acts=('linear', 'elu', 'gelu'),
+F_acts=('gelu', 'gelu', 'linear'),
+output_act='sigmoid'
