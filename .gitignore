@@ -1,3 +1,7 @@
+# Data_dir too heavy for GitHub
+Data/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
