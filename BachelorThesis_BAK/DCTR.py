@@ -9,7 +9,6 @@
 from __future__ import absolute_import, division, print_function
 # import tensorflow.keras.backend as K
 import tensorflow as tf
-import keras.backend as K
 
 # system modules
 import sys
@@ -26,8 +25,6 @@ import matplotlib.pyplot as plt
 # from hist import intervals
 import mplhep
 import pandas as pd
-from copy import copy
-import csv
 
 # energyflow imports
 from energyflow.archs import PFN
@@ -68,20 +65,6 @@ def pseudorapidity(particle):
     else:
         pseudorapidity = 0.5*math.log((p+pz)/(p-pz))
         return pseudorapidity
-
-
-
-def delta_phi(X):
-    phi_t = X[:,1, 2] # phi of top quark
-    phi_t_bar = X[:,2, 2] # phi of anti-top quark
-    delta = phi_t - phi_t_bar
-    # remap delta from [-2*pi, 2*pi] to [0, 2pi]
-    delta = ((delta + 2*math.pi) % (2*math.pi))
-    # remap to [0, pi] since it is symmetrical
-    delta = math.pi - abs(delta-math.pi)
-    
-    return delta
-
 
 
 def check_pseudorapidity(particle):
@@ -375,11 +358,11 @@ def convert_lhe(inputFolder, outputFolder, theta, outLabel=None, maxJetParts=8, 
     np.savez_compressed(str(outputFolder) + str(outLabel) + str(label)+'.npz', a=X0)
     
     # clear from memory after saving to file
-    del countEta
-    del countRapidity
-    del X0
-    del results
-    del lheVector
+    countEta = 0
+    countRapidity = 0
+    X0 = []
+    results = []
+    lheVector = []
 
 
 #################################################################################
@@ -432,49 +415,219 @@ def remap_pid(X, pid_i=6):
     return X
 
 
-def norm(X, ln=False, nrm=None):
-    if nrm is not None:
-        (mean, std, ln) = nrm
-        if ln == True:
-            X = np.log(np.clip(X, a_min = 1e-6, a_max = None))
-    else:
-        if ln == True:
-            X = np.log(np.clip(X, a_min = 1e-6, a_max = None))
-        mean = np.nanmean(X)
-        std = np.nanstd(X)
-        nrm = (mean, std, ln)
-
+def norm(X, ln=False):
+    if ln == True:
+        X = np.log(np.clip(X, a_min = 1e-6, a_max = None))
+    mean = np.nanmean(X[:,1])
+    std = np.nanstd(X[:,1])
+    norm = (mean, std, ln)
     X -= mean
+    X /= std
+    return X, norm
+
+
+
+def norm_2(X, Y, ln=False):
+    if ln == True:
+        X = np.log(np.clip(X, a_min = 1e-6, a_max = None))
+        Y = np.log(np.clip(Y, a_min = 1e-6, a_max = None))
+    mean = np.nanmean(np.concatenate((X[:,1], Y[:,1])))
+    std = np.nanstd(np.concatenate((X[:,1], Y[:,1])))
+    norm = (mean, std, ln)
+    X -= mean
+    X /= std
+    
+    Y -= mean
+    Y /= std
+    return X, Y, norm
+
+
+def un_norm(X, norm):
+    mean, std, ln = norm
+    X *= std
+    X += mean
+    if ln == True:
+        X = np.exp(X)
+    return X
+
+def un_norm_2(X, Y, norm):
+    mean, std, ln = norm
+    X *= std
+    X += mean
+    if ln == True:
+        X = np.exp(X)
+    Y *= std
+    Y += mean
+    if ln == True:
+        Y = np.exp(Y)
+    return X, Y
+
+
+def norm_wgt(X):
+    mode = stats.mode(np.absolute(X), keepdims=False)[0]
+    X /= mode
+    return X
+
+
+def normalize_data(X, pt=True, rapidity=True,  phi=True, mass=True, 
+                   PID=True, wgt=True, pseudorapidity=True, energy=True):
+    
+    norm_dict = {}
+    norm_pt = (0.0, 1.0, False)
+    norm_rapidity = (0.0, 1.0, False)
+    norm_phi = (0.0, 1.0, False)
+    norm_mass = (0.0, 1.0, False)
+    norm_pseudorapidity = (0.0, 1.0, False)
+    norm_e = (0.0, 1.0, False)
+    
+    # [pt, rapidity, phi, mass, pseudorapidity, E, PID, w, theta]
+    # [0 , 1       , 2  , 3   , 4             , 5, 6  , 7, 8    ]
+    
+    if pt==True: # 0
+        X[...,0], norm_pt = norm(X[...,0], ln=True)
+    
+    if rapidity==True: # 1
+        r_std = np.std(X[:,0,1])
+        X[...,1] = np.divide(X[...,1], r_std)
+        norm_rapidity = (0.0, r_std, False)
+        
+    if phi==True: # 2
+        X[...,2] = X[...,2]/math.pi
+        norm_phi = (0.0, math.pi, False)
+    
+    if mass==True: # 3
+        X[...,3], norm_mass = norm(X[...,3], ln=True)
+    
+    if pseudorapidity==True: # 4
+        pr_std = 4
+        X[...,4] = np.divide(X[...,4], pr_std)
+        norm_pseudorapidity  = (0.0, pr_std, False)
+    
+    if energy==True: # 5
+        X[...,5], norm_e = norm(X[...,5], ln=True)
+    
+    if PID==True: # 6
+        try: X = remap_pid(X)
+        except KeyError: print('remap PID KeyError intercepted. Maybe the PIDs were already remaped,'+
+                               'or you are trying to remap PIDs of a someting other than Quarks or Gluons')
+    
+    if wgt==True: # 7
+            X[...,7] = norm_wgt(X[:,0,7])[:, np.newaxis]
+    
+    norm_dict = {'pt':             norm_pt,
+                 'rapidity':       norm_rapidity,
+                 'phi':            norm_phi,
+                 'mass':           norm_mass,
+                 'pseudorapidity': norm_pseudorapidity,
+                 'energy':         norm_e}
+    
+    return X, norm_dict
+
+
+def normalize_data_2(X, Y, pt=True, rapidity=True,  phi=True, mass=True, 
+                   PID=True, wgt=True, pseudorapidity=True, energy=True):
+    
+    norm_dict = {}
+    norm_pt = (0.0, 1.0, False)
+    norm_rapidity = (0.0, 1.0, False)
+    norm_phi = (0.0, 1.0, False)
+    norm_mass = (0.0, 1.0, False)
+    norm_pseudorapidity = (0.0, 1.0, False)
+    norm_e = (0.0, 1.0, False)
+    
+    # [pt, rapidity, phi, mass, pseudorapidity, E, PID, w, theta]
+    # [0 , 1       , 2  , 3   , 4             , 5, 6  , 7, 8    ]
+    
+    
+    if pt==True: # 0
+        X[...,0], Y[...,0], norm_pt = norm_2(X[...,0], Y[...,0], ln=True)
+    
+    if rapidity==True: # 1
+        r_std = np.std(np.concatenate((X[:,0,1], Y[:,0,1])) )
+        X[...,1] = np.divide(X[...,1], r_std)
+        Y[...,1] = np.divide(Y[...,1], r_std)
+        norm_rapidity = (0.0, r_std, False)
+        
+    if phi==True: # 2
+        X[...,2] = np.divide(X[...,2], math.pi)
+        Y[...,2] = np.divide(Y[...,2], math.pi)
+        norm_phi = (0.0, math.pi, False)
+    
+    if mass==True: # 3
+        X[...,3], Y[...,3], norm_mass = norm_2(X[...,3], Y[...,3], ln=True)
+    
+    if pseudorapidity==True: # 4
+        pr_std = 4
+        X[...,4] = np.divide(X[...,4], pr_std)
+        Y[...,4] = np.divide(Y[...,4], pr_std)
+        norm_pseudorapidity  = (0.0, pr_std, False)
+    
+    if energy==True: # 5
+        X[...,5], Y[...,5], norm_e = norm_2(X[...,5], Y[...,5], ln=True)
+    
+    if PID==True: # 6
+        try: X = remap_pid(X)
+        except KeyError: print('remap PID KeyError intercepted. Maybe the PIDs were already remaped,'+
+                               'or you are trying to remap PIDs of a someting other than Quarks or Gluons')
+        try: Y = remap_pid(Y)
+        except KeyError: print('remap PID KeyError intercepted. Maybe the PIDs were already remaped,'+
+                               'or you are trying to remap PIDs of a someting other than Quarks or Gluons')
+    
+    if wgt==True: # 7
+            X[...,7] = norm_wgt(X[:,0,7])[:, np.newaxis]
+            Y[...,7] = norm_wgt(Y[:,0,7])[:, np.newaxis]
+    
+    norm_dict = {'pt':             norm_pt,
+                 'rapidity':       norm_rapidity,
+                 'phi':            norm_phi,
+                 'mass':           norm_mass,
+                 'pseudorapidity': norm_pseudorapidity,
+                 'energy':         norm_e}
+    
+    return X, Y, norm_dict
+
+
+def norm_per(X, ln=False):
+    if ln == True:
+        X = np.log(np.clip(X, a_min = 1e-6, a_max = None))
+    mean = np.nanmean(X)
+    std = np.nanstd(X)
+    X -= mean
+    if std >= 1e-2: # mostly for mass less gluons not causing divide by zero error
+        X /= std
+    return X
+
+
+def norm2_per(X, Y, ln=False):
+    if ln == True:
+        X = np.log(np.clip(X, a_min = 1e-6, a_max = None))
+        Y = np.log(np.clip(Y, a_min = 1e-6, a_max = None))
+    mean = np.nanmean(np.concatenate((X, Y)))
+    std = np.nanstd(np.concatenate((X, Y)))
+    X -= mean
+    Y -= mean
     if std >= 1e-2: # mostly for massless gluons not causing divide by zero error
         X /= std
-    
-    return X, nrm
+        Y /= std
+ 
+    return X, Y
 
 
-def normalize_data(X, nrm_array=None):
+def normalize_data_per_particle(X):
 
     # [pt, rapidity, phi, mass, pseudorapidity, E, PID, w, theta]
     # [0 , 1       , 2  , 3   , 4             , 5, 6  , 7, 8    ]
     
-    if nrm_array is None: # calculate normalization
-        nrm_array = []
-        for particle in range(len(X[0,:,0])):
-            nrm_part = []
-            for arg in range(6):
-                if arg == 0 or arg == 5: # use log for pt and E
-                    X[:,particle, arg], nrm_arg = norm(X[:,particle, arg], ln=True) 
-                elif arg == 3 and particle == 0: # use log for mass of tt-pair
-                    X[:,particle, arg], nrm_arg = norm(X[:,particle, arg], ln=True) 
-                else:
-                    X[:,particle, arg], nrm_arg = norm(X[:,particle, arg], ln=False)
-                nrm_part.append(nrm_arg)
-            nrm_array.append(nrm_part)
-     
-    else: # use given normalization
-        for particle, nrm_part in enumerate(nrm_array):
-            for arg, nrm_arg in enumerate(nrm_part):
-                X[:,particle, arg], _ = norm(X[:,particle, arg], nrm = nrm_arg) 
-                    
+    for particle in range(len(X[0,:,0])):
+        for arg in range(6):
+            if arg == 0 or arg == 3 or arg == 5:
+                if particle == 0: # don't use log for nrming top-pair mass
+                    X[:,particle, arg] = norm_per(X[:,particle, arg], ln=False)
+                else: # use log for pt and E
+                    X[:,particle, arg] = norm_per(X[:,particle, arg], ln=True) 
+            else:
+                X[:,particle, arg] = norm_per(X[:,particle, arg], ln=False)
+                
     # wgt
     X[X[:,:,7] > 0, 7] = 1 #  masks positive weights and sets them = 1
     X[X[:,:,7] < 0, 7] = -1 # masks negative weights and sets them = -1
@@ -483,7 +636,51 @@ def normalize_data(X, nrm_array=None):
     try: X = remap_pid(X)
     except KeyError: print('remap PID KeyError intercepted. Maybe the PIDs were already remaped,'+
                            'or you are trying to remap PIDs of a someting other than Quarks or Gluons')
-    return X, nrm_array
+    return X
+
+def normalize_data2_per_particle(X, Y):
+
+    # [pt, rapidity, phi, mass, pseudorapidity, E, PID, w, theta]
+    # [0 , 1       , 2  , 3   , 4             , 5, 6  , 7, 8    ]
+    
+    for particle in range(len(X[0,:,0])):
+        for arg in range(6):
+            if arg == 0 or arg == 5: # pt and energy
+                if particle == 0: # don't use log for nrming top-pair mass
+                    X[:,particle, arg], Y[:,particle, arg] = norm2_per(X[:,particle, arg], Y[:,particle, arg], ln=False)
+                else:
+                    X[:,particle, arg], Y[:,particle, arg] = norm2_per(X[:,particle, arg], Y[:,particle, arg], ln=True)
+            else:
+                X[:,particle, arg], Y[:,particle, arg] = norm2_per(X[:,particle, arg], Y[:,particle, arg], ln=False)
+    
+    # wgt
+    X[X[:,:,7] > 0, 7] = 1 #  masks positive weights and sets them = 1
+    X[X[:,:,7] < 0, 7] = -1 # masks negative weights and sets them = -1
+    
+    Y[Y[:,:,7] > 0, 7] = 1 #  masks positive weights and sets them = 1
+    Y[Y[:,:,7] < 0, 7] = -1 # masks negative weights and sets them = -1
+    
+    #PID
+    try: 
+        X = remap_pid(X)
+        Y = remap_pid(Y)
+    except KeyError: print('remap PID KeyError intercepted. Maybe the PIDs were already remaped,'+
+                           'or you are trying to remap PIDs of a someting other than Quarks or Gluons')
+    
+    return X, Y
+
+
+def un_normalize_data(X, norm_dict):
+    for i, norm in enumerate(norm_dict.values()):
+        X[...,i] = un_norm(X[...,i], norm)
+            
+    return X 
+
+def un_normalize_data_2(X, Y, norm_dict):
+    for i, norm in enumerate(norm_dict.values()):
+        X[...,i], X[...,i] = un_norm_2(X[...,i], X[...,i], norm)
+            
+    return X , Y
 
 
 def prep_arrays(X0, X1, val=0.15, shuffle=True, use_class_weights=False):
@@ -496,24 +693,33 @@ def prep_arrays(X0, X1, val=0.15, shuffle=True, use_class_weights=False):
     then uses energyflows data_split function to create training and validation (15% of all events, by default) arrays from X, Y and weights_array with shuffle (by default)
     returns the data_split arrays X_train, X_val, Y_train, Y_val, wgt_train, wgt_val
     '''
-    
-    # create weights array from dataset
-    class_wgt = 1
-    X0_wgt = X0[:,0,-2].copy()
-    X1_wgt = X1[:,0,-2].copy()
-    if use_class_weights==True:
-        class_wgt=len(X0)/len(X1)
-        X1_wgt *= class_wgt
-
-    weights_array = np.concatenate((X0_wgt, X1_wgt))
-    
-    X = np.concatenate((X0[...,:-2], X1[...,:-2]))
-    
+    Y0 = []
+    Y1 = []
     # classifier array takes theta parameter from dataset
-    Y0 = X0[:,0,-1].copy() # theta is last parameter
-    Y1 = X1[:,0,-1].copy()
+    Y0 = X0[:,0,-1] # theta is last parameter
+    Y1 = X1[:,0,-1]
+    
+    # removing theta as it was already used to create the classifier arrays Y0 and Y1
+    X0 = np.delete(X0, -1, -1)
+    X1 = np.delete(X1, -1, -1)
+    
+    X = []
+    X = np.concatenate((X0, X1))
+    
+    Y = []
     Y = np.concatenate((Y0, Y1))
     Y = to_categorical(Y, num_classes=2)
+    
+    class_wgt = 1
+    if use_class_weights==True:
+        class_wgt=len(X0)/len(X1)
+        X0[...,-1] /= class_wgt
+    
+    # create weights array from dataset
+    weights_array = X[:,0,-1] # weigts are last paramter after removing theta
+    
+    # removing weights as it was already used to create the weights_array
+    X = np.delete(X, -1, -1) 
     
     X_train, X_val, Y_train, Y_val, wgt_train, wgt_val = data_split(X, Y, weights_array, train=-1, test=val, shuffle=shuffle)
     
@@ -551,10 +757,10 @@ Also generates weights for reweighing one dataset into another
 
 
 
-def setup_nn(input_dim=5, Phi_sizes = (100,100,128), F_sizes = (100,100,100),
+def setup_nn(input_dim=7, Phi_sizes = (100,100,128), F_sizes = (100,100,100),
              loss = 'cce', dropout=0.0, l2_reg=0.0, Phi_acts='relu', F_acts='relu', output_act='softmax',
-             learning_rate=0.001, patience=10, use_scheduler=True, monitor='val_loss', reduceLR = True,
-             mode='min', savePath=currentPath, saveLabel='DCTR_training', summary=False, verbose = 2):
+             learning_rate=0.001, patience=10, use_scheduler=True, monitor='val_loss', 
+             mode='min', savePath=currentPath, saveLabel='DCTR_training', summary=False):
     
     # supported losses
     cce_loss = tf.keras.losses.CategoricalCrossentropy()
@@ -565,22 +771,17 @@ def setup_nn(input_dim=5, Phi_sizes = (100,100,128), F_sizes = (100,100,100),
     else:
         loss = cce_loss
     
-    # activation functions: if string is unsuppported, fallback to 'relu' or 'softmax'
-    supported_acts = ['relu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh', 'selu', 'elu', 'exponential', 'gelu', 'hard_sigmoid', 'linear']
-            
-    for act in (Phi_acts if isinstance(Phi_acts, (list, tuple)) else [Phi_acts]):
-        if act not in supported_acts:
-            print(f"unrecognized Phi activation '{act}', falling back to 'relu'")
-            act = 'relu'
-
-    for act in (F_acts if isinstance(Phi_acts, (list, tuple)) else [F_acts]):
-        if act not in supported_acts:
-            print(f"unrecognized F activation '{act}', falling back to 'relu'")
-            act = 'relu'
-            
+    # activation functions: if string is unsuppported, fallback to 'relu'
+    supported_acts = ['relu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh', 'selu', 'elu', 'exponential']
+    if Phi_acts not in supported_acts:
+        print(f"unrecognized Phi activation '{Phi_acts}', falling back to 'relu'")
+        Phi_acts = 'relu'
+    if F_acts not in supported_acts:
+        print(f"unrecognized F activation '{F_acts}', falling back to 'relu'")
+        F_acts = 'relu'
     if output_act not in supported_acts:
-        print(f"unrecognized output activation '{output_act}', falling back to 'softmax'")
-        output_act = 'softmax'
+        print(f"unrecognized output activation '{F_acts}', falling back to 'softmax'")
+        F_acts = 'softmax'
     
     
     # optimizer
@@ -590,18 +791,18 @@ def setup_nn(input_dim=5, Phi_sizes = (100,100,128), F_sizes = (100,100,100),
     dctr = PFN(input_dim=input_dim, Phi_sizes=Phi_sizes, F_sizes=F_sizes,
                Phi_l2_regs=l2_reg, F_l2_regs=l2_reg, latent_dropout=dropout,
                F_dropouts=dropout, summary=summary, optimizer=adam,
-               loss=loss, Phi_acts=Phi_acts, F_acts=F_acts, output_act=output_act) 
+               loss=loss, Phi_acts=Phi_acts, F_acts=F_acts) 
     
     
     # sets up keras checkpoints with monitoring of given metric. monitors 'val_loss' with mode 'min' by default 
-    checkpoint = tf.keras.callbacks.ModelCheckpoint(savePath + saveLabel + '.tf',
+    checkpoint = tf.keras.callbacks.ModelCheckpoint(savePath + saveLabel + '.h5',
                                                     monitor = monitor,
-                                                    verbose = verbose,
+                                                    verbose = 2,
                                                     save_best_only = True,
                                                     mode = mode)
     
     # sets up CSV Logging of callbacks
-    # CSVLogger = tf.keras.callbacks.CSVLogger(savePath + saveLabel + '_loss.csv', append=False)
+    CSVLogger = tf.keras.callbacks.CSVLogger(savePath + saveLabel + '_loss.csv', append=False)
     
     # sets up eraly stopping with given patience (default 15)
     EarlyStopping = tf.keras.callbacks.EarlyStopping(monitor = monitor,
@@ -622,365 +823,69 @@ def setup_nn(input_dim=5, Phi_sizes = (100,100,128), F_sizes = (100,100,100),
             return learning_rate * tf.math.exp(-0.03)
         else:
             return learning_rate * tf.math.exp(-0.01)
-        
     # scheduler callback
     learn_schedule = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=0)
     
-    # reducesing rate when little improvements are made
-    if reduceLR == True:
-        reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor=monitor, mode=mode, factor=0.6, patience=int(0.4*patience), verbose=1)
-    else: 
-        reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor=monitor, mode=mode, factor=1, patience=int(patience), verbose=0)
-    
-    callbacks = [checkpoint, EarlyStopping, learn_schedule, reduce_lr] # csv_logger
+    callbacks = [checkpoint, CSVLogger, EarlyStopping, learn_schedule]
     
     return dctr, callbacks
 
 
 def train(dctr, callbacks, X_train, Y_train, X_val, Y_val, wgt_train=1.0, wgt_val=1.0, 
-          epochs=80, batch_size=8192, savePath=currentPath, saveLabel='DCTR_training', verbose = 2, plot=True):
+          epochs=80, batch_size=8192, savePath=currentPath, saveLabel='DCTR_training'):
     '''
     method to train the given dctr Neural Network with the X_train/Y_train arrays and validate the predictions with X_val and Y_val
     allows for passing along sample_weights for training and validation. These can be positive and/or negative. If no wgt_train or wgt_val are given, then the weights are set to 1 by default
     plots and saves a figure of loss and accuracy throughout the Epochs
     '''
     
-    
-    
     history = dctr.fit(X_train, Y_train,
                        sample_weight = pd.Series(wgt_train).to_frame('w_t'), # pd.Series makes the training initialize much, much faster than passing just the weight
                        epochs = epochs,
                        batch_size = batch_size,
                        validation_data = (X_val, Y_val, pd.Series(wgt_val).to_frame('w_v')),
-                       verbose = verbose,
+                       verbose = 1,
                        callbacks = callbacks)
                        
 
-    dctr.save(savePath+saveLabel+'.tf')
-
-    if plot == True:
-        fig, (ax1, ax2) = plt.subplots(1,2, figsize=(10,5))
-        fig.tight_layout(pad=2)
-        
-        ax1.plot(history.history['loss'],     label = 'loss', color='cyan')
-        ax1.plot(history.history['val_loss'], label = 'val loss', color='blue')
-        ax1.set_xlabel('Epochs')
-        ax1.set_ylabel('loss')
-        ax1.legend()
-        
-        ax2.plot(history.history['acc'],     label = 'acc', color='pink')
-        ax2.plot(history.history['val_acc'], label = 'val acc', color='orange')
-        ax2.set_ylabel('acc')
-        ax2.set_xlabel('Epochs')
-        ax2.legend()
+    dctr.save(savePath+saveLabel+'.h5')
     
-        # plt.savefig(savePath+saveLabel+'_history.pdf')
-        plt.show()
+    fig, (ax1, ax2) = plt.subplots(1,2, figsize=(10,5))
+    fig.tight_layout(pad=2)
+    
+    ax1.plot(history.history['loss'],     label = 'loss', color='cyan')
+    ax1.plot(history.history['val_loss'], label = 'val loss', color='blue')
+    ax1.set_xlabel('Epochs')
+    ax1.set_ylabel('loss')
+    ax1.legend()
+    
+    ax2.plot(history.history['acc'],     label = 'acc', color='pink')
+    ax2.plot(history.history['val_acc'], label = 'val acc', color='orange')
+    ax2.set_ylabel('acc')
+    ax2.set_xlabel('Epochs')
+    ax2.legend()
 
-    min_loss = min(history.history['loss'])
+    plt.savefig(savePath+saveLabel+'_history.pdf')
+    plt.show()
 
-    return min_loss
 
-def predict_weights(dctr, X, batch_size=8192, clip=0.00001, verbose=1):
+def predict_weights(dctr, X0, X1, batch_size=8192, clip=0.00001, verbose=1):
     '''
     generates weights for reweighing X0 to X1: weights_0
                   and for reweighing X1 to X0: weights_1
     from the predictions made by DCTR
     and returns the reweighing arrays
     '''
-    predics = dctr.predict(X, batch_size=batch_size, verbose=verbose)
+    predics_0 = np.clip(dctr.predict(X0, batch_size=batch_size, verbose=verbose), 0+clip, 1-clip)
+    predics_1 = np.clip(dctr.predict(X1, batch_size=batch_size, verbose=verbose), 0+clip, 1-clip)
     
-    weights = np.divide(predics[:,1], (1-predics[:,1]), out=np.zeros_like(predics[:,1]), where=(predics[:,1])!=1.0 )
-
-    weights /= np.mean(weights) # adjust weights so that mean is 1
-
-    return weights
-
-
-
-
-
-def reset_weights(model):
-    session = K.get_session()
-    for layer in model.layers:
-        if hasattr(layer, 'kernel_initializer'):
-            layer.build(layer.input_shape)
-            
-            # Initialize the weights
-            weights = [layer.kernel_initializer(layer.kernel.shape),
-                       layer.bias_initializer(layer.bias.shape) if layer.bias_initializer else None ]
-            
-            # Set the weights for the layer
-            layer.set_weights(weights)
-
-
-
-def get_rwgt(model_list, x0_plt_nrm):
-    rwgt_list = []
-    for model in model_list:
-        dctr = tf.keras.models.load_model(model)
-        rwgt = predict_weights(dctr, x0_plt_nrm[...,:-2], batch_size=8192*8, verbose=0)
-        rwgt_list.append(rwgt)
-
-    return rwgt_list
-
-
-
-def calc_stats(rwgt_list, plt_data, part_indices = [0, 1], arg_indices = [0, 3, 4, 5], stats_only=True, verbose=False):
-    print(f'calculating stats for {len(rwgt_list)} models')
-    # unpack data
-    x0_plt , x0_plt_nrm, x1_plt, x1_plt_wgt = plt_data
-
-    # setup args
-    args = [(x1_plt, x1_plt_wgt, '')]
-    for rwgt in rwgt_list:
-        args.append((x0_plt, rwgt, ''))
+    weights_0 = predics_0[:,1]/(1-predics_0[:,1])
+    weights_1 = predics_1[:,0]/(1-predics_1[:,0])
     
-    mae_all = []
-    chi2_all = []
-    p_all = []
-
-    # plot with proper ranges set for each observable
-    for part_index in part_indices:
-        for arg_index in arg_indices:
-            div = 31
-            if arg_index == 1:  # rapidity
-                start = None
-                stop = None
-            elif arg_index == 3:  # mass
-                if part_index == 0:  # tt-pair
-                    start = None
-                    stop = 1500
-                else:
-                    start = None
-                    stop = None
-                    div = 32
-            elif arg_index == 4:  # pseudorapidity
-                start = -8
-                stop = 8
-            elif arg_index == 5: # energy
-                if part_index == 0:  # tt-pair
-                    start = None
-                    stop = 3000
-                else:
-                    start = None
-                    stop = 2000
-            else:  # pt
-                start = 0
-                stop = 600
-            
-            mae_list, chi2_list, p_list = plot_ratio(args, arg_index=arg_index, part_index=part_index, start=start, stop=stop, div=div, stats_only=stats_only, verbose=verbose)
-            # print(chi2_list)
-            mae_all.append(mae_list)
-            chi2_all.append(chi2_list)
-            p_all.append(p_list)
-            # print(np.array(chi2_all).shape)
-            
-
-    # delta phi
-    x0_delta_phi = delta_phi(x0_plt)
-    x1_delta_phi = delta_phi(x1_plt)
+    weights_0 /= np.mean(weights_0) # adjust weights so that mean is 1
+    weights_1 /= np.mean(weights_1) # adjust weights so that mean is 1
     
-    args_delta_phi = [(x1_delta_phi, x1_plt_wgt, '')]
-    for rwgt in rwgt_list:
-        args_delta_phi.append((x0_delta_phi, rwgt, ''))   
-        
-    mae_list, chi2_list, p_list = plot_ratio(args_delta_phi, start = 0, stop = math.pi, div = 31, stats_only=stats_only, verbose=verbose)
-    
-    # print(chi2_list)
-    mae_all.append(mae_list)
-    chi2_all.append(chi2_list)
-    p_all.append(p_list)
-    # print(np.array(chi2_all).shape)
-    
-    # calculate mean over all histograms
-    mae_mean_list = np.mean(mae_all, axis=0)
-    chi2_mean_list = np.mean(chi2_all, axis=0)
-    p_mean_list = np.mean(p_all, axis=0)
-    
-    # print(f'chi2_list: {chi2_list}')
-    # print(f'chi2_mean_list: {chi2_mean_list}')
-    
-    return mae_mean_list, chi2_mean_list, p_mean_list
-
-
-
-def train_super_epoch(model, train_data, batch_size, repeat, train_dir = '/tf/home/gdrive/_STUDIUM_/DCTR_Paper/train',
-                      input_dim=5, Phi_sizes = (100,100,128), F_sizes = (128,100,100), loss = 'mse', dropout=0.0, l2_reg=0.0,
-                      Phi_acts=('linear', 'elu', 'gelu'), F_acts=('gelu', 'gelu', 'linear'), output_act='sigmoid', learning_rate=0.001, 
-                      epochs = 5, super_epoch = 0):
-    
-    # unpack data
-    x_train, y_train, x_val, y_val, wgt_train, wgt_val = train_data
-    
-    # training
-    model_list = []
-    loss_list = []
-    for run in range(repeat):
-        K.clear_session()
-        print(f'starting run {run} of super_epoch {super_epoch} with batch_size {batch_size}')
-        save_dir = f'{train_dir}/super_epoch_{super_epoch}/run_{run}/'
-        label = f's-{super_epoch}_b-{batch_size}_r-{run}'
-
-        # setup nn model
-        dctr, callbacks = setup_nn(input_dim=input_dim, Phi_sizes = Phi_sizes, F_sizes = F_sizes,
-                                   loss = loss, dropout=dropout, l2_reg=l2_reg, Phi_acts=Phi_acts, F_acts=F_acts, output_act=output_act,
-                                   learning_rate=learning_rate, patience=epochs, savePath=save_dir, saveLabel=label, verbose=0)
-
-        if model is None:
-            reset_weights(dctr)    
-        else: # load weights
-            dctr = tf.keras.models.load_model(model)
-        
-        # train
-        loss_val = train(dctr, callbacks, x_train, y_train, x_val, y_val, wgt_train=wgt_train, wgt_val=wgt_val, 
-                         epochs=epochs, batch_size=batch_size, savePath=save_dir, saveLabel=label, verbose=0, plot=False)
-        
-        # loss_val = dctr.evaluate(x_val, y_val, sample_weight=pd.Series(wgt_val).to_frame('w_v'), batch_size=batch_size)
-        current_model = f'{save_dir}{label}.tf'
-        model_list.append(current_model)
-        loss_list.append(loss_val)
-        print(f'\n best loss {loss_val:.4f} of run {run} of super_epoch {super_epoch} with batch_size {batch_size}\n')
-        
-    return dctr, model_list, loss_list
-    
-
-
-def train_super_epoch_choose_best(model, train_data, plt_data, batch_size, repeat, epochs, super_epoch, x0_plt_nrm, train_dir = '/tf/home/gdrive/_STUDIUM_/DCTR_Paper/train',
-                                  input_dim=5, Phi_sizes = (100,100,128), F_sizes = (128,100,100), loss = 'mse', dropout=0.0, l2_reg=0.0,
-                                  Phi_acts=('linear', 'elu', 'gelu'), F_acts=('gelu', 'gelu', 'linear'), output_act='sigmoid', learning_rate=0.001):
-    
-    # train and get list of model model
-    dctr, model_list, loss_list = train_super_epoch(model, train_data, batch_size, repeat, train_dir = train_dir, input_dim=input_dim, 
-                                                              Phi_sizes = Phi_sizes, F_sizes = F_sizes, loss = loss, dropout=dropout, l2_reg=l2_reg,
-                                                              Phi_acts=Phi_acts, F_acts=F_acts, output_act=output_act, learning_rate=learning_rate, 
-                                                              epochs = epochs, super_epoch = super_epoch)
-    
-    rwgt_list= get_rwgt(model_list, x0_plt_nrm)
-    # stats
-    mae_mean_list, chi2_mean_list, p_mean_list = calc_stats(rwgt_list, plt_data)
-    min_chi2 = min(chi2_mean_list[1:]) # first is always the baseline x1, always has chi2=0 and is only used for calculating the other statistics
-    
-    best_where = np.where(chi2_mean_list == min_chi2)
-    
-    # print(f'best_where: {best_where}')
-    # print(f'best_where.shape(): {np.array(best_where).shape}')
-    # print(f'best_where[0][0]: {best_where[0][0]}')
-    # best_where.shape = (1,1)
-    best_model = model_list[best_where[0][0] - 1] # chi2_list which defines best_where includes baseline as first entry, model_list does not
-    min_loss = loss_list[best_where[0][0] - 1]
-
-    return best_model, min_chi2, chi2_mean_list, min_loss, loss_list
-    
-
-def train_loop(train_data, plt_data, model=None, lowest_chi2 = 1e6, train_dir = '/tf/home/gdrive/_STUDIUM_/DCTR_Paper/train',
-               batch_sizes=[4*8192, 8*8192, 16*8192, 32*8192], repeat=5, super_epochs=35, super_patience = 5, epochs = 8, starting_super_epoch = 0, 
-               input_dim=5, Phi_sizes = (100,100,128), F_sizes = (128,100,100), loss = 'mse', dropout=0.0, l2_reg=0.0, 
-               Phi_acts=('linear', 'elu', 'gelu'), F_acts=('gelu', 'gelu', 'linear'), output_act='sigmoid', learning_rate=0.001):
-
-    # unpack data
-    x_train, y_train, x_val, y_val, wgt_train, wgt_val = train_data
-    x0_plt , x0_plt_nrm, x1_plt, x1_plt_wgt = plt_data
-
-    patience_counter = 0
-    lowest_loss = 1
-    best_model_list = []
-    lowest_chi2_list = []
-    lowest_loss_list = []
-    for i in range(super_epochs):
-        batch_model_list = []
-        batch_chi2_list = []
-        batch_loss_list = []
-        super_epoch = starting_super_epoch + i
-        print(f'starting super_epoch {super_epoch}\n')
-        
-        # save list of used models for training   
-        with open('model_history.csv', 'a', newline='\n') as file:
-                writer = csv.writer(file)
-                writer.writerow([model])
-            
-        for batch_size in batch_sizes:
-            print(f'starting training with batch_size: {batch_size} and {epochs} epochs\n' +
-                  f'starting with weights from model: {model}')
-            batch_model, min_chi2, chi2_mean_list, min_loss, loss_list = train_super_epoch_choose_best(model, train_data, batch_size, repeat, epochs, super_epoch, x0_plt_nrm, train_dir=train_dir, 
-                                                                                                       input_dim=input_dim, Phi_sizes = Phi_sizes, F_sizes = F_sizes, loss = loss, 
-                                                                                                       Phi_acts=Phi_acts, F_acts=F_acts, output_act=output_act, learning_rate=learning_rate, 
-                                                                                                       l2_reg=l2_reg, dropout=dropout)
-            
-            # save chi2, loss for each run to disk
-            for k in range(len(chi2_mean_list)): # one entry for each run, plus baseline (needs to be ignored) x1 as first entry
-                if k == 0: continue # first entry in chi2_mean_list is baseline x1
-                run = k - 1 
-                save_dir = f'{train_dir}/super_epoch_{super_epoch}/run_{run}/'
-                label = f'b-{batch_size}_r-{run}'
-                # save loss and chi2
-                with open(f'{save_dir}{label}_loss_chi2.csv', 'a', newline='\n') as file:
-                    writer = csv.writer(file)
-                    # len(chi2_mean) = runs + 1 --> use k as index; len(loss_list) = runs --> use run as index
-                    writer.writerow([f'super_epoch-{super_epoch}_run-{run}_chi2_and_loss', chi2_mean_list[k], loss_list[run]])
-
-            batch_loss_list.append(min_loss)
-            batch_model_list.append(batch_model)
-            batch_chi2_list.append(min_chi2)
-            
-            print(f'\nfinished {repeat} runs of batch_size {batch_size}\n' +
-                  f'in super epoch {super_epoch}\n' +
-                  f'with best model {batch_model}\n' +
-                  f'with chi2 {min_chi2:.4f} and loss {min_loss:.4f}')
-            
-        # find which batch size had best min_chi2 in completed super_epoch
-        best_chi2 = min(batch_chi2_list)
-        if best_chi2 < lowest_chi2: # check if there is an improvement from best super epoch
-            patience_counter = 0
-            lowest_chi2 = best_chi2
-            lowest_chi2_list.append(lowest_chi2)
-            # set model to best for further training
-            best_where = np.where(batch_chi2_list == best_chi2)
-            model = batch_model_list[best_where[0][0]]
-            best_model_list.append(model)
-            lowest_loss = batch_loss_list[best_where[0][0]]
-            lowest_loss_list.append(lowest_loss)
-        else:
-            if patience_counter >= super_patience:
-                print('super_patiece reached. Stopping training.')
-                break
-            elif patience_counter >= math.floor(0.6*super_patience):
-                learning_rate = 0.7*learning_rate
-            patience_counter += 1
-            print(f'no improvement, lowering learnng_rate to {learning_rate}')
-            
-        print(f'\n\nfinished super_epoch {super_epoch} with {repeat} runs each with batch_sizes:{batch_sizes}\n' +
-              f'best model{model}' +
-              f'with chi2 {lowest_chi2:.4f} and loss {lowest_loss:.4f}')
-    
-    best_chi2 = min(batch_chi2_list) # find best after completing all super epochs
-    if best_chi2 < lowest_chi2: # check if there is an improvement from best super epoch
-        lowest_chi2 = best_chi2
-        lowest_chi2_list.append(lowest_chi2)
-        # set model to best for further training
-        best_where = np.where(batch_chi2_list == best_chi2)
-        model = batch_model_list[best_where[0][0]] # no need for - 1 (like in train_super_epoch_choose_best()) b/c chi2 list best_where is based on is build only from models, doesn't include baseline x1 stats
-        best_model_list.append(model)
-        lowest_loss = batch_loss_list[best_where[0][0]]
-        lowest_loss_list.append(lowest_loss)
-        
-    print('\n\n\n' +
-          f'finished loop of {super_epochs} super_epochs\n' +
-          f'with batch_sizes:{batch_sizes}\n' +
-          f'best model{model}\n' +
-          f'with chi2 {lowest_chi2:.4f} and loss {lowest_loss:.4f}')
-    
-    # save final model to csv of model history
-    with open('model_history.csv', 'a', newline='\n') as file:
-            writer = csv.writer(file)
-            writer.writerow([model])
-
-    return best_model_list, lowest_chi2_list, lowest_loss_list
-
-
-
-
-
+    return weights_0, weights_1
 
 
 #################################################################################
@@ -1042,14 +947,19 @@ def plot_weights(wgts, start = -1.5, stop = 2.5, div = 31, title = None):
     
     
 def plot_ratio(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, 
-               bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1],
-               figsize=(6,8), layout='rows', stats_only=False, y_scale=None, verbose = True):
+               bins = None, optimal_bins = False, start = None, stop = None, div = 35, 
+               ratio_ylim=[0.9,1.1], figsize=(8,8), layout='rows', stats_only=False):
     
-    # binning: prio: passed bins, calculated bins from quantiles, linear bins from start, stop, div
+    # binning: prio: passed bins, calculated optimal bins, linear bins from start, stop, div
     if bins is not None: 
-        bins = bins    
+        bins = bins
+    elif optimal_bins == True: # 2. prio: calculate optimal bins
+        if args[0][0].ndim > 1: # check whether full array
+            bins = np.histogram_bin_edges(args[0][0][:,part_index, arg_index], bins = 'auto')
+        else:
+            bins = np.histogram_bin_edges(args[0][0], bins = 'auto')
     else: # no passed bins, nor optimal bins
-        if start is None: # was start/stop given?
+        if start is None: # was startstop given?
             if args[0][0].ndim > 1: # check whether full array
                 start = np.min(args[0][0][:,part_index, arg_index])
             else:
@@ -1063,16 +973,16 @@ def plot_ratio(args, arg_index = 0, part_index = 0, title = None, x_label = None
                 
         bins = np.linspace(start, stop, div)
     
-    start = copy(bins[0])
-    stop = copy(bins[-1])
+    start = bins[0]
+    stop = bins[-1]
     div = len(bins)
-    
+    # width = bins[1] - bins [0]
     
     if stats_only == False:
         if layout == 'cols':
             fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=figsize)
         else: fig, (ax1, ax2) = plt.subplots(nrows=2, figsize=figsize)
-        fig.tight_layout(pad=1.5)
+        fig.tight_layout(pad=2)
     
     n_list = [] # list of histogram bin counts
     n_sum_list = [] # list of total counts in all bins: used for normalizing
@@ -1080,61 +990,35 @@ def plot_ratio(args, arg_index = 0, part_index = 0, title = None, x_label = None
     mae_list = []
     chi2_list = []
     p_list = []
-   #ks_statistic_list = [] 
-   #ks_p_value_list = []
     
     for i, (X, wgt, label) in enumerate(args):
-        # include events past histogram edges in first/last bin
-        bins[0] = -np.inf
-        bins[-1] = np.inf
-        
         # check wheter full dataset is passed or 1D dataset, that can be plotted as is
         if X.ndim > 1:
-            n, bins_ = np.histogram(X[:,part_index, arg_index], bins = bins, weights = wgt)
+            n, bins = np.histogram(X[:,part_index, arg_index], bins = bins, weights = wgt)
             bin_indices = np.digitize(X[:,part_index, arg_index], bins = bins)
-            # num_evts = len(X[:,0,0])
-            # ks_statistic, ks_p_value = stats.ks_2samp(args[0][0][:, part_index, arg_index], X[:, part_index, arg_index])
-            
-            mean = np.average(X[:,part_index, arg_index], weights=wgt)
-            std = math.sqrt(np.absolute(np.average(np.absolute((X[:,part_index, arg_index] - mean))**2, weights=wgt)))
-            min, max = np.min(X[:,part_index, arg_index]), np.max(X[:,part_index, arg_index])
-            
         else: 
-            n, bins_ = np.histogram(X, bins = bins, weights = wgt)
+            n, bins = np.histogram(X, bins = bins, weights = wgt)
             bin_indices = np.digitize(X, bins = bins)
-            # num_evts = len(X)
-            # ks_statistic, ks_p_value = stats.ks_2samp(args[0][0], X)
-            
-            mean = np.average(X, weights=wgt)
-            std = math.sqrt(np.average((X - mean)**2, weights=wgt))
-            min, max = np.min(X), np.max(X)
-        
-       #ks_statistic_list.append(ks_statistic)
-       #ks_p_value_list.append(ks_p_value)
         
         # statistics
         # uncert: sqrt of the square of all weights in each bin
         uncert = np.array([np.sqrt(np.sum(wgt[bin_indices == bin_index]**2)) for bin_index in range(1, len(bins))])
         uncert_list.append(uncert)
-        uncert_nrm = np.divide(uncert, n, out=np.ones_like(uncert), where=(n != 0) )
+        uncert_nrm = uncert/n
         uncert_nrm = np.append(uncert_nrm, uncert_nrm[-1]) # extend list by last element for plotting
-           
-        n_sum = np.nansum(n)
+        
+        # normalize so that all counts are equal to first passed X
+        n_sum = np.sum(n)
         n_sum_list.append(n_sum)
-        # normalize to the expected counts for the first passed X
         n *= (n_sum_list[0] / n_sum)
         n_list.append(n)
         # calculate MAE statistics and chi^2
-        mae = np.mean(np.absolute(n_list[0] - n))
-        mre = np.mean(np.absolute(np.divide((n_list[0] - n), n, out=np.ones_like(n), where=(n != 0) )))
-        
+        mae = np.nanmean(np.absolute(n_list[0] - n))
         chi2 = np.nansum(np.power(n_list[0] - n, 2)/(np.power(uncert, 2) + np.power(uncert_list[0], 2)))
-        dof = len(bins) - 2 # bins are bin edges not actually bins
-        red_chi2 = chi2/dof # reduced chi2
-        p = stats.chi2.sf(chi2, dof)
-        if verbose: print(f'{label}: mean: {mean:.3f}, std: {std:.3f}, max/min: {max}/{min} \n Mean Absolute Error {mae} \n Mean Relative Error {mre} \n reduced chi square of {red_chi2} with p {p} \n compared to {args[0][2]}')
+        p = stats.chi2.sf(chi2, len(bins) - 2)
+        print(f'{label}: \n Mean Absolute Error {mae} \n chi square of {chi2} with p {p} \n compared to {args[0][2]}')
         mae_list.append(mae)
-        chi2_list.append(red_chi2)
+        chi2_list.append(chi2)
         p_list.append(p)
         # plotting
         if stats_only == False:
@@ -1162,20 +1046,7 @@ def plot_ratio(args, arg_index = 0, part_index = 0, title = None, x_label = None
                 alpha=0.2
                 fill_label = f'{args[i][2]}'
                 label_ = ''
-            
-            # set bin edges back to start/stop for plotting 
-            bins[0] = start
-            bins[-1] = stop
-            
-            # normalize to bin width, so wider bins get shorter. If all bins are same size, nothing happens
-            widths = []
-            for k in range(len(bins) - 1):
-                widths.append(bins[k+1]-bins[k])
-            width_div = widths/np.mean(widths) # if all widths are same -> = 1
-            # n_tot = np.sum(n)
-            hist = np.divide(n, width_div)
-            hist = np.append(hist, hist[-1])
-            
+            hist = np.append(n, n[-1])
             ax1.step(bins, hist, label = label_, where = 'post', color=line_color, linestyle=line_style)
             ax1.fill_between(bins, hist, label = fill_label, step='post', alpha=alpha, color=line_color)
             hist = []
@@ -1196,14 +1067,11 @@ def plot_ratio(args, arg_index = 0, part_index = 0, title = None, x_label = None
         else: ax1.set_xlabel(x_label)
             
         if y_label is None:
-            ax1.set_ylabel(f'expected count \n normalized to {args[0][2]}')
+            ax1.set_ylabel(f'counts normalized to {args[0][2]}')
         else: ax1.set_ylabel(y_label)
+        
         ax1.set_xlim([start, stop])
-        if y_scale == 'log':
-            ax1.set_yscale('log')
-            ax1.set_ylim(bottom=1e-12)
-        else:
-            ax1.set_ylim(bottom=0)
+        ax1.set_ylim(bottom=0)
         ax1.legend()
         
         ax2.set_title('ratio plot')
@@ -1214,6 +1082,5 @@ def plot_ratio(args, arg_index = 0, part_index = 0, title = None, x_label = None
         
         plt.show()
     
-    return mae_list, chi2_list, p_list # ks_statistic_list, ks_p_value_list
-
+    return mae_list, chi2_list, p_list
 
