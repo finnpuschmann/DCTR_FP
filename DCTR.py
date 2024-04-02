@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from copy import copy
 import csv
-from numba import cuda
+from numba import cuda # for memory management
 
 # energyflow imports
 from energyflow.archs import PFN
@@ -557,6 +557,7 @@ def setup_nn(input_dim=5, Phi_sizes = (100,100,128), F_sizes = (100,100,100),
              learning_rate=0.001, patience=10, use_scheduler=True, monitor='val_loss', reduceLR = True,
              mode='min', savePath=currentPath, saveLabel='DCTR_training', summary=False, verbose = 2):
     
+    
     # supported losses
     cce_loss = tf.keras.losses.CategoricalCrossentropy()
     mse_loss = tf.keras.losses.MeanSquaredError()
@@ -566,6 +567,7 @@ def setup_nn(input_dim=5, Phi_sizes = (100,100,128), F_sizes = (100,100,100),
     else:
         loss = cce_loss
     
+    # print(f'loss: {loss}')
     # activation functions: if string is unsuppported, fallback to 'relu' or 'softmax'
     supported_acts = ['relu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'tanh', 'selu', 'elu', 'exponential', 'gelu', 'hard_sigmoid', 'linear']
             
@@ -583,17 +585,20 @@ def setup_nn(input_dim=5, Phi_sizes = (100,100,128), F_sizes = (100,100,100),
         print(f"unrecognized output activation '{output_act}', falling back to 'softmax'")
         output_act = 'softmax'
     
+    # print('acts set up')
     
     # optimizer
     adam=tf.keras.optimizers.Adam(learning_rate=learning_rate)
-    
+    # print('optimizer set up')
+
     # defines dctr as a particle flow network with given paramterization
     dctr = PFN(input_dim=input_dim, Phi_sizes=Phi_sizes, F_sizes=F_sizes,
                Phi_l2_regs=l2_reg, F_l2_regs=l2_reg, latent_dropout=dropout,
                F_dropouts=dropout, summary=summary, optimizer=adam,
                loss=loss, Phi_acts=Phi_acts, F_acts=F_acts, output_act=output_act) 
     
-    
+    # print('set up DCTR')
+
     # sets up keras checkpoints with monitoring of given metric. monitors 'val_loss' with mode 'min' by default 
     checkpoint = tf.keras.callbacks.ModelCheckpoint(savePath + saveLabel + '.tf',
                                                     monitor = monitor,
@@ -645,9 +650,7 @@ def train(dctr, callbacks, X_train, Y_train, X_val, Y_val, wgt_train=1.0, wgt_va
     allows for passing along sample_weights for training and validation. These can be positive and/or negative. If no wgt_train or wgt_val are given, then the weights are set to 1 by default
     plots and saves a figure of loss and accuracy throughout the Epochs
     '''
-    
-    
-    
+    #print('starting training')
     history = dctr.fit(X_train, Y_train,
                        sample_weight = pd.Series(wgt_train).to_frame('w_t'), # pd.Series makes the training initialize much, much faster than passing just the weight
                        epochs = epochs,
@@ -656,8 +659,8 @@ def train(dctr, callbacks, X_train, Y_train, X_val, Y_val, wgt_train=1.0, wgt_va
                        verbose = verbose,
                        callbacks = callbacks)
                        
-
     dctr.save(savePath+saveLabel+'.tf')
+    # print(f'saved model: {savePath+saveLabel}.tf')
 
     if plot == True:
         fig, (ax1, ax2) = plt.subplots(1,2, figsize=(10,5))
@@ -679,6 +682,10 @@ def train(dctr, callbacks, X_train, Y_train, X_val, Y_val, wgt_train=1.0, wgt_va
         plt.show()
 
     min_loss = min(history.history['loss'])
+
+    print('clearing keras session and collecting garbage')
+    K.clear_session()
+    gc.collect()
 
     return min_loss
 
@@ -717,13 +724,14 @@ def reset_weights(model):
 
 def get_rwgt(model_list, x0_plt_nrm):
     rwgt_list = []
-    K.clear_session()
     for model in model_list:
+        K.clear_session()
         with tf.device('/cpu:0'):
             dctr = tf.keras.models.load_model(model)
             rwgt = predict_weights(dctr, x0_plt_nrm[...,:-2], batch_size=8192*8, verbose=0)
         rwgt_list.append(rwgt)
-
+    
+    K.clear_session()
     return rwgt_list
 
 
@@ -806,45 +814,52 @@ def calc_stats(rwgt_list, plt_data, part_indices = [0, 1], arg_indices = [0, 3, 
     return mae_mean_list, chi2_mean_list, p_mean_list
 
 
+def train_run(model, train_data, run, super_epoch, batch_size, epochs, input_dim, Phi_sizes, F_sizes, loss, dropout, l2_reg, Phi_acts, F_acts, output_act, learning_rate, save_dir, label):
+    
+    # unpack data
+    x_train, y_train, x_val, y_val, wgt_train, wgt_val = train_data
+
+    # K.clear_session() # clearing in train() instead
+    print(f'starting run {run} of super_epoch {super_epoch} with batch_size {batch_size}')
+
+    # setup nn model
+    dctr, callbacks = setup_nn(input_dim=input_dim, Phi_sizes = Phi_sizes, F_sizes = F_sizes, loss = loss, dropout=dropout, l2_reg=l2_reg, Phi_acts=Phi_acts, F_acts=F_acts, output_act=output_act, learning_rate=learning_rate, patience=epochs, savePath=save_dir, saveLabel=label, verbose=0)
+    # print('setup neural network')
+    if model is None:
+        reset_weights(dctr)
+        print('reset neural network weights')
+    else: # load weights
+        dctr = tf.keras.models.load_model(model)
+        print(f'loaded neural network model: {model}')
+    
+    # train using multiprocessing to close child process every repeat to free memory from GPU 
+    loss_val = train(dctr, callbacks, x_train, y_train, x_val, y_val, wgt_train=wgt_train, wgt_val=wgt_val, epochs=epochs, batch_size=batch_size, savePath=save_dir, saveLabel=label, verbose=0, plot=False)
+
+    current_model = f'{save_dir}{label}.tf'
+    print(f'\n best loss {loss_val:.4f} of run {run} of super_epoch {super_epoch} with batch_size {batch_size}\n')
+
+    return loss_val, current_model
+
 
 def train_super_epoch(model, train_data, batch_size, repeat, train_dir = '/tf/home/gdrive/_STUDIUM_/DCTR_Paper/train',
                       input_dim=5, Phi_sizes = (100,100,128), F_sizes = (128,100,100), loss = 'mse', dropout=0.0, l2_reg=0.0,
                       Phi_acts=('linear', 'elu', 'gelu'), F_acts=('gelu', 'gelu', 'linear'), output_act='sigmoid', learning_rate=0.001, 
                       epochs = 5, super_epoch = 0):
     
-    # unpack data
-    x_train, y_train, x_val, y_val, wgt_train, wgt_val = train_data
-    
     # training
     model_list = []
     loss_list = []
     for run in range(repeat):
-        K.clear_session()
-        print(f'starting run {run} of super_epoch {super_epoch} with batch_size {batch_size}')
+
         save_dir = f'{train_dir}/super_epoch_{super_epoch}/run_{run}/'
         label = f's-{super_epoch}_b-{batch_size}_r-{run}'
 
-        # setup nn model
-        dctr, callbacks = setup_nn(input_dim=input_dim, Phi_sizes = Phi_sizes, F_sizes = F_sizes,
-                                   loss = loss, dropout=dropout, l2_reg=l2_reg, Phi_acts=Phi_acts, F_acts=F_acts, output_act=output_act,
-                                   learning_rate=learning_rate, patience=epochs, savePath=save_dir, saveLabel=label, verbose=0)
-
-        if model is None:
-            reset_weights(dctr)    
-        else: # load weights
-            dctr = tf.keras.models.load_model(model)
+        loss_val, current_model = train_run(model, train_data, run, super_epoch, batch_size, epochs, input_dim, Phi_sizes, F_sizes, loss, dropout, l2_reg, Phi_acts, F_acts, output_act, learning_rate, save_dir, label)
         
-        # train
-        loss_val = train(dctr, callbacks, x_train, y_train, x_val, y_val, wgt_train=wgt_train, wgt_val=wgt_val, 
-                         epochs=epochs, batch_size=batch_size, savePath=save_dir, saveLabel=label, verbose=0, plot=False)
-        
-        # loss_val = dctr.evaluate(x_val, y_val, sample_weight=pd.Series(wgt_val).to_frame('w_v'), batch_size=batch_size)
-        current_model = f'{save_dir}{label}.tf'
         model_list.append(current_model)
         loss_list.append(loss_val)
-        print(f'\n best loss {loss_val:.4f} of run {run} of super_epoch {super_epoch} with batch_size {batch_size}\n')
         
-    return dctr, model_list, loss_list
+    return model_list, loss_list
     
 
 
@@ -855,10 +870,7 @@ def train_super_epoch_choose_best(model, train_data, plt_data, batch_size, repea
     x0_plt , x0_plt_nrm, x1_plt, x1_plt_wgt = plt_data
 
     # train and get list of model model
-    dctr, model_list, loss_list = train_super_epoch(model, train_data, batch_size, repeat, train_dir = train_dir, input_dim=input_dim, 
-                                                    Phi_sizes = Phi_sizes, F_sizes = F_sizes, loss = loss, dropout=dropout, l2_reg=l2_reg,
-                                                    Phi_acts=Phi_acts, F_acts=F_acts, output_act=output_act, learning_rate=learning_rate, 
-                                                    epochs = epochs, super_epoch = super_epoch)
+    model_list, loss_list = train_super_epoch(model, train_data, batch_size, repeat, train_dir = train_dir, input_dim=input_dim, Phi_sizes = Phi_sizes, F_sizes = F_sizes, loss = loss, dropout=dropout, l2_reg=l2_reg, Phi_acts=Phi_acts, F_acts=F_acts, output_act=output_act, learning_rate=learning_rate, epochs = epochs, super_epoch = super_epoch)
     
     rwgt_list= get_rwgt(model_list, x0_plt_nrm)
     # stats
@@ -905,7 +917,7 @@ def train_loop(train_data, plt_data, model=None, lowest_chi2 = 1e6, train_dir = 
             
         for batch_size in batch_sizes:
             # K.clear_session() # clearing before every run now
-            gc.collect() # collect garbage
+            # gc.collect() # collect garbage
             # device.reset()
              
             print(f'starting training with batch_size: {batch_size} and {epochs} epochs\n' +
@@ -1020,33 +1032,36 @@ rc('legend', fontsize=10)
 # [pt, rapidity, phi, mass, pseudorapidity, E, PID, w, theta]
 # [0 , 1       , 2  , 3   , 4             , 5, 6  , 7, 8    ]
 
-particles = {0: r'$t\bar{t}$ pair', 
-             1: r'$t$',
-             2: r'$\bar{t}$'} 
-
-parts_label = {0: r'$t\bar{t}$', 
-               1: r'$t$',
-               2: r'$\bar{t}$'} 
+particles = {0: r't\bar{t}', 
+             1: r't',
+             2: r'\bar{t}'} 
 
 
-args_dict = {0: r'$p_{T}$ [GeV]',
-             1: r'$y$ rapidity',
-             2: r'$\phi$',
-             3: r'mass [GeV]',
-             4: r'$\eta$ pseudorapidity',
-             5: r'Energy [GeV]',
-             6: r'PID'}
-
-args_label = {0: r'$p_{T}$',
-             1: r'$y$',
-             2: r'$\phi$',
-             3: r'$m$',
-             4: r'$\eta$',
-             5: r'$E$',
+args_dict = {0: r'p_{T}',
+             1: r'y',
+             2: r'\phi',
+             3: r'm',
+             4: r'\eta',
+             5: r'E',
              6: r'PID'}       
 
 
+args_units = {0: r' [GeV]',
+              1: r' ',
+              2: r' [rad]',
+              3: r' [GeV]',
+              4: r' ',
+              5: r' [GeV]',
+              6: r' '}
 
+
+inverse_units = {0: r' [GeV^{-1}]',
+                 1: r' ',
+                 2: r' [rad^{-1}]',
+                 3: r' [GeV^{-1}]',
+                 4: r' ',
+                 5: r' [GeV^{-1}]',
+                 6: r' '}
 
 def plot_weights(wgts, start = -1.5, stop = 2.5, div = 31, title = None):
     bins = np.linspace(start, stop, div)
@@ -1253,7 +1268,7 @@ def make_legend(ax, title):
     plt.tight_layout()
 
 
-def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], pythia_text = pythia_text, figsize=(8,10), y_scale=None, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV'):
+def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], pythia_text = pythia_text, figsize=(8,10), y_scale=None, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV', part_label=None, arg_label=None, unit=None, inv_unit=None):
     
     plt_style_10a = {'histtype':'step', 'color':'Green', 'linewidth':3, 'linestyle':'--', 'density':True}
     plt_style_11a = {'histtype':'step', 'color':'black', 'linewidth':3, 'linestyle':'-', 'density':True}
@@ -1287,11 +1302,17 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
     except:
         print('args not in right form. Needs to be args = [(x1, x1_wgt, x1_label), (x0, x0_wgt, x0_label), (x0, x0_rwgt, x0_rwgt_label)]')
 
-    hist3, edges3 = np.histogram(x1[:, part_index, arg_index], bins=bins, range=(start, stop), weights=x1_wgt)
-    hist5, edges5 = np.histogram(x0[:, part_index, arg_index], bins=bins, range=(start, stop), weights=x0_wgt)
-    hist4, edges4 = np.histogram(x0[:, part_index, arg_index], bins=bins, range=(start, stop), weights=x0_rwgt)
 
-    # Calculate the ratio of the histograms
+    if x1.ndim > 1: # full array or single dim
+        hist3, edges3 = np.histogram(x1[:, part_index, arg_index], bins=bins, range=(start, stop), weights=x1_wgt)
+        hist5, edges5 = np.histogram(x0[:, part_index, arg_index], bins=bins, range=(start, stop), weights=x0_wgt)
+        hist4, edges4 = np.histogram(x0[:, part_index, arg_index], bins=bins, range=(start, stop), weights=x0_rwgt)
+    else:
+        hist3, edges3 = np.histogram(x1, bins=bins, range=(start, stop), weights=x1_wgt)
+        hist5, edges5 = np.histogram(x0, bins=bins, range=(start, stop), weights=x0_wgt)
+        hist4, edges4 = np.histogram(x0, bins=bins, range=(start, stop), weights=x0_rwgt)
+
+    # Calculate the ratio of thepart_label histograms
     ratioNom = hist3 / hist3
     ratio_errNom = np.sqrt(hist3) / hist3
     ratio = hist4 / hist3
@@ -1302,25 +1323,50 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
 
     # Create figure with two subplots
     fig, axes = plt.subplots(nrows=2, figsize=figsize, gridspec_kw={'height_ratios': [2, 1]})
+    fig.tight_layout(pad=1)
 
 
     # First subplot
-    hist0 = axes[0].hist(x1[:, part_index, arg_index], bins=bins, label=x1_label,      weights=x1_wgt,  **plt_style_11a)
-    hist1 = axes[0].hist(x0[:, part_index, arg_index], bins=bins, label=x0_label,      weights=x0_wgt,  **plt_style_10a)
-    hist2 = axes[0].hist(x0[:, part_index, arg_index], bins=bins, label=x0_rwgt_label, weights=x0_rwgt, **plt_style_12a)
+    if x1.ndim > 1:
+        hist0 = axes[0].hist(x1[:, part_index, arg_index], bins=bins, label=x1_label,      weights=x1_wgt,  **plt_style_11a)
+        hist1 = axes[0].hist(x0[:, part_index, arg_index], bins=bins, label=x0_label,      weights=x0_wgt,  **plt_style_10a)
+        hist2 = axes[0].hist(x0[:, part_index, arg_index], bins=bins, label=x0_rwgt_label, weights=x0_rwgt, **plt_style_12a)
+    else:
+        hist0 = axes[0].hist(x1, bins=bins, label=x1_label,      weights=x1_wgt,  **plt_style_11a)
+        hist1 = axes[0].hist(x0, bins=bins, label=x0_label,      weights=x0_wgt,  **plt_style_10a)
+        hist2 = axes[0].hist(x0, bins=bins, label=x0_rwgt_label, weights=x0_rwgt, **plt_style_12a)
 
+
+    # labels and titles
     make_legend(axes[0], pythia_text)
+
+    if part_label is None:
+        part = particles.get(part_index)
+    else:
+        part = part_label
+
+    if arg_label is None:
+        obs = args_dict.get(arg_index)
+    else:
+        obs = arg_label
     
-    part = parts_label.get(part_index)
-    obs = args_label.get(arg_index)
-    label = rf'$\frac{{1}}{{\sigma}} \frac{{d\sigma}}{{d{obs}({part})}}$' # \; [{unit}]$'
+    if unit is None:
+        inv_unit = inverse_units.get(arg_index)
+        unit = args_units.get(arg_index)
+    else:
+        inv_unit = inv_unit
+        unit = unit
+    
+    # Constructing the label using Python string formatting
+    label = r'$1$/$\sigma \frac{d\sigma}{d %s(%s)}$ $%s$' % (obs, part, inv_unit)
 
     axes[0].set_ylabel(label)
 
     if y_scale == 'log':
         axes[0].set_yscale('log')
+        axes[0].set_ylim(bottom=1e-5)
+    else: axes[0].set_ylim(bottom=0)
     axes[0].grid(True)
-    axes[0].legend(fontsize=13)
 
     # Second subplot
     bin_centers = (edges4[:-1] + edges4[1:]) / 2.0
@@ -1330,8 +1376,8 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
     axes[1].plot(bin_centers, ratioNom, '-', color='black',  linewidth=3, label=x1_label)
     axes[1].plot(bin_centers, ratioB,  '--', color='green',  linewidth=3, label=x0_label)
     axes[1].plot(bin_centers, ratio,    ':', color='#FC5A50',linewidth=3, label=x0_rwgt_label)
-    axes[1].set_xlabel(f'{obs}({part})')
-    axes[1].set_ylabel('Ratio(/MiNNLO)')
+    axes[1].set_xlabel(fr'${obs}({part}){unit}$')
+    axes[1].set_ylabel(f'Ratio(/{args[0][-1]})')
     axes[1].grid(True)
 
     plt.subplots_adjust(hspace=0.2)
@@ -1348,7 +1394,7 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
     axes[0].text(1.0, 1.05, center_mass_energy, ha="right", va="top", fontsize=20, transform=axes[0].transAxes)
 
     # Save the figure
-    plt.savefig(f'{args_label}_{parts_label}_plot.pdf')
-
+    # plt.savefig(f'./plots/{obs}_{part}_plot.pdf')
+    plt.show()
         
     

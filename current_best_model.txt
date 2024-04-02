@@ -1,0 +1,3 @@
+./train_20240330/super_epoch_21/run_0/s-21_b-32768_r-0.tf
+
+with average reduced chi2 = 2.0231
