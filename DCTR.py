@@ -1022,15 +1022,16 @@ import matplotlib.font_manager
 import mplhep as hep
 plt.style.use(hep.style.CMS)
 
-rc('text', usetex=True)
-rc('font', size=14)
-rc('xtick', labelsize=10)
-rc('ytick', labelsize=10)
-rc('legend', fontsize=10)
+# rc('text', usetex=True)
+# rc('font', size=14)
+# rc('xtick', labelsize=10)
+# rc('ytick', labelsize=10)
+# rc('legend', fontsize=10)
 
 # define dicts of arguments and particles
 # [pt, rapidity, phi, mass, pseudorapidity, E, PID, w, theta]
 # [0 , 1       , 2  , 3   , 4             , 5, 6  , 7, 8    ]
+
 
 particles = {0: r't\bar{t}', 
              1: r't',
@@ -1055,13 +1056,14 @@ args_units = {0: r' [GeV]',
               6: r' '}
 
 
-inverse_units = {0: r' [GeV^{-1}]',
+inverse_units = {0: r' [GeV$^{-1}$]',
                  1: r' ',
-                 2: r' [rad^{-1}]',
-                 3: r' [GeV^{-1}]',
+                 2: r' [rad$^{-1}$]',
+                 3: r' [GeV$^{-1}$]',
                  4: r' ',
-                 5: r' [GeV^{-1}]',
+                 5: r' [GeV$^{-1}$]',
                  6: r' '}
+
 
 def plot_weights(wgts, start = -1.5, stop = 2.5, div = 31, title = None):
     bins = np.linspace(start, stop, div)
@@ -1259,7 +1261,7 @@ def plot_ratio(args, arg_index = 0, part_index = 0, title = None, x_label = None
 
 
 
-pythia_text = r'$POWHEG \; (hvq) \; pp \to  t\bar{t}$'
+pythia_text = r'$POWHEG \; pp \to  t\bar{t}$'
 def make_legend(ax, title):
     leg = ax.legend(frameon=False)
     leg.set_title(title, prop={'size':20})
@@ -1268,12 +1270,17 @@ def make_legend(ax, title):
     plt.tight_layout()
 
 
-def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], pythia_text = pythia_text, figsize=(8,10), y_scale=None, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV', part_label=None, arg_label=None, unit=None, inv_unit=None):
-    
-    plt_style_10a = {'histtype':'step', 'color':'Green', 'linewidth':3, 'linestyle':'--', 'density':True}
-    plt_style_11a = {'histtype':'step', 'color':'black', 'linewidth':3, 'linestyle':'-', 'density':True}
-    plt_style_12a = {'histtype':'step', 'color':'#FC5A50', 'linewidth':3, 'linestyle':':', 'density':True}
 
+def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV', part_label=None, arg_label=None, unit=None, inv_unit=None):
+
+    try:
+        [(x1, x1_wgt , x1_label), (x0, x0_wgt , x0_label), (x0, x0_rwgt, x0_rwgt_label)] = args
+    except:
+        print('args not in right form. Needs to be args = [(x1, x1_wgt, x1_label), (x0, x0_wgt, x0_label), (x0, x0_rwgt, x0_rwgt_label)]')
+    
+    plt_style_10a = {'color':'Green', 'linewidth':3, 'linestyle':'--'} #, 'density':True, 'histtype':'step'}
+    plt_style_11a = {'color':'black', 'linewidth':3, 'linestyle':'-'} #', 'density':True, 'histtype':'step'}
+    plt_style_12a = {'color':'#FC5A50', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
 
     # binning: prio: passed bins, calculated bins from quantiles, linear bins from start, stop, div
     if bins is not None: 
@@ -1297,44 +1304,79 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
     stop = copy(bins[-1])
     div = len(bins)
 
-    try:
-        [(x1, x1_wgt , x1_label), (x0, x0_wgt , x0_label), (x0, x0_rwgt, x0_rwgt_label)] = args
-    except:
-        print('args not in right form. Needs to be args = [(x1, x1_wgt, x1_label), (x0, x0_wgt, x0_label), (x0, x0_rwgt, x0_rwgt_label)]')
+    if overflow is True:
+        # include events past histogram edges in first/last bin
+        bins[0] = -np.inf
+        bins[-1] = np.inf
+    
+    n_list = [] # list of histogram bin counts
+    n_sum_list = [] # list of total counts in all bins: used for normalizing
+    uncert_list = [] # list of uncertainties for each bin in each histogram
+    uncert_nrm_list = []
+    dense_list = []
 
+    for i, (X, wgt, label) in enumerate(args):
+        # check wheter full dataset is passed or 1D dataset, that can be plotted as is
+        if X.ndim > 1:
+            n, bin_edges = np.histogram(X[:,part_index, arg_index], bins = bins, weights = wgt) # calculate histogram
+            if density is True:
+                dense_n, bin_edges = np.histogram(X[:,part_index, arg_index], bins = bins, weights = wgt, density=True)
+                dense_n = np.append(dense_n, dense_n[-1])
+                dense_list.append(dense_n) # extend list by last element for plotting
+            bin_indices = np.digitize(X[:,part_index, arg_index], bins = bins) # which bin did each event end up in
+            
+        else: 
+            n, bin_edges = np.histogram(X, bins = bins, weights = wgt)
+            if density is True:
+                dense_n, bin_edges = np.histogram(X, bins = bins, weights = wgt, density=True)
+                dense_n = np.append(dense_n, dense_n[-1])
+                dense_list.append(dense_n) # extend list by last element for plotting
+            bin_indices = np.digitize(X, bins = bins) # which bin did each event end up in
+        
 
-    if x1.ndim > 1: # full array or single dim
-        hist3, edges3 = np.histogram(x1[:, part_index, arg_index], bins=bins, range=(start, stop), weights=x1_wgt)
-        hist5, edges5 = np.histogram(x0[:, part_index, arg_index], bins=bins, range=(start, stop), weights=x0_wgt)
-        hist4, edges4 = np.histogram(x0[:, part_index, arg_index], bins=bins, range=(start, stop), weights=x0_rwgt)
-    else:
-        hist3, edges3 = np.histogram(x1, bins=bins, range=(start, stop), weights=x1_wgt)
-        hist5, edges5 = np.histogram(x0, bins=bins, range=(start, stop), weights=x0_wgt)
-        hist4, edges4 = np.histogram(x0, bins=bins, range=(start, stop), weights=x0_rwgt)
+        # statistics
+        # uncert: sqrt of the square of all weights in each bin
+        uncert = np.array([np.sqrt(np.sum(wgt[bin_indices == bin_index]**2)) for bin_index in range(1, len(bins))])
+        uncert_list.append(uncert)
+        uncert_nrm = np.divide(uncert, n, out=np.ones_like(uncert), where=(n != 0)) # normalizing uncert by dividing by bin counts, for non-zero bin counts
 
-    # Calculate the ratio of thepart_label histograms
-    ratioNom = hist3 / hist3
-    ratio_errNom = np.sqrt(hist3) / hist3
-    ratio = hist4 / hist3
-    ratio_err = np.sqrt(hist4) / hist3
-
-    ratioB = hist5 / hist3
-    ratio_errB = np.sqrt(hist5) / hist3
-
+        uncert_nrm = np.append(uncert_nrm, uncert_nrm[-1]) # extend list by last element for plotting
+        uncert_nrm_list.append(uncert_nrm)
+        
+        n_sum = np.nansum(n) # total number of events in all bins
+        n_sum_list.append(n_sum)
+        # normalize to the expected counts for the first passed X
+        n *= (n_sum_list[0] / n_sum)
+        n = np.append(n, n[-1]) # extend array by repeating last element for plotting
+        n_list.append(n)
+    
+    
     # Create figure with two subplots
     fig, axes = plt.subplots(nrows=2, figsize=figsize, gridspec_kw={'height_ratios': [2, 1]})
     fig.tight_layout(pad=1)
 
+    if density is True:
+        hist0 = dense_list[0] # NNLO
+        hist1 = dense_list[1] # NLO
+        hist2 = dense_list[2] # NLO rwgt
+    else:
+        hist0 = n_list[0] # NNLO
+        hist1 = n_list[1] # NLO
+        hist2 = n_list[2] # NLO rwgt
 
     # First subplot
-    if x1.ndim > 1:
-        hist0 = axes[0].hist(x1[:, part_index, arg_index], bins=bins, label=x1_label,      weights=x1_wgt,  **plt_style_11a)
-        hist1 = axes[0].hist(x0[:, part_index, arg_index], bins=bins, label=x0_label,      weights=x0_wgt,  **plt_style_10a)
-        hist2 = axes[0].hist(x0[:, part_index, arg_index], bins=bins, label=x0_rwgt_label, weights=x0_rwgt, **plt_style_12a)
-    else:
-        hist0 = axes[0].hist(x1, bins=bins, label=x1_label,      weights=x1_wgt,  **plt_style_11a)
-        hist1 = axes[0].hist(x0, bins=bins, label=x0_label,      weights=x0_wgt,  **plt_style_10a)
-        hist2 = axes[0].hist(x0, bins=bins, label=x0_rwgt_label, weights=x0_rwgt, **plt_style_12a)
+    bin_edges[0] = start # reset bin edges for plotting
+    bin_edges[-1] = stop
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.0
+    
+    axes[0].step(bin_edges, hist0, label = x1_label, where='post', **plt_style_11a)
+    axes[0].step(bin_edges, hist1, label = x0_label, where='post', **plt_style_10a)
+    axes[0].step(bin_edges, hist2, label = x0_rwgt_label, where='post', **plt_style_12a)
+
+    # Calculate the ratios of histograms
+    ratio_0 = hist0 / hist0
+    ratio_1 = hist1 / hist0
+    ratio_2 = hist2 / hist0
 
 
     # labels and titles
@@ -1358,31 +1400,31 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
         unit = unit
     
     # Constructing the label using Python string formatting
-    label = r'$1$/$\sigma \frac{d\sigma}{d %s(%s)}$ $%s$' % (obs, part, inv_unit)
+    label = r'$1$/$\sigma \frac{d\sigma}{d %s(%s)}$ %s' % (obs, part, inv_unit)
 
     axes[0].set_ylabel(label)
 
     if y_scale == 'log':
         axes[0].set_yscale('log')
-        axes[0].set_ylim(bottom=1e-5)
-    else: axes[0].set_ylim(bottom=0)
+    else: 
+        axes[0].set_ylim(bottom=0)
     axes[0].grid(True)
 
     # Second subplot
-    bin_centers = (edges4[:-1] + edges4[1:]) / 2.0
-    axes[1].errorbar(bin_centers, ratio, yerr=ratio_err, fmt=':', color='#FC5A50')
-    axes[1].errorbar(bin_centers, ratioNom, yerr=ratio_errNom, fmt='-', color='black')
-    axes[1].errorbar(bin_centers, ratioB, yerr=ratio_errB, fmt='--', color='green')
-    axes[1].plot(bin_centers, ratioNom, '-', color='black',  linewidth=3, label=x1_label)
-    axes[1].plot(bin_centers, ratioB,  '--', color='green',  linewidth=3, label=x0_label)
-    axes[1].plot(bin_centers, ratio,    ':', color='#FC5A50',linewidth=3, label=x0_rwgt_label)
+    axes[1].errorbar(bin_centers, ratio_0[:-1], yerr=uncert_nrm_list[0][:-1], fmt='-', color='black')
+    axes[1].errorbar(bin_centers, ratio_1[:-1],   yerr=uncert_nrm_list[1][:-1], fmt='--', color='green')
+    axes[1].errorbar(bin_centers, ratio_2[:-1],    yerr=uncert_nrm_list[2][:-1], fmt=':', color='#FC5A50')
+    axes[1].plot([start, stop], [1,1], '-', color='black',  linewidth=3, label=x1_label)
+    axes[1].plot(bin_centers, ratio_1[:-1],  '--', color='green',  linewidth=3, label=x0_label)
+    axes[1].plot(bin_centers, ratio_2[:-1],    ':', color='#FC5A50',linewidth=3, label=x0_rwgt_label)
     axes[1].set_xlabel(fr'${obs}({part}){unit}$')
-    axes[1].set_ylabel(f'Ratio(/{args[0][-1]})')
+    axes[1].set_ylabel(f'Ratio(/NNLO)')
     axes[1].grid(True)
 
+    # print(f'uncertainty NLO: {uncert_nrm_list[0]}')
+    
     plt.subplots_adjust(hspace=0.2)
     plt.subplots_adjust(left=0.2, right=0.95, bottom=0.1, top=0.95)
-    # axes[0].set_ylim([0.04, 1])
     axes[1].set_ylim(ratio_ylim)
 
     axes[0].set_xlim([start,stop])
@@ -1394,7 +1436,5 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
     axes[0].text(1.0, 1.05, center_mass_energy, ha="right", va="top", fontsize=20, transform=axes[0].transAxes)
 
     # Save the figure
-    # plt.savefig(f'./plots/{obs}_{part}_plot.pdf')
+    plt.savefig(f'./plots/{obs}_{part}_plot.pdf')
     plt.show()
-        
-    
