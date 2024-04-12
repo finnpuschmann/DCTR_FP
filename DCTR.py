@@ -1270,7 +1270,7 @@ def make_legend(ax, title):
 
 
 
-def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV', part_label=None, arg_label=None, unit=None, inv_unit=None):
+def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV', part_label=None, arg_label=None, unit=None, inv_unit=None):
 
     try:
         [(x1, x1_wgt , x1_label), (x0, x0_wgt , x0_label), (x0, x0_rwgt, x0_rwgt_label)] = args
@@ -1297,7 +1297,12 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
             else:
                 stop = np.max(args[0][0])
                 
-        bins = np.linspace(start, stop, div)
+        if binning != 'log':              
+            bins = np.linspace(start, stop, div)
+        else:
+            if start == 0:
+                start = 1
+            bins = np.logspace(np.log10(start), np.log10(stop), div)
     
     start = copy(bins[0])
     stop = copy(bins[-1])
@@ -1468,11 +1473,8 @@ def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label 
                 stop = np.max(args[0][0][:,part_index, arg_index])
             else:
                 stop = np.max(args[0][0])
-<<<<<<< HEAD
-        if binning != 'log':        
-=======
-        if binning is not 'log':        
->>>>>>> 4e2733dffa04aaac23e6a66f441f3886f253141f
+                
+        if binning != 'log':              
             bins = np.linspace(start, stop, div)
         else:
             if start == 0:
