@@ -700,10 +700,9 @@ def predict_weights(dctr, X, batch_size=8192, clip=0.00001, verbose=1):
     
     weights = np.divide(predics[:,1], (1-predics[:,1]), out=np.zeros_like(predics[:,1]), where=(predics[:,1])!=1.0 )
 
-    weights /= np.mean(weights) # adjust weights so that mean is 1
+    # weights /= np.mean(weights) # adjust weights so that mean is 1
 
     return weights
-
 
 
 
@@ -1417,6 +1416,187 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
     axes[1].plot([start, stop], [1,1], '-', color='black',  linewidth=3, label=x1_label)
     axes[1].plot(bin_centers, ratio_1[:-1],  '--', color='green',  linewidth=3, label=x0_label)
     axes[1].plot(bin_centers, ratio_2[:-1],    ':', color='#FC5A50',linewidth=3, label=x0_rwgt_label)
+    axes[1].set_xlabel(fr'${obs}({part}){unit}$')
+    axes[1].set_ylabel(f'Ratio(/NNLO)')
+    axes[1].grid(True)
+
+    # print(f'uncertainty NLO: {uncert_nrm_list[0]}')
+    
+    plt.subplots_adjust(hspace=0.2)
+    plt.subplots_adjust(left=0.2, right=0.95, bottom=0.1, top=0.95)
+    axes[1].set_ylim(ratio_ylim)
+
+    axes[0].set_xlim([start,stop])
+    axes[1].set_xlim([start,stop])
+    axes[1].legend(fontsize=13)
+
+    #hep.cms.label(ax=axes[0], data=False, paper=False, lumi=None, fontsize=20, loc=0)
+    hep.cms.text(hep_text, loc=0, fontsize=20, ax=axes[0])
+    axes[0].text(1.0, 1.05, center_mass_energy, ha="right", va="top", fontsize=20, transform=axes[0].transAxes)
+
+    # Save the figure
+    plt.savefig(f'./plots/{obs}_{part}_plot.pdf')
+    plt.show()
+
+
+
+def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV', part_label=None, arg_label=None, unit=None, inv_unit=None):
+
+    try:
+        [(x1, x1_wgt , x1_label), (x0, x0_wgt , x0_label), (x0, x0_rwgt, x0_rwgt_label), (x0, x0_rwgt_alt, x0_rwgt_alt_label)] = args
+    except:
+        print('args not in right form. Needs to be args = [(x1, x1_wgt, x1_label), (x0, x0_wgt, x0_label), (x0, x0_rwgt, x0_rwgt_label), (x0, x0_rwgt_alt, x0_rwgt_alt_label)]')
+    
+    plt_style_10a = {'color':'Green', 'linewidth':3, 'linestyle':'--'} #, 'density':True, 'histtype':'step'}
+    plt_style_11a = {'color':'black', 'linewidth':3, 'linestyle':'-'} #', 'density':True, 'histtype':'step'}
+    plt_style_12a = {'color':'#FC5A50', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
+    plt_style_13a = {'color':'blue', 'linewidth':3, 'linestyle':'-.'} #, 'density':True, 'histtype':'step'}
+
+
+    # binning: prio: passed bins, calculated bins from quantiles, linear bins from start, stop, div
+    if bins is not None: 
+        bins = bins    
+    else: # no passed bins, nor optimal bins
+        if start is None: # was start/stop given?
+            if args[0][0].ndim > 1: # check whether full array
+                start = np.min(args[0][0][:,part_index, arg_index])
+            else:
+                start = np.min(args[0][0])
+                
+        if stop is None:
+            if args[0][0].ndim > 1: # check whether full array
+                stop = np.max(args[0][0][:,part_index, arg_index])
+            else:
+                stop = np.max(args[0][0])
+        if binning != 'log':        
+            bins = np.linspace(start, stop, div)
+        else:
+            if start == 0:
+                start = 1
+            bins = np.logspace(np.log10(start), np.log10(stop), div)
+     
+    start = copy(bins[0])
+    stop = copy(bins[-1])
+    div = len(bins)
+
+    if overflow is True:
+        # include events past histogram edges in first/last bin
+        bins[0] = -np.inf
+        bins[-1] = np.inf
+    
+    n_list = [] # list of histogram bin counts
+    n_sum_list = [] # list of total counts in all bins: used for normalizing
+    uncert_list = [] # list of uncertainties for each bin in each histogram
+    uncert_nrm_list = []
+    dense_list = []
+
+    for i, (X, wgt, label) in enumerate(args):
+        # check wheter full dataset is passed or 1D dataset, that can be plotted as is
+        if X.ndim > 1:
+            n, bin_edges = np.histogram(X[:,part_index, arg_index], bins = bins, weights = wgt) # calculate histogram
+            if density is True:
+                dense_n, bin_edges = np.histogram(X[:,part_index, arg_index], bins = bins, weights = wgt, density=True)
+                dense_n = np.append(dense_n, dense_n[-1])
+                dense_list.append(dense_n) # extend list by last element for plotting
+            bin_indices = np.digitize(X[:,part_index, arg_index], bins = bins) # which bin did each event end up in
+            
+        else: 
+            n, bin_edges = np.histogram(X, bins = bins, weights = wgt)
+            if density is True:
+                dense_n, bin_edges = np.histogram(X, bins = bins, weights = wgt, density=True)
+                dense_n = np.append(dense_n, dense_n[-1])
+                dense_list.append(dense_n) # extend list by last element for plotting
+            bin_indices = np.digitize(X, bins = bins) # which bin did each event end up in
+        
+
+        # statistics
+        # uncert: sqrt of the square of all weights in each bin
+        uncert = np.array([np.sqrt(np.sum(wgt[bin_indices == bin_index]**2)) for bin_index in range(1, len(bins))])
+        uncert_list.append(uncert)
+        uncert_nrm = np.divide(uncert, n, out=np.ones_like(uncert), where=(n != 0)) # normalizing uncert by dividing by bin counts, for non-zero bin counts
+
+        uncert_nrm = np.append(uncert_nrm, uncert_nrm[-1]) # extend list by last element for plotting
+        uncert_nrm_list.append(uncert_nrm)
+        
+        n_sum = np.nansum(n) # total number of events in all bins
+        n_sum_list.append(n_sum)
+        # normalize to the expected counts for the first passed X
+        n *= (n_sum_list[0] / n_sum)
+        n = np.append(n, n[-1]) # extend array by repeating last element for plotting
+        n_list.append(n)
+    
+    
+    # Create figure with two subplots
+    fig, axes = plt.subplots(nrows=2, figsize=figsize, gridspec_kw={'height_ratios': [2, 1]})
+    fig.tight_layout(pad=1)
+
+    if density is True:
+        hist0 = dense_list[0] # NNLO
+        hist1 = dense_list[1] # NLO
+        hist2 = dense_list[2] # NLO rwgt
+        hist3 = dense_list[3] # bins rwgt
+    else:
+        hist0 = n_list[0] # NNLO
+        hist1 = n_list[1] # NLO
+        hist2 = n_list[2] # NLO rwgt
+        hist3 = n_list[3] # bins rwgt
+
+    # First subplot
+    bin_edges[0] = start # reset bin edges for plotting
+    bin_edges[-1] = stop
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.0
+    
+    axes[0].step(bin_edges, hist0, label = x1_label, where='post', **plt_style_11a)
+    axes[0].step(bin_edges, hist1, label = x0_label, where='post', **plt_style_10a)
+    axes[0].step(bin_edges, hist2, label = x0_rwgt_label, where='post', **plt_style_12a)
+    axes[0].step(bin_edges, hist3, label = x0_rwgt_alt_label, where='post', **plt_style_13a)
+
+    # Calculate the ratios of histograms
+    ratio_0 = hist0 / hist0
+    ratio_1 = hist1 / hist0
+    ratio_2 = hist2 / hist0
+    ratio_3 = hist3 / hist0
+
+    # labels and titles
+    make_legend(axes[0], pythia_text)
+
+    if part_label is None:
+        part = particles.get(part_index)
+    else:
+        part = part_label
+
+    if arg_label is None:
+        obs = args_dict.get(arg_index)
+    else:
+        obs = arg_label
+    
+    if unit is None:
+        inv_unit = inverse_units.get(arg_index)
+        unit = args_units.get(arg_index)
+    else:
+        inv_unit = inv_unit
+        unit = unit
+    
+    # Constructing the label using Python string formatting
+    label = r'$1$/$\sigma \frac{d\sigma}{d %s(%s)}$ %s' % (obs, part, inv_unit)
+
+    axes[0].set_ylabel(label)
+
+    if y_scale == 'log':
+        axes[0].set_yscale('log')
+    else: 
+        axes[0].set_ylim(bottom=0)
+    axes[0].grid(True)
+
+    # Second subplot
+    axes[1].errorbar(bin_centers, ratio_0[:-1], yerr=uncert_nrm_list[0][:-1], fmt='-', color='black')
+    axes[1].errorbar(bin_centers, ratio_1[:-1],   yerr=uncert_nrm_list[1][:-1], fmt='--', color='green')
+    axes[1].errorbar(bin_centers, ratio_2[:-1],    yerr=uncert_nrm_list[2][:-1], fmt=':', color='#FC5A50')
+    axes[1].errorbar(bin_centers, ratio_3[:-1],    yerr=uncert_nrm_list[3][:-1], fmt='-.', color='blue')
+    axes[1].plot([start, stop], [1,1], '-', color='black',  linewidth=3, label=x1_label)
+    axes[1].plot(bin_centers, ratio_1[:-1],  '--', color='green',  linewidth=3, label=x0_label)
+    axes[1].plot(bin_centers, ratio_2[:-1],    ':', color='#FC5A50',linewidth=3, label=x0_rwgt_label)
+    axes[1].plot(bin_centers, ratio_3[:-1],    ':', color='blue', linewidth=3, label=x0_rwgt_alt_label)
     axes[1].set_xlabel(fr'${obs}({part}){unit}$')
     axes[1].set_ylabel(f'Ratio(/NNLO)')
     axes[1].grid(True)
