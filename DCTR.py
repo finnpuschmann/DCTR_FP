@@ -1468,7 +1468,11 @@ def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label 
                 stop = np.max(args[0][0][:,part_index, arg_index])
             else:
                 stop = np.max(args[0][0])
+<<<<<<< HEAD
         if binning != 'log':        
+=======
+        if binning is not 'log':        
+>>>>>>> 4e2733dffa04aaac23e6a66f441f3886f253141f
             bins = np.linspace(start, stop, div)
         else:
             if start == 0:
