@@ -1270,7 +1270,7 @@ def make_legend(ax, title):
 
 
 
-def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV', part_label=None, arg_label=None, unit=None, inv_unit=None):
+def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV', part_label=None, arg_label=None, unit=None, inv_unit=None, save_prefix = 'plot'):
 
     try:
         [(x1, x1_wgt , x1_label), (x0, x0_wgt , x0_label), (x0, x0_rwgt, x0_rwgt_label)] = args
@@ -1440,12 +1440,18 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
     axes[0].text(1.0, 1.05, center_mass_energy, ha="right", va="top", fontsize=20, transform=axes[0].transAxes)
 
     # Save the figure
-    plt.savefig(f'./plots/{obs}_{part}_plot.pdf')
+    if part_index == 0:
+        save_folder = './plots/tt-pair'
+    elif part_index == 1:
+        save_folder = './plots/top'
+    else:
+        save_folder = './plots/anti-top'
+    plt.savefig(f'{save_folder}/{save_prefix}_{obs}_{part}.pdf')
     plt.show()
 
 
 
-def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV', part_label=None, arg_label=None, unit=None, inv_unit=None):
+def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV', part_label=None, arg_label=None, unit=None, inv_unit=None, save_prefix = 'plot'):
 
     try:
         [(x1, x1_wgt , x1_label), (x0, x0_wgt , x0_label), (x0, x0_rwgt, x0_rwgt_label), (x0, x0_rwgt_alt, x0_rwgt_alt_label)] = args
@@ -1622,5 +1628,11 @@ def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label 
     axes[0].text(1.0, 1.05, center_mass_energy, ha="right", va="top", fontsize=20, transform=axes[0].transAxes)
 
     # Save the figure
-    plt.savefig(f'./plots/{obs}_{part}_plot.pdf')
+    if part_index == 0:
+        save_folder = './plots/tt-pair'
+    elif part_index == 1:
+        save_folder = './plots/top'
+    else:
+        save_folder = './plots/anti-top'
+    plt.savefig(f'{save_folder}/{save_prefix}_{obs}_{part}.pdf')
     plt.show()
