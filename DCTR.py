@@ -1085,7 +1085,7 @@ def plot_weights(wgts, start = -1.5, stop = 2.5, div = 31, title = None):
     
 def plot_ratio(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, 
                bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1],
-               figsize=(6,8), layout='rows', stats_only=False, y_scale=None, verbose = True):
+               figsize=(15,20), layout='rows', stats_only=False, y_scale=None, verbose = True):
     
     # binning: prio: passed bins, calculated bins from quantiles, linear bins from start, stop, div
     if bins is not None: 
@@ -1243,7 +1243,7 @@ def plot_ratio(args, arg_index = 0, part_index = 0, title = None, x_label = None
         ax1.set_xlim([start, stop])
         if y_scale == 'log':
             ax1.set_yscale('log')
-            ax1.set_ylim(bottom=1e-12)
+            # ax1.set_ylim(bottom=1)
         else:
             ax1.set_ylim(bottom=0)
         ax1.legend()
@@ -1446,6 +1446,17 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
         save_folder = './plots/top'
     else:
         save_folder = './plots/anti-top'
+    # make save_folder directory, if it does not exist
+    os.makedirs(save_folder, exist_ok=True) 
+
+    # adjust strings for named files
+    obs.replace('\\', '') # Literal backslash
+    obs.replace('{', '') # remove LaTeX curly brackets
+    obs.replace('}', '') # remove LaTeX curly brackets
+    part.replace('\\', '') #  backslash
+    part.replace('{', '') # remove LaTeX curly brackets
+    part.replace('}', '') # remove LaTeX curly brackets
+
     plt.savefig(f'{save_folder}/{save_prefix}_{obs}_{part}.pdf')
     plt.show()
 
@@ -1634,5 +1645,16 @@ def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label 
         save_folder = './plots/top'
     else:
         save_folder = './plots/anti-top'
+    # make save_folder directory, if it does not exist
+    os.makedirs(save_folder, exist_ok=True) 
+
+    # adjust strings for named files
+    obs.replace('\\', '') # Literal backslash
+    obs.replace('{', '') # remove LaTeX curly brackets
+    obs.replace('}', '') # remove LaTeX curly brackets
+    part.replace('\\', '') # Literal backslash
+    part.replace('{', '') # remove LaTeX curly brackets
+    part.replace('}', '') # remove LaTeX curly brackets
+
     plt.savefig(f'{save_folder}/{save_prefix}_{obs}_{part}.pdf')
     plt.show()
