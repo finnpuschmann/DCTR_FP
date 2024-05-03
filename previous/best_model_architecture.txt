@@ -1,0 +1,11 @@
+input_dim=5,
+Phi_sizes = (100,100,128),
+F_sizes = (128,100,100),
+loss = 'mse',
+Phi_acts=('linear', 'gelu', 'gelu'),
+F_acts=('gelu', 'gelu', 'linear'),
+output_act='sigmoid'
+
+current best:
+./train_20240330/super_epoch_21/run_0/s-21_b-32768_r-0.tf
+with average reduced chi2 = 2.0231
