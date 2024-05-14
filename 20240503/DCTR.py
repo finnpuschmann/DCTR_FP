@@ -1661,14 +1661,14 @@ def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label 
     plt.show()
 
 
-def plot_ratio_cms_2(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV', part_label=None, arg_label=None, unit=None, inv_unit=None, save_prefix = 'plot'):
+def plot_ratio_cms_2(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '13 TeV', part_label=None, arg_label=None, unit=None, inv_unit=None, save_prefix = 'plot', color='green'):
 
     try:
         [(x1, x1_wgt , x1_label), (x0, x0_wgt , x0_label)] = args
     except:
         print('args not in right form. Needs to be args = [(x1, x1_wgt, x1_label), (x0, x0_wgt, x0_label)]')
     
-    plt_style_10a = {'color':'Green', 'linewidth':3, 'linestyle':'--'} #, 'density':True, 'histtype':'step'}
+    plt_style_10a = {'color':f'{color}', 'linewidth':3, 'linestyle':'--'} #, 'density':True, 'histtype':'step'}
     plt_style_11a = {'color':'black', 'linewidth':3, 'linestyle':'-'} #', 'density':True, 'histtype':'step'}
     plt_style_12a = {'color':'#FC5A50', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
 
@@ -1804,11 +1804,11 @@ def plot_ratio_cms_2(args, arg_index = 0, part_index = 0, title = None, x_label 
 
     # Second subplot
     axes[1].errorbar(bin_centers, ratio_0[:-1], yerr=uncert_nrm_list[0][:-1], fmt='-', color='black')
-    axes[1].errorbar(bin_centers, ratio_1[:-1],   yerr=uncert_nrm_list[1][:-1], fmt='--', color='green')
+    axes[1].errorbar(bin_centers, ratio_1[:-1],   yerr=uncert_nrm_list[1][:-1], fmt='--', color=f'{color}')
     axes[1].plot([start, stop], [1,1], '-', color='black',  linewidth=3, label=x1_label)
-    axes[1].plot(bin_centers, ratio_1[:-1],  '--', color='green',  linewidth=3, label=x0_label)
+    axes[1].plot(bin_centers, ratio_1[:-1],  '--', color=f'{color}',  linewidth=3, label=x0_label)
     axes[1].set_xlabel(fr'${obs}({part}){unit}$')
-    axes[1].set_ylabel(f'Ratio(/NNLO)')
+    axes[1].set_ylabel(f'Ratio (after/before)')
     axes[1].grid(True)
 
     # print(f'uncertainty NLO: {uncert_nrm_list[0]}')
