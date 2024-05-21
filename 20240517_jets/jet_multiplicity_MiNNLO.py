@@ -98,7 +98,7 @@ def pseudorapidity(px, py, pz):
 
 # num events to process
 N = 10000
-max_jets = 10
+max_jets = 20
 
 # Begin event loop. Generate event. 
 # Skip if error. List first one.
