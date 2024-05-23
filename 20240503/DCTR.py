@@ -1064,7 +1064,7 @@ inverse_units = {0: r' [GeV$^{-1}$]',
                  6: r' '}
 
 
-def plot_weights(wgts, start = 0.001, stop = 100000, div = 31, title = None):
+def plot_weights(wgts, start = 0.001, stop = 100000, div = 31, title = None, xscale = 'log', yscale = 'log'):
     bins = np.logspace(np.log10(start), np.log10(stop), div)
     plt.figure(figsize=(8,8))
     
@@ -1078,8 +1078,10 @@ def plot_weights(wgts, start = 0.001, stop = 100000, div = 31, title = None):
     plt.xlabel(r'weights (log)')
     plt.ylabel(r'counts (log)')
     plt.xlim([start, stop])
-    plt.yscale('log')
-    plt.xscale('log')
+    if yscale == 'log':
+        plt.yscale('log')
+    if xscale == 'log':
+        plt.xscale('log')
     plt.legend()
     plt.show()
     
