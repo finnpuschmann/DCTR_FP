@@ -18,6 +18,8 @@ import sys
 import argparse
 import numpy as np
 
+from lhe_parser import EventFile
+
 cfg = open("Makefile.inc")
 lib = "../lib"
 for line in cfg:
@@ -45,9 +47,12 @@ import uproot_methods
 # Import the Pythia module.
 import pythia8
 pythia = pythia8.Pythia()
+
+lhe_file = f'/nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/dileptoninc/pwgevents.lhe'
+
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
-pythia.readString(f'Beams:LHEF = /nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/dileptoninc/pwgevents.lhe') # the LHEF to read from
-print(f'Using LHE File: /nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/dileptoninc/pwgevents.lhe')
+pythia.readString(f'Beams:LHEF = {lhe_file}') # the LHEF to read from
+print(f'Using LHE File: {lhe_file}')
 
 # Veto Settings # # Veto Settings # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8PowhegEmissionVetoSettings_cfi.py
 pythia.readString("SpaceShower:pTmaxMatch = 2")
@@ -141,7 +146,15 @@ jets_4vectors = []
 # init particle vector array
 P0 = []
 
-for iEvent in range(0, N):
+# use madgraph lhe_parser EventFile, because I don't know how to get event weights from pythia
+lhe = EventFile(lhe_file)
+
+# check that number of events in lhe file is >= N, since there were missmathces in the past
+
+if len(lhe) <= N:
+    N = len(lhe)
+
+for iEvent in range(N):
     if not pythia.next():
         continue
     # showering
@@ -160,6 +173,7 @@ for iEvent in range(0, N):
     ptop = uproot_methods.TLorentzVector.from_ptetaphim(top.pT(), top.eta(), top.phi(), top.m())
 
     p_tt = ptop + patop
+
 
     wgt = pythia.event.weight()
 

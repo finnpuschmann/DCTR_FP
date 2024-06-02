@@ -18,6 +18,8 @@ import sys
 import argparse
 import numpy as np
 
+from lhe_parser import EventFile
+
 cfg = open("Makefile.inc")
 lib = "../lib"
 for line in cfg:
@@ -40,13 +42,16 @@ else:
 
 # import pdb to debug
 import pdb
+import uproot_methods
 
 # Import the Pythia module.
 import pythia8
 pythia = pythia8.Pythia()
+
+lhe_file = f'/nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{LHE}.lhe'
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
-pythia.readString(f'Beams:LHEF = /nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{LHE}.lhe') # the LHEF to read from
-print(f'Using LHE File: /nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{LHE}.lhe"')
+pythia.readString(f'Beams:LHEF = {lhe_file}') # the LHEF to read from
+print(f'Using LHE File: {lhe_file}')
 
 # Veto Settings # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8PowhegEmissionVetoSettings_cfi.py
 pythia.readString("SpaceShower:pTmaxMatch = 2")
@@ -143,7 +148,16 @@ jets_4vectors = []
 # init particle vector array
 P0 = []
 
-for iEvent in range(0, N):
+# use madgraph lhe_parser EventFile, because I don't know how to get event weights from pythia
+lhe = EventFile(lhe_file)
+
+# check that number of events in lhe file is >= N, since there were missmathces in the past
+
+if len(lhe) <= N:
+    N = len(lhe)
+
+
+for iEvent in range(N):
     if not pythia.next():
         continue
     # showering
@@ -163,7 +177,7 @@ for iEvent in range(0, N):
 
     p_tt = ptop + patop
 
-    wgt = pythia.event.weight()
+    wgt = lhe[i].wgt
 
                 # [pt, y, phi, mass, eta, E, PID, w, theta]
                 # [0 , 1, 2  , 3   , 4  , 5, 6  , 7, 8    ]
@@ -207,12 +221,12 @@ pythia.stat()
 
 # save shower
 P0 = np.array(P0)
-np.save(f'./output/MiNNLO/converted_lhe_MiNNLO_dileptonic.npy', P0)
+np.save(f'./output/MiNNLO/converted_lhe_MiNNLO_{LHE}_dileptonic.npy', P0)
 print(f'{np.shape(P0) = }')
 
 # save multiplicity and jet observables
-np.save(f'./output/MiNNLO/jet_multiplicity_MiNNLO_dileptonic.npy', nJets)
+np.save(f'./output/MiNNLO/jet_multiplicity_MiNNLO_{LHE}_dileptonic.npy', nJets)
 print(f'{np.shape(nJets) = }')
 
-np.save(f'./output/MiNNLO/jet_4vectors_MiNNLO_dileptonic.npy', jets_4vectors)
+np.save(f'./output/MiNNLO/jet_4vectors_MiNNLO_{LHE}_dileptonic.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
