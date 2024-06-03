@@ -116,7 +116,7 @@ pythia.readString("Main:timesAllowErrors = 500")
 pythia.readString("PartonLevel:MPI = on")
 pythia.readString("HadronLevel:all = on")
 pythia.readString("Random:setSeed = on")
-pythia.readString(f"Random:seed = int(LHE)")
+pythia.readString(f"Random:seed = {int(LHE)}")
 
 
 # Initialize, incoming pp beams are default.
