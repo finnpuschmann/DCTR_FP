@@ -50,7 +50,7 @@ import uproot_methods
 import pythia8
 pythia = pythia8.Pythia()
 
-lhe_file = f'/nfs/dust/cms/user/vaguglie/converterLHEfiles/MiNNLO_rew/hvq/13TeV_v2/filtered_output.lhe'
+lhe_file = f'/nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/Results{LHE}/pwgevents.lhe'
 
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
 pythia.readString(f"Beams:LHEF = {lhe_file}") # the LHEF to read from
@@ -239,12 +239,12 @@ pythia.stat()
 
 # save shower
 P0 = np.array(P0)
-np.save(f'./output/hvq/converted_lhe_hvq_all_decays_filtered.npy', P0)
+np.save(f'./output/hvq/converted_lhe_hvq_all_decays.npy', P0)
 print(f'{np.shape(P0) = }')
 
 # save multiplicity and jet observables
-np.save(f'./output/hvq/jet_multiplicity_hvq_all_decays_filtered.npy', nJets)
+np.save(f'./output/hvq/jet_multiplicity_hvq_all_decays.npy', nJets)
 print(f'{np.shape(nJets) = }')
 
-np.save(f'./output/hvq/jet_4vectors_hvq_all_decays_filtered.npy', jets_4vectors)
+np.save(f'./output/hvq/jet_4vectors_hvq_all_decays.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')

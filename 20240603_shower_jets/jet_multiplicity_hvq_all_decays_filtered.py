@@ -27,19 +27,20 @@ for line in cfg:
     if line.startswith("PREFIX_LIB="): lib = line[11:-1]; break
 sys.path.insert(0, lib)
 
+
 # parse cli arguments
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Which LHE File to Open")
+    parser = argparse.ArgumentParser(description="How many events to shower and get jets for")
     # LHE arg
-    parser.add_argument("-l", "--lhe", help="String. Which MiNNLO LHE File to open. Values between 1 and 100. Default = '1000'", type = str, default = '1000')
+    parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 100. Default = '100'", type = str, default = '100')
     # NUM arg
-    parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 10000", type = int, default = 10000)
+    parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 100000", type = int, default = 100000)
     args = parser.parse_args()
     LHE = args.lhe
     NUM = args.num
 else:
-    LHE = '1000'
-    NUM = 10000
+    LHE = '100'
+    NUM = 100000
 
 # import pdb to debug
 import pdb
@@ -49,9 +50,10 @@ import uproot_methods
 import pythia8
 pythia = pythia8.Pythia()
 
-lhe_file = f'/nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{LHE}.lhe'
+lhe_file = f'/nfs/dust/cms/user/vaguglie/converterLHEfiles/MiNNLO_rew/hvq/13TeV_v2/filtered_output.lhe'
+
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
-pythia.readString(f'Beams:LHEF = {lhe_file}') # the LHEF to read from
+pythia.readString(f"Beams:LHEF = {lhe_file}") # the LHEF to read from
 print(f'Using LHE File: {lhe_file}')
 
 # Veto Settings # # Veto Settings # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8PowhegEmissionVetoSettings_cfi.py
@@ -114,10 +116,8 @@ pythia.readString("Main:timesAllowErrors = 500")
 pythia.readString("PartonLevel:MPI = on")
 pythia.readString("HadronLevel:all = on")
 pythia.readString("Random:setSeed = on")
-pythia.readString(f"Random:seed = {int(LHE)}")
+pythia.readString("Random:seed = 1")
 
-# MiNNLO parameter
-pythia.readString("SpaceShower:dipoleRecoil = on")
 
 # Initialize, incoming pp beams are default.
 pythia.init()
@@ -128,7 +128,7 @@ min_pT = 30.0
 max_eta = 2.4
 jet_def = pythia8.SlowJet(-1, R, min_pT, max_eta)
 
-# pseudrapidity function
+#pseudrapidity function
 def pseudorapidity(px, py, pz):
     p = np.sqrt(np.power(px, 2) + np.power(py, 2) + np.power(pz, 2))
     if (p-pz) == 0.0:
@@ -142,7 +142,7 @@ def pseudorapidity(px, py, pz):
 # num events to process
 N = NUM
 max_jets = 20
-theta = 1 # for MiNNLO 
+theta = 0 # for hvq 
 
 # Begin event loop. Generate event.
 # Skip if error. List first one.
@@ -159,11 +159,19 @@ lhe = EventFile(lhe_file)
 
 # check that number of events in lhe file is >= N, since there were missmathces in the past
 wgts_list = []
-for event in lhe:
+for i, event in enumerate(lhe):
     wgts_list.append(event.wgt)
+    if i >= N:
+        break
 
 if len(wgts_list) <= N:
     N = len(lhe)
+
+
+def is_neutrino(particle_id):
+    # IDs for neutrini in PDG (Particle Data Group) notation
+    neutrino_ids = {12, -12, 14, -14, 16, -16}
+    return particle_id in neutrino_ids
 
 
 for iEvent in range(N):
@@ -173,9 +181,9 @@ for iEvent in range(N):
     partVec = []
     TT = []
     top = None
-    antitop = None  
+    antitop = None
     for particle in pythia.event:
-        # selecting only last top
+        ##selecting only last top
         if particle.id() == 6:
             top = particle
         if particle.id() == -6:
@@ -185,6 +193,7 @@ for iEvent in range(N):
     ptop = uproot_methods.TLorentzVector.from_ptetaphim(top.pT(), top.eta(), top.phi(), top.m())
 
     p_tt = ptop + patop
+
 
     wgt = wgts_list[iEvent]
 
@@ -230,12 +239,12 @@ pythia.stat()
 
 # save shower
 P0 = np.array(P0)
-np.save(f'./output/MiNNLO/converted_lhe_MiNNLO_{LHE}.npy', P0)
+np.save(f'./output/hvq/converted_lhe_hvq_all_decays_filtered.npy', P0)
 print(f'{np.shape(P0) = }')
 
 # save multiplicity and jet observables
-np.save(f'./output/MiNNLO/jet_multiplicity_MiNNLO_{LHE}.npy', nJets)
+np.save(f'./output/hvq/jet_multiplicity_hvq_all_decays_filtered.npy', nJets)
 print(f'{np.shape(nJets) = }')
 
-np.save(f'./output/MiNNLO/jet_4vectors_MiNNLO_{LHE}.npy', jets_4vectors)
+np.save(f'./output/hvq/jet_4vectors_hvq_all_decays_filtered.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
