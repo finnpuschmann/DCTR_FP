@@ -18,13 +18,8 @@ import sys
 import argparse
 import numpy as np
 
-# madgraph imports
-sys.path.append('~/MG5_aMC_v2_9_16')
-try:
-    from madgraph.various.lhe_parser import EventFile
-except ModuleNotFoundError:
-    print('Madgraph was not found in PATH or in docker /tf/madgraph/MG5_aMC_v2_9_16 dir \n can be added temporarily with sys.path.append(\'path/to/madgraph\')')
-
+# madgraph import
+from madgraph.various.lhe_parser import EventFile
 
 cfg = open("Makefile.inc")
 lib = "../lib"
@@ -183,7 +178,7 @@ for iEvent in range(N):
 
     p_tt = ptop + patop
 
-    wgt = lhe[i].wgt
+    wgt = lhe[iEvent].wgt
 
                 # [pt, y, phi, mass, eta, E, PID, w, theta]
                 # [0 , 1, 2  , 3   , 4  , 5, 6  , 7, 8    ]
