@@ -34,15 +34,15 @@ sys.path.insert(0, lib)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="How many events to shower and get jets for")
     # LHE arg
-    # parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 100. Default = '100'", type = str, default = '100')
+    parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 100. Default = '100'", type = str, default = '100')
     # NUM arg
-    parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 100000", type = int, default = 1000000)
+    parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 100000", type = int, default = 100000)
     args = parser.parse_args()
-    # LHE = args.lhe
+    LHE = args.lhe
     NUM = args.num
 else:
-    # LHE = '100'
-    NUM = 1000000
+    LHE = '100'
+    NUM = 100000
 
 # import pdb to debug
 import pdb
@@ -51,20 +51,11 @@ import pdb
 import pythia8
 pythia = pythia8.Pythia()
 
-lhe_file = f'/nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-1000.lhe'
-
-
+lhe_file = f'/nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/Test/Results{LHE}/pwgevents.lhe'
 
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
-pythia.readString("Beams:LHEF = ") # the LHEF to read from
-
-
-
-
-pythia.readString("Beams:frameType = 4") # read info from a LHEF
-pythia.readString(f'Beams:LHEF = /nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/dileptoninc/pwgevents.lhe') # the LHEF to read from
-print(f'Using LHE File: /nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/dileptoninc/pwgevents.lhe')
-
+pythia.readString(f"Beams:LHEF = {lhe_file}") # the LHEF to read from
+print(f'Using LHE File: {lhe_file}')
 
 
 
@@ -199,14 +190,35 @@ for event in lhe:
 if len(wgts_list) <= N:
     N = len(lhe)
 
+k_events = 0 # counter for events chosen after filtering
+
+
+def is_neutrino(particle_id):
+    # IDs for neutrini in PDG (Particle Data Group) notation
+    neutrino_ids = {12, -12, 14, -14, 16, -16}
+    return particle_id in neutrino_ids
+
+
+
 for iEvent in range(N):
     if not pythia.next():
         continue
     # showering
+    neutrino_count = 0
+    
+    # dileptonic decays only! Count number of neutrinos
+    for particle in pythia.event:
+        if is_neutrino(particle.pid):
+            neutrino_count += 1
+
+    if neutrino_count != 2:
+        continue
+    
+    k_events += 1
     partVec = []
     TT = []
     top = None
-    antitop = None  
+    antitop = None
     for particle in pythia.event:
         ##selecting only last top
         if particle.id() == 6:
