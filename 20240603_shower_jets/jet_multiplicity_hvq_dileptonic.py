@@ -151,8 +151,11 @@ P0 = []
 lhe = EventFile(lhe_file)
 
 # check that number of events in lhe file is >= N, since there were missmathces in the past
+wgts_list = []
+for event in lhe:
+    wgts_list.append(event.wgt)
 
-if len(lhe) <= N:
+if len(wgts_list) <= N:
     N = len(lhe)
 
 for iEvent in range(N):
@@ -176,14 +179,14 @@ for iEvent in range(N):
     p_tt = ptop + patop
 
 
-    wgt = lhe[iEvent].wgt
+    wgt = wgts_list[iEvent]
 
                 # [pt, y, phi, mass, eta, E, PID, w, theta]
                 # [0 , 1, 2  , 3   , 4  , 5, 6  , 7, 8    ]
-    partVec.append([p_tt.pT, p_tt.y, p_tt.phi, p_tt.m,  p_tt.eta, p_tt.E, 0, wgt, theta])
+    partVec.append([p_tt.pt, p_tt.rapidity, p_tt.phi, p_tt.mass, p_tt.eta, p_tt.E, 0, wgt, theta])
 
-    partVec.append([top.pT(), top.y(), top.phi(), top.m(),  top.eta(), top.E(), 6, wgt, theta])
-    partVec.append([antitop.pT(), antitop.y(), antitop.phi(), antitop.m(),  antitop.eta(), antitop.E(), -6, wgt, theta])
+    partVec.append([ptop.pt, ptop.rapidity, ptop.phi, ptop.mass, ptop.eta, ptop.E, 6, wgt, theta])
+    partVec.append([patop.pt, patop.rapidity, patop.phi, patop.mass, patop.eta, patop.E, -6, wgt, theta])
 
     P0.append(partVec)
 
