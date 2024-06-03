@@ -18,7 +18,14 @@ import sys
 import argparse
 import numpy as np
 
-from lhe_parser import EventFile
+
+# madgraph imports
+sys.path.append('~/MG5_aMC_v2_9_16')
+try:
+    from madgraph.various.lhe_parser import EventFile
+except ModuleNotFoundError:
+    print('Madgraph was not found in PATH or in docker /tf/madgraph/MG5_aMC_v2_9_16 dir \n can be added temporarily with sys.path.append(\'path/to/madgraph\')')
+
 
 cfg = open("Makefile.inc")
 lib = "../lib"
