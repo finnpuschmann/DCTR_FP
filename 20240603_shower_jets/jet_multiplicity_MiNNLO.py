@@ -54,16 +54,18 @@ pythia.readString("Beams:frameType = 4") # read info from a LHEF
 pythia.readString(f'Beams:LHEF = {lhe_file}') # the LHEF to read from
 print(f'Using LHE File: {lhe_file}')
 
-# Veto Settings # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8PowhegEmissionVetoSettings_cfi.py
-pythia.readString("SpaceShower:pTmaxMatch = 2")
-pythia.readString("TimeShower:pTmaxMatch = 2")
+# Veto Settings # # Veto Settings # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8PowhegEmissionVetoSettings_cfi.py
+pythia.readString("SpaceShower:pTmaxMatch = 1")
+pythia.readString("TimeShower:pTmaxMatch = 1")
 
+'''
 pythia.readString('POWHEG:veto = 1')
 pythia.readString('POWHEG:pTdef = 1')
 pythia.readString('POWHEG:emitted = 0')
 pythia.readString('POWHEG:pTemt = 0')
 pythia.readString('POWHEG:pThard = 0')
 pythia.readString('POWHEG:vetoCount = 100')
+'''
 
 # CP5 tune # https://github.com/cms-sw/cmssw/blob/1234e950f3ee35b6f39abdeba60b2d1a53c0c891/Configuration/Generator/python/MCTunes2017/PythiaCP5Settings_cfi.py#L4
 pythia.readString("Tune:pp = 14")
@@ -90,16 +92,19 @@ pythia.readString("PDF:pSet = 20")
 pythia.readString("HadronLevel:all = on")
 
 # Common settings CFI # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8CommonSettings_cfi.py
-pythia.readString('Tune:preferLHAPDF = 2')
-pythia.readString('Main:timesAllowErrors = 10000')
-pythia.readString('Check:epTolErr = 0.01')
-pythia.readString('Beams:setProductionScalesFromLHEF = off') # possibly incorrect according to Simone
-pythia.readString('SLHA:minMassSM = 1000.')
-pythia.readString('ParticleDecays:limitTau0 = on')
-pythia.readString('ParticleDecays:tau0Max = 10')
-pythia.readString('ParticleDecays:allowPhotonRadiation = on')
+
+# pythia.readString('Tune:preferLHAPDF = 2')
+# pythia.readString('Main:timesAllowErrors = 10000')
+# pythia.readString('Check:epTolErr = 0.01')
+# pythia.readString('Beams:setProductionScalesFromLHEF = off')
+# pythia.readString('SLHA:minMassSM = 1000.')
+# pythia.readString('ParticleDecays:limitTau0 = on')
+# pythia.readString('ParticleDecays:tau0Max = 10')
+# pythia.readString('ParticleDecays:allowPhotonRadiation = on')
+
 
 ### Additional parameters
+
 pythia.readString("ParticleDecays:limitTau = on")
 pythia.readString("ParticleDecays:tauMax = 10")
 pythia.readString("6:onMode = on")
@@ -107,12 +112,16 @@ pythia.readString("-6:onMode = on")
 pythia.readString("StringZ:rFactB = 0.855")
 pythia.readString("Main:timesAllowErrors = 500")
 pythia.readString("PartonLevel:MPI = on")
-pythia.readString("24:mayDecay = on")
+pythia.readString("HadronLevel:all = on")
 pythia.readString("Random:setSeed = on")
-pythia.readString("Random:seed = 2")
+pythia.readString("Random:seed = 1")
 
 # MiNNLO parameter
 pythia.readString("SpaceShower:dipoleRecoil = on")
+
+# Initialize, incoming pp beams are default.
+pythia.init()
+
 
 # Initialize, incoming pp beams are default.
 pythia.init()
