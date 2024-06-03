@@ -28,8 +28,6 @@ for line in cfg:
 sys.path.insert(0, lib)
 
 
-
-
 # parse cli arguments
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="How many events to shower and get jets for")
@@ -46,45 +44,16 @@ else:
 
 # import pdb to debug
 import pdb
-
-# Import the Pythia module.
-import pythia8
-pythia = pythia8.Pythia()
-
-lhe_file = f'/nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/Test/Results{LHE}/pwgevents.lhe'
-
-pythia.readString("Beams:frameType = 4") # read info from a LHEF
-pythia.readString(f"Beams:LHEF = {lhe_file}") # the LHEF to read from
-print(f'Using LHE File: {lhe_file}')
-
-
-
-# parse cli arguments
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="How many events to shower and get jets for")
-    # LHE arg
-    # parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 100. Default = '100'", type = str, default = '100')
-    # NUM arg
-    parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 100000", type = int, default = 100000)
-    args = parser.parse_args()
-    # LHE = args.lhe
-    NUM = args.num
-else:
-    # LHE = '100'
-    NUM = 100000
-
-# import pdb to debug
-import pdb
 import uproot_methods
 
 # Import the Pythia module.
 import pythia8
 pythia = pythia8.Pythia()
 
-lhe_file = f'/nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/dileptoninc/pwgevents.lhe'
+lhe_file = f'/nfs/dust/cms/user/vaguglie/converterLHEfiles/MiNNLO_rew/hvq/13TeV_v2/filtered_output.lhe'
 
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
-pythia.readString(f'Beams:LHEF = {lhe_file}') # the LHEF to read from
+pythia.readString(f"Beams:LHEF = {lhe_file}") # the LHEF to read from
 print(f'Using LHE File: {lhe_file}')
 
 # Veto Settings # # Veto Settings # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8PowhegEmissionVetoSettings_cfi.py
@@ -192,8 +161,6 @@ for i, event in enumerate(lhe):
 if len(wgts_list) <= N:
     N = len(lhe)
 
-k_events = 0 # counter for events chosen after filtering
-
 
 def is_neutrino(particle_id):
     # IDs for neutrini in PDG (Particle Data Group) notation
@@ -201,22 +168,10 @@ def is_neutrino(particle_id):
     return particle_id in neutrino_ids
 
 
-
 for iEvent in range(N):
     if not pythia.next():
         continue
     # showering
-    neutrino_count = 0
-    
-    # dileptonic decays only! Count number of neutrinos
-    for particle in pythia.event:
-        if is_neutrino(particle.pid):
-            neutrino_count += 1
-
-    if neutrino_count != 2:
-        continue
-    
-    k_events += 1
     partVec = []
     TT = []
     top = None
@@ -278,12 +233,12 @@ pythia.stat()
 
 # save shower
 P0 = np.array(P0)
-np.save(f'./output/hvq/converted_lhe_hvq_dileptonic.npy', P0)
+np.save(f'./output/hvq/converted_lhe_hvq_all_decays_filtered.npy', P0)
 print(f'{np.shape(P0) = }')
 
 # save multiplicity and jet observables
-np.save(f'./output/hvq/jet_multiplicity_hvq_dileptonic.npy', nJets)
+np.save(f'./output/hvq/jet_multiplicity_hvq_all_decays_filtered..npy', nJets)
 print(f'{np.shape(nJets) = }')
 
-np.save(f'./output/hvq/jet_4vectors_hvq_dileptonic.npy', jets_4vectors)
+np.save(f'./output/hvq/jet_4vectors_hvq_all_decays_filtered..npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
