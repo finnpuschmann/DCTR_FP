@@ -237,8 +237,8 @@ np.save(f'./output/hvq/converted_lhe_hvq_all_decays_filtered.npy', P0)
 print(f'{np.shape(P0) = }')
 
 # save multiplicity and jet observables
-np.save(f'./output/hvq/jet_multiplicity_hvq_all_decays_filtered..npy', nJets)
+np.save(f'./output/hvq/jet_multiplicity_hvq_all_decays_filtered.npy', nJets)
 print(f'{np.shape(nJets) = }')
 
-np.save(f'./output/hvq/jet_4vectors_hvq_all_decays_filtered..npy', jets_4vectors)
+np.save(f'./output/hvq/jet_4vectors_hvq_all_decays_filtered.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
