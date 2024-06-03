@@ -184,8 +184,10 @@ lhe = EventFile(lhe_file)
 
 # check that number of events in lhe file is >= N, since there were missmathces in the past
 wgts_list = []
-for event in lhe:
+for i, event in enumerate(lhe):
     wgts_list.append(event.wgt)
+    if i >= N:
+        break
 
 if len(wgts_list) <= N:
     N = len(lhe)
