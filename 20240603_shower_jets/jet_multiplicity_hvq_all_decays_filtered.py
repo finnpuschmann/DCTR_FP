@@ -32,14 +32,14 @@ sys.path.insert(0, lib)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="How many events to shower and get jets for")
     # LHE arg
-    parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 100. Default = '100'", type = str, default = '100')
+    # parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 100. Default = '100'", type = str, default = '100')
     # NUM arg
     parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 100000", type = int, default = 100000)
     args = parser.parse_args()
-    LHE = args.lhe
+    # LHE = args.lhe
     NUM = args.num
 else:
-    LHE = '100'
+    # LHE = '100'
     NUM = 100000
 
 # import pdb to debug
