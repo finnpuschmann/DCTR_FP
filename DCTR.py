@@ -1367,7 +1367,7 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
         n = np.append(n, n[-1]) # extend array by repeating last element for plotting
         n_list.append(n)
     
-    
+
     # Create figure with two subplots
     fig, axes = plt.subplots(nrows=2, figsize=figsize, gridspec_kw={'height_ratios': [2, 1]})
     fig.tight_layout(pad=1)
@@ -1471,8 +1471,152 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
     part.replace('}', '') # remove LaTeX curly brackets
 
     plt.savefig(f'{save_folder}/{save_prefix}_{obs}_{part}.pdf')
+
+    # save histograms and uncertainties for easier plotting in the future, without reacalculating hists
+    if density is True:
+        out_hists = [n_list, uncert_nrm_list, bin_edges]
+    else:
+        out_hists = [dense_list, uncert_nrm_list, bin_edges]
+    out_hists = np.array(out_hists, dtype=object)
+    np.save(f'{save_folder}/{save_prefix}_{obs}_{part}_histograms.npy', out_hists)
+
     plt.show()
 
+    return out_hists
+
+
+def plot_ratio_cms_from_hists(in_hists, labels, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', hep_text = 'Simulation Preliminary', center_mass_energy = '(13 TeV)', part_label=None, arg_label=None, unit=None, inv_unit=None, save_prefix = 'plot'):
+
+    try:
+        n_list, uncert_nrm_list, bin_edges = in_hists
+    except:
+        print('in_hists not in right form. Needs to be in_hists = [n_list, uncert_nrm_list, bin_edges]')
+        return
+    
+    # make sure each hist has a label
+    assert len(labels) == len(n_list), 'differnt number of labels and histograms!'
+
+    # different order then plot_ratio_cms() functions, for easier looping # swapped 10a and 11a
+    plt_style_10a = {'color':'black', 'linewidth':3, 'linestyle':'-'} #', 'density':True, 'histtype':'step'}
+    plt_style_11a = {'color':'Green', 'linewidth':3, 'linestyle':'--'} #, 'density':True, 'histtype':'step'}
+    plt_style_12a = {'color':'#FC5A50', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
+    plt_style_13a = {'color':'blue', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
+
+
+    # binning: prio: passed bins, calculated bins from quantiles, linear bins from start, stop, div
+    start = copy(bin_edges[0])
+    stop = copy(bin_edges[-1])
+    div = len(bin_edges)
+
+    # Create figure with two subplots
+    fig, axes = plt.subplots(nrows=2, figsize=figsize, gridspec_kw={'height_ratios': [2, 1]})
+    fig.tight_layout(pad=1)
+
+    # First subplot
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.0
+
+    ratio_list = []
+
+    for i, label in enumerate(labels):
+        if i == 0:
+            axes[0].step(bin_edges, n_list[i], label = label, where='post', **plt_style_10a)
+        elif i % 3 == 0:
+            axes[0].step(bin_edges, n_list[i], label = label, where='post', **plt_style_13a)
+        elif i % 2 == 0:
+            axes[0].step(bin_edges, n_list[i], label = label, where='post', **plt_style_12a)
+        else:
+            axes[0].step(bin_edges, n_list[i], label = label, where='post', **plt_style_11a)
+
+        # Calculate the ratios of histograms
+        ratio = n_list[i] / n_list[0] # comparing to first passed hist
+        ratio_list.append(ratio)
+    
+    # labels and titles
+    make_legend(axes[0], pythia_text)
+
+    if part_label is None:
+        part = particles.get(part_index)
+    else:
+        part = part_label
+
+    if arg_label is None:
+        obs = args_dict.get(arg_index)
+    else:
+        obs = arg_label
+    
+    if unit is None:
+        inv_unit = inverse_units.get(arg_index)
+        unit = args_units.get(arg_index)
+    else:
+        inv_unit = inv_unit
+        unit = unit
+    
+    # Constructing the label using Python string formatting
+    label = r'$1$/$\sigma \frac{d\sigma}{d %s(%s)}$ %s' % (obs, part, inv_unit)
+
+    axes[0].set_ylabel(label)
+
+    if y_scale == 'log':
+        axes[0].set_yscale('log')
+    else: 
+        axes[0].set_ylim(bottom=0)
+    axes[0].grid(True)
+
+    # Second subplot
+    for i, label in enumerate(labels):
+        if i == 0:
+            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], **plt_style_10a)
+            axes[1].plot([start, stop], [1,1], label=label, **plt_style_10a)
+        elif i % 3 == 0:
+            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], **plt_style_13a)
+            axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, **plt_style_13a)
+        elif i % 2 == 0:
+            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], **plt_style_12a)
+            axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, **plt_style_12a)
+        else:
+            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], **plt_style_11a)
+            axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, **plt_style_11a)    
+
+    
+    axes[1].set_xlabel(fr'${obs}({part}){unit}$')
+    axes[1].set_ylabel(f'Ratio(/NNLO)')
+    axes[1].grid(True)
+
+    # print(f'uncertainty NLO: {uncert_nrm_list[0]}')
+    
+    plt.subplots_adjust(hspace=0.2)
+    plt.subplots_adjust(left=0.2, right=0.95, bottom=0.1, top=0.95)
+    axes[1].set_ylim(ratio_ylim)
+
+    axes[0].set_xlim([start,stop])
+    axes[1].set_xlim([start,stop])
+    axes[1].legend(fontsize=13)
+
+    #hep.cms.label(ax=axes[0], data=False, paper=False, lumi=None, fontsize=20, loc=0)
+    hep.cms.text(hep_text, loc=0, fontsize=20, ax=axes[0])
+    axes[0].text(1.0, 1.05, center_mass_energy, ha="right", va="top", fontsize=20, transform=axes[0].transAxes)
+
+    # Save the figure
+    if part_index == 0:
+        save_folder = './plots/tt-pair'
+    elif part_index == 1:
+        save_folder = './plots/top'
+    else:
+        save_folder = './plots/anti-top'
+    # make save_folder directory, if it does not exist
+    os.makedirs(save_folder, exist_ok=True) 
+
+    # adjust strings for named files
+    obs.replace('\\', '') # Literal backslash
+    obs.replace('{', '') # remove LaTeX curly brackets
+    obs.replace('}', '') # remove LaTeX curly brackets
+    part.replace('\\', '') #  backslash
+    part.replace('{', '') # remove LaTeX curly brackets
+    part.replace('}', '') # remove LaTeX curly brackets
+
+    plt.savefig(f'{save_folder}/{save_prefix}_{obs}_{part}.pdf')
+
+    plt.show()
 
 
 def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '(13 TeV)', part_label=None, arg_label=None, unit=None, inv_unit=None, save_prefix = 'plot'):
