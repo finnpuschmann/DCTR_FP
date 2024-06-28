@@ -2002,3 +2002,83 @@ def plot_ratio_cms_2(args, arg_index = 0, part_index = 0, title = None, x_label 
 
     plt.savefig(f'{save_folder}/{save_prefix}_{obs}_{part}.pdf')
     plt.show()
+
+
+# covariance matrix using weighted samples
+def weighted_cov(data, weights):
+    # print(f'{np.shape(data) = }')
+
+    # Calculate weighted mean
+    weighted_mean = np.average(data, axis=0, weights=weights)
+    # print(f'{np.shape(weighted_mean) = }')
+    # print(f'{weighted_mean = }')
+
+    # Calculate centered data
+    centered_data = data - weighted_mean
+    # print(f'{np.shape(centered_data) = }')
+
+    # Calculate weighted covariance matrix
+    vars = len(data[0,:]) # num of variables per sample
+    weighted_covariance = np.zeros(shape=(vars, vars))
+    for i in range(vars):
+        for j in range(vars):
+            weighted_covariance[i, j] = np.sum(
+                weights * centered_data[:,i] * centered_data[:,j]) / np.sum(weights)
+
+    return weighted_covariance
+    
+
+# correlation matrix using weighted samples
+def weighted_corr(data, weights):
+    cov = weighted_cov(data, weights)
+
+    # Calculate diagonal matrix for standard deviations
+    std_dev = np.sqrt(np.diag(cov))
+    std_dev_matrix = np.outer(std_dev, std_dev)
+
+    # Calculate correlation matrix
+    weighted_correlation = cov / std_dev_matrix
+
+    return weighted_correlation
+    
+
+def plot_square_matrix_heatmap(matrix, title, variable_labels = None, vmin=None, vmax=None, savefig = './plots/up/matrix.pdf'):
+    
+    import matplotlib.patheffects as pe
+
+    font = {'size'   : 14}
+    rc('font', **font)
+
+    assert len(matrix[0,:]) == len(matrix[:,0]), 'matrix is not square'
+    
+    if variable_labels is not None:
+        assert len(variable_labels) == len(matrix[0, :]), 'length of variable_labels does not match the dimension of the square matrix'
+    else:
+        variable_labels = np.arange(1, len(matrix) + 1) # Labels for variables is bin number
+    
+    figsize = (max(8, (matrix.shape[1]+1)*0.9), max(7, matrix.shape[0])*0.9)
+    plt.figure(figsize=figsize)
+    
+    if vmin is not None and vmax is not None:
+        plt.matshow(matrix, cmap='viridis', vmin=vmin, vmax=vmax, fignum=1, aspect='auto')  # Set colormap limits if specified
+    else:
+        plt.matshow(matrix, cmap='viridis', fignum=1, aspect='auto')  # Default behavior with automatic colormap limits
+
+    plt.colorbar()  # Add colorbar to show scale
+    plt.title(title)  # Set the title of the plot
+    
+    # Add annotations to show values in the heatmap
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
+            plt.text(j, i, f'{matrix[i, j]:.3f}', ha='center', va='center', color='black',  path_effects=[pe.withStroke(linewidth=2, foreground="white")])
+
+    # Label x-axis with variable names
+    plt.xticks(ticks=np.arange(len(variable_labels)), labels=variable_labels)
+    plt.xlabel('bin number')  # Label x-axis
+
+    # Label y-axis with variable names
+    plt.yticks(ticks=np.arange(len(variable_labels)), labels=variable_labels)
+    plt.ylabel('bin number')  # Label y-axis
+
+    plt.savefig(savefig)
+    plt.show()

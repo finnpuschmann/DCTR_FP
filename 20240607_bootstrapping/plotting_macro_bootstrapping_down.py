@@ -6,11 +6,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
 import mplhep as hep
+import matplotlib.patheffects as pe
 
 # all functions and methods defined here are also defined in DCTR.py
 # defined again here, so that this script can run with only
 # matplotlib, numpy, copy and mplhep as dependencies
-# plotting settings and help functions
 
 def make_legend(ax, title):
     leg = ax.legend(frameon=False)
@@ -18,15 +18,16 @@ def make_legend(ax, title):
     leg._legend_box.align = "left"
     plt.tight_layout()
 
-
-
-def plot_ratio_bootstrapped(in_hists, ratio_ylim=[0.80, 1.20],
-        pythia_text = r'$POWHEG \; pp \to  t\bar{t}$', hep_text = 'Simulation Preliminary'):
+def plot_ratio_bootstrapped(in_hists, hist_list, label_list, 
+        ratio_ylim=[0.80, 1.20], denominator = 'Up', 
+        pythia_text = r'$POWHEG \; pp \to t\bar{t}$',
+        hep_text = 'Simulation Preliminary', 
+        save_prefix = '40M_50iter'):
 
     try:
-        n_list, std_hist, bins = in_hists
+        n_list, ratio_std, bin_edges = in_hists
     except:
-        print('in_hists not in right form. Needs to be in_hists = [n_list, std_hist, bin_edges]')
+        print('in_hists not in right form. Needs to be in_hists = [n_list, ratio_std, bin_edges]')
         return
 
     # make sure each hist has a label
@@ -47,6 +48,8 @@ def plot_ratio_bootstrapped(in_hists, ratio_ylim=[0.80, 1.20],
 
     # First subplot
     bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.0
+    start = bin_edges[0]
+    stop  = bin_edges[-1]
 
     ratio_list = []
 
@@ -64,115 +67,6 @@ def plot_ratio_bootstrapped(in_hists, ratio_ylim=[0.80, 1.20],
         ratio = n_list[i] / n_list[0] # comparing to first passed hist
         ratio_list.append(ratio)
 
-    # labels and titles
-    make_legend(axes[0], pythia_text)
-
-    # Calculate the ratios of histograms
-    ratio_0 = target_hist / target_hist
-    ratio_1 = mean_hist / target_hist
-    ratio_std = std_hist / mean_hist
-    ratio_2 = nominal_hist / target_hist
-    ratio_3 = paper_hist / target_hist
-
-
-    make_legend(axes[0], pythia_text)
-    obs = r'p_{T}'
-    part = r't\bar{t}'
-    unit =r' [GeV]'
-    inv_unit = r' [GeV$^{-1}$]'
-    start = bins[0]
-    stop = bins[-1]
-
-    # Constructing the label using Python string formatting
-    label = r'$1$/$\sigma \frac{d\sigma}{d %s(%s)}$ %s' % (obs, part, inv_unit)
-
-    axes[0].set_ylabel(label)
-    axes[0].set_yscale('log')
-    axes[0].grid(True)
-
-    # Second subplot
-
-    axes[1].plot([start, stop], [1,1], '-', color='black',  linewidth=3, label='Up')
-    for hist in hist_list:
-        axes[1].plot(bin_centers, hist/target_hist[:-1], linewidth=1, alpha = 0.3, color = 'grey')
-    axes[1].plot(bin_centers, ratio_2[:-1], label='Nominal', **plt_style_10a)
-    axes[1].plot(bin_centers, ratio_1[:-1], label = 'Reweighted Up (mean)', **plt_style_12a)
-    axes[1].fill_between(bin_centers, (ratio_1*(1+ratio_std))[:-1], (ratio_1*(1-ratio_std))[:-1], color='#FC5A50', alpha = 0.5, label = 'Reweighted Up (std)') 
-
-    # axes[1].plot(bin_centers, ratio_3[:-1], label='rwgt valentina', **plt_style_13a)
-
-    axes[1].set_xlabel(fr'${obs}({part}){unit}$')
-    axes[1].set_ylabel(f'Ratio(/Up)')
-    axes[1].grid(True)
-
-    # print(f'uncertainty NLO: {uncert_nrm_list[0]}')
-
-    plt.subplots_adjust(hspace=0.2)
-    plt.subplots_adjust(left=0.2, right=0.95, bottom=0.1, top=0.95)
-    axes[1].set_ylim(ratio_ylim)
-
-    axes[0].set_xlim([start,stop])
-    axes[1].set_xlim([start,stop])
-    axes[1].legend(fontsize=13)
-
-    #hep.cms.label(ax=axes[0], data=False, paper=False, lumi=None, fontsize=20, loc=0)
-    hep.cms.text(hep_text, loc=0, fontsize=20, ax=axes[0])
-    axes[0].text(1.0, 1.05, '(13 TeV)', ha="right", va="top", fontsize=20, transform=axes[0].transAxes)
-
-    plt.savefig('./plots/up/40M_50iter_pt_tt_10bin.pdf')
-    # plt.show()
-
-
-
-
-def plot_ratio_cms_from_hists(
-    in_hists, label_list, arg_index = 0, part_index = 0,
-    ratio_ylim=[0.9,1.1], pythia_text = r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-    figsize=(8,10), y_scale=None, hep_text = 'Simulation Preliminary', center_mass_energy = '(13 TeV)',
-    part_label=None, arg_label=None, unit=None, inv_unit=None, save_prefix = 'plot'):
-
-    try:
-        n_list, uncert_nrm_list, bin_edges = in_hists
-    except:
-        print('in_hists not in right form. Needs to be in_hists = [n_list, uncert_nrm_list, bin_edges]')
-        return
-
-    # make sure each hist has a label
-    assert len(label_list) == len(n_list), 'differnt number of labels and histograms!'
-
-    # different order then plot_ratio_cms() functions, for easier looping # swapped 10a and 11a
-    plt_style_10a = {'color':'black',   'linestyle':'-' }
-    plt_style_11a = {'color':'Green',   'linestyle':'--'}
-    plt_style_12a = {'color':'#FC5A50', 'linestyle':':' }
-    plt_style_13a = {'color':'blue',    'linestyle':':' }
-
-
-    # binning: prio: passed bins, calculated bins from quantiles, linear bins from start, stop, div
-    start = copy(bin_edges[0])
-    stop = copy(bin_edges[-1])
-
-    # Create figure with two subplots
-    fig, axes = plt.subplots(nrows=2, figsize=figsize, gridspec_kw={'height_ratios': [2, 1]})
-    fig.tight_layout(pad=1)
-
-    # First subplot
-    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.0
-
-    ratio_list = []
-
-    for i, label in enumerate(label_list):
-        if i == 0:
-            axes[0].step(bin_edges, n_list[i], label = label, where='post', linewidth=3, **plt_style_10a)
-        elif i % 3 == 0:
-            axes[0].step(bin_edges, n_list[i], label = label, where='post', linewidth=3, **plt_style_13a)
-        elif i % 2 == 0:
-            axes[0].step(bin_edges, n_list[i], label = label, where='post', linewidth=3, **plt_style_12a)
-        else:
-            axes[0].step(bin_edges, n_list[i], label = label, where='post', linewidth=3, **plt_style_11a)
-
-        # Calculate the ratios of histograms
-        ratio = n_list[i] / n_list[0] # comparing to first passed hist
-        ratio_list.append(ratio)
 
     # labels and titles
     make_legend(axes[0], pythia_text)
@@ -207,22 +101,22 @@ def plot_ratio_cms_from_hists(
 
     # Second subplot
     for i, label in enumerate(label_list):
-        if i == 0:
-            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], linewidth=1.5, **plt_style_10a)
+        if i == 0:       # 0 | target
             axes[1].plot([start, stop], [1,1], label=label, linewidth=2, **plt_style_10a)
-        elif i % 3 == 0:
-            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], linewidth=1.5, **plt_style_13a)
+        elif i % 3 == 0: # 3, 6, 9, ...
             axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=2, **plt_style_13a)
-        elif i % 2 == 0:
-            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], linewidth=1.5, **plt_style_12a)
+        elif i % 2 == 0: # 2, 4, 8, ...
             axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=2, **plt_style_12a)
-        else:
-            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], linewidth=1.5, **plt_style_11a)
-            axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=2, **plt_style_11a)
-
-
+        elif i == 1:     # 1 meann
+            axes[1].plot(bin_centers, ratio_list[i][:-1], label = f'{label} + (mean)', linewidth=2, **plt_style_11a)
+            axes[1].fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.6, label = f'{label} (std)', **plt_style_11a) 
+    
+    # plot all resulting hists in hist_list faintly
+    for hist in hist_list:
+        axes[1].plot(bin_centers, hist/target_hist[:-1], linewidth=1, alpha = 0.3, color = 'grey')
+    
     axes[1].set_xlabel(fr'${obs}({part}){unit}$')
-    axes[1].set_ylabel('Ratio(/NNLO)')
+    axes[1].set_ylabel(f'Ratio(/{denominator})')
     axes[1].grid(True)
 
     # print(f'uncertainty NLO: {uncert_nrm_list[0]}')
@@ -251,9 +145,87 @@ def plot_ratio_cms_from_hists(
     # adjust strings for named files
     obs = obs.replace('\\', '').replace('{', '').replace('}', '').replace('_','').replace(' ','-').lower()
     part = part.replace('\\', '').replace('{', '').replace('}', '').replace('bar', '').lower()
+    denominator = denominator.lower()
 
-    plt.savefig(f'{save_folder}/{save_prefix}_{obs}_{part}.pdf')
+    plt.savefig(f'{save_folder}/{denominator}/{save_prefix}_{obs}_{part}.pdf')
     # plt.show()
+
+
+# covariance matrix using weighted samples
+def weighted_cov(data, weights):
+    # print(f'{np.shape(data) = }')
+
+    # Calculate weighted mean
+    weighted_mean = np.average(data, axis=0, weights=weights)
+    # print(f'{np.shape(weighted_mean) = }')
+    # print(f'{weighted_mean = }')
+
+    # Calculate centered data
+    centered_data = data - weighted_mean
+    # print(f'{np.shape(centered_data) = }')
+
+    # Calculate weighted covariance matrix
+    vars = len(data[0,:]) # num of variables per sample
+    weighted_covariance = np.zeros(shape=(vars, vars))
+    for i in range(vars):
+        for j in range(vars):
+            weighted_covariance[i, j] = np.sum(
+                weights * centered_data[:,i] * centered_data[:,j]) / np.sum(weights)
+
+    return weighted_covariance
+
+
+# correlation matrix using weighted samples
+def weighted_corr(data, weights):
+    cov = weighted_cov(data, weights)
+
+    # Calculate diagonal matrix for standard deviations
+    std_dev = np.sqrt(np.diag(cov))
+    std_dev_matrix = np.outer(std_dev, std_dev)
+
+    # Calculate correlation matrix
+    weighted_correlation = cov / std_dev_matrix
+
+    return weighted_correlation
+
+
+def plot_square_matrix_heatmap(matrix, title, variable_labels = None, vmin=None, vmax=None, savefig = './plots/up/matrix.pdf'):
+    font = {'size'   : 14}
+    rc('font', **font)
+
+    assert len(matrix[0,:]) == len(matrix[:,0]), 'matrix is not square'
+    
+    if variable_labels is not None:
+        assert len(variable_labels) == len(matrix[0, :]), 'length of variable_labels does not match the dimension of the square matrix'
+    else:
+        variable_labels = np.arange(1, len(matrix) + 1) # Labels for variables is bin number
+    
+    figsize = (max(8, (matrix.shape[1]+1)*0.9), max(7, matrix.shape[0])*0.9)
+    plt.figure(figsize=figsize)
+    
+    if vmin is not None and vmax is not None:
+        plt.matshow(matrix, cmap='viridis', vmin=vmin, vmax=vmax, fignum=1, aspect='auto')  # Set colormap limits if specified
+    else:
+        plt.matshow(matrix, cmap='viridis', fignum=1, aspect='auto')  # Default behavior with automatic colormap limits
+
+    plt.colorbar()  # Add colorbar to show scale
+    plt.title(title)  # Set the title of the plot
+    
+    # Add annotations to show values in the heatmap
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
+            plt.text(j, i, f'{matrix[i, j]:.3f}', ha='center', va='center', color='black',  path_effects=[pe.withStroke(linewidth=2, foreground="white")])
+
+    # Label x-axis with variable names
+    plt.xticks(ticks=np.arange(len(variable_labels)), labels=variable_labels)
+    plt.xlabel('bin number')  # Label x-axis
+
+    # Label y-axis with variable names
+    plt.yticks(ticks=np.arange(len(variable_labels)), labels=variable_labels)
+    plt.ylabel('bin number')  # Label y-axis
+
+    plt.savefig(savefig)
+    plt.show()
 
 
 # plot hists
@@ -298,6 +270,15 @@ if __name__ == '__main__':
     # hists = [hist_list, uncert_nrm_list, bin_edges]
     # where each _list contains an entry for each label in label_list
 
+
+    # TODO !!!
+    # Adjust for Bootstrapping plots, including corr matrices
+
+
+
+
+
+    # EXAMPLE from plotting macro for regular epochs
     # top plots
     # p_t(t) log binning
     name = 'showered_log_0800_31'
@@ -309,199 +290,4 @@ if __name__ == '__main__':
         pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
         save_prefix = name)
 
-    # eta(t) +/- 8
-    name = 'showered_lin_pm8_31'
-    hists_eta_top = np.load(f'./plots/top/{name}_eta_t_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_eta_top, label_list,
-        arg_index=4, part_index=1,
-        y_scale='log', ratio_ylim=[0.90, 1.10],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-    # m(t)
-    name = 'showered_lin_min-max_32'
-    hists_m_top = np.load(f'./plots/top/{name}_m_t_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_m_top, label_list,
-        arg_index=3, part_index=1,
-        y_scale='log', ratio_ylim=[0.90, 1.10],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-
-    # tt-pair plots
-    # p_t(tt) log binning
-    name = 'showered_log_1000_50'
-    hists_pt_tt = np.load(f'./plots/tt-pair/{name}_pt_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_pt_tt, label_list,
-        arg_index=0, part_index=0,
-        y_scale='log', ratio_ylim=[0.80, 1.20],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-    # eta(tt) +/- 8
-    name = 'showered_lin_pm8_31'
-    hists_eta_tt = np.load(f'./plots/tt-pair/{name}_eta_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_eta_tt, label_list,
-        arg_index=0, part_index=0,
-        y_scale='log', ratio_ylim=[0.80, 1.20],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-    # delta phi
-    name = 'showered_lin_pi_31'
-    hists_delta_phi_tt = np.load(f'./plots/tt-pair/{name}_delta-phi_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_delta_phi_tt, label_list,
-        arg_index=0, part_index=0,
-        y_scale='log', ratio_ylim=[0.90, 1.10],
-        part_label=r't \bar{t}', arg_label=r'\Delta \phi', unit='[rad]', inv_unit='[rad$^{-1}$]',
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-    # m(tt) lin min(X1[:,])-> 1500
-    name = 'showered_lin_min-1500_31'
-    hists_m_tt = np.load(f'./plots/tt-pair/{name}_m_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_m_tt, label_list,
-        arg_index=3, part_index=0,
-        y_scale='log', ratio_ylim=[0.90, 1.10],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-
-    # m(tt) lin min(X1[:,])-> 1000
-    name = 'showered_lin_min-1000_31'
-    hists_m_tt = np.load(f'./plots/tt-pair/{name}_m_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_m_tt, label_list,
-        arg_index=3, part_index=0,
-        y_scale='log', ratio_ylim=[0.90, 1.10],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-
-    # log min(X1[:,])-> 1000
-    name = 'showered_log_min-1000_31'
-    hists_m_tt = np.load(f'./plots/tt-pair/{name}_m_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_m_tt, label_list,
-        arg_index=3, part_index=0,
-        y_scale='log', ratio_ylim=[0.90, 1.10],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-
-    # bin rwgt
-    # setup args for plotting
-    label_list_bin_rwgt = [
-        'NNLO (MiNNLO)',
-        'NLO (hvq)',
-        'DCTR Reweighted NNLO',
-        '2D Bin Reweighted NNLO'
-        ]
-
-    ### with m(tt) and pt(t)
-    # m(tt) min(X1[:,])
-    name = 'bin_reweighter_m-tt_pt-t'
-    hists_bins_m_tt = np.load(f'./plots/tt-pair/{name}_m_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_bins_m_tt, label_list_bin_rwgt,
-        arg_index=3, part_index=0,
-        y_scale='log', ratio_ylim=[0.85, 1.15],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-    # p_t(t) log binning
-    name = 'bin_reweighter_m-tt_pt-t'
-    hists_bins_pt_t = np.load(f'./plots/top/{name}_pt_t_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_bins_pt_t, label_list_bin_rwgt,
-        arg_index=0, part_index=1,
-        y_scale='log', ratio_ylim=[0.80, 1.20],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-    # p_t(tt) log binning
-    hists_bins_pt_tt = np.load(f'./plots/tt-pair/{name}_pt_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_bins_pt_tt, label_list_bin_rwgt,
-        arg_index=0, part_index=0,
-        y_scale='log', ratio_ylim=[0.80, 1.20],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-    # eta(tt)
-    hists_bins_eta_tt = np.load(f'./plots/tt-pair/{name}_eta_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_bins_eta_tt, label_list_bin_rwgt,
-        arg_index=4, part_index=0,
-        y_scale='log', ratio_ylim=[0.90, 1.10],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-
-    ### with pt(tt) and eta(tt)
-    # m(tt) min(X1[:,])
-    name = 'bin_reweighter_pt-tt_eta-tt'
-
-    hists_bins_m_tt = np.load(f'./plots/tt-pair/{name}_m_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_bins_m_tt, label_list_bin_rwgt,
-        arg_index=3, part_index=0,
-        y_scale='log', ratio_ylim=[0.85, 1.15],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-    # p_t(t) log binning
-    hists_bins_pt_t = np.load(f'./plots/top/{name}_pt_t_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_bins_pt_t, label_list_bin_rwgt,
-        arg_index=0, part_index=1,
-        y_scale='log', ratio_ylim=[0.80, 1.20],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-    # p_t(tt) log binning
-    hists_bins_pt_tt = np.load(f'./plots/tt-pair/{name}_pt_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_bins_pt_tt, label_list_bin_rwgt,
-        arg_index=0, part_index=0,
-        y_scale='log', ratio_ylim=[0.80, 1.20],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-    # eta(tt)
-    hists_bins_eta_tt = np.load(f'./plots/tt-pair/{name}_eta_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_bins_eta_tt, label_list_bin_rwgt,
-        arg_index=4, part_index=0,
-        y_scale='log', ratio_ylim=[0.90, 1.10],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name)
-
-
-    ### with same binning as the 2D reweight
-    # p_t(tt)
-    name_same_binning = 'bin_reweighter_pt-tt_eta-tt_same_binning'
-    hists_bins_pt_tt = np.load(f'./plots/tt-pair/{name_same_binning}_pt_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_bins_pt_tt, label_list_bin_rwgt,
-        arg_index=0, part_index=0,
-        y_scale='log', ratio_ylim=[0.80, 1.20],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name_same_binning)
-
-    ### with same binning and samples as the 2D reweight
-    # p_t(tt)
-    name_same_binning_samples = 'bin_reweighter_pt-tt_eta-tt_same_sample_and_binning'
-    hists_bins_pt_tt = np.load(f'./plots/tt-pair/{name_same_binning_samples}_pt_tt_histograms.npy', allow_pickle=True)
-
-    plot_ratio_cms_from_hists(hists_bins_pt_tt, label_list_bin_rwgt,
-        arg_index=0, part_index=0,
-        y_scale='log', ratio_ylim=[0.80, 1.20],
-        pythia_text=r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-        save_prefix = name_same_binning_samples)
+    
