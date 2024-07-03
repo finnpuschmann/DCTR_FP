@@ -18,11 +18,15 @@ import sys
 import argparse
 import numpy as np
 
+# madgraph import
+from madgraph.various.lhe_parser import EventFile
+
 cfg = open("Makefile.inc")
 lib = "../lib"
 for line in cfg:
     if line.startswith("PREFIX_LIB="): lib = line[11:-1]; break
 sys.path.insert(0, lib)
+
 
 # parse cli arguments
 if __name__ == "__main__":
@@ -40,24 +44,30 @@ else:
 
 # import pdb to debug
 import pdb
+import uproot_methods
 
 # Import the Pythia module.
 import pythia8
 pythia = pythia8.Pythia()
+
+lhe_file = f'/nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{LHE}.lhe'
+
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
-pythia.readString(f'Beams:LHEF = /nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{LHE}.lhe') # the LHEF to read from
-print(f'Using LHE File: /nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{LHE}.lhe"')
+pythia.readString(f"Beams:LHEF = {lhe_file}") # the LHEF to read from
+print(f'Using LHE File: {lhe_file}')
 
-# Veto Settings
-pythia.readString("SpaceShower:pTmaxMatch = 2")
-pythia.readString("TimeShower:pTmaxMatch = 2")
+# Veto Settings # # Veto Settings # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8PowhegEmissionVetoSettings_cfi.py
+pythia.readString("SpaceShower:pTmaxMatch = 1")
+pythia.readString("TimeShower:pTmaxMatch = 1")
 
+'''
 pythia.readString('POWHEG:veto = 1')
 pythia.readString('POWHEG:pTdef = 1')
 pythia.readString('POWHEG:emitted = 0')
 pythia.readString('POWHEG:pTemt = 0')
 pythia.readString('POWHEG:pThard = 0')
 pythia.readString('POWHEG:vetoCount = 100')
+'''
 
 # CP5 tune # https://github.com/cms-sw/cmssw/blob/1234e950f3ee35b6f39abdeba60b2d1a53c0c891/Configuration/Generator/python/MCTunes2017/PythiaCP5Settings_cfi.py#L4
 pythia.readString("Tune:pp = 14")
@@ -84,16 +94,19 @@ pythia.readString("PDF:pSet = 20")
 pythia.readString("HadronLevel:all = on")
 
 # Common settings CFI # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8CommonSettings_cfi.py
-pythia.readString('Tune:preferLHAPDF = 2')
-pythia.readString('Main:timesAllowErrors = 10000')
-pythia.readString('Check:epTolErr = 0.01')
-pythia.readString('Beams:setProductionScalesFromLHEF = off') # possibly incorrect according to Simone
-pythia.readString('SLHA:minMassSM = 1000.')
-pythia.readString('ParticleDecays:limitTau0 = on')
-pythia.readString('ParticleDecays:tau0Max = 10')
-pythia.readString('ParticleDecays:allowPhotonRadiation = on')
+
+# pythia.readString('Tune:preferLHAPDF = 2')
+# pythia.readString('Main:timesAllowErrors = 10000')
+# pythia.readString('Check:epTolErr = 0.01')
+# pythia.readString('Beams:setProductionScalesFromLHEF = off')
+# pythia.readString('SLHA:minMassSM = 1000.')
+# pythia.readString('ParticleDecays:limitTau0 = on')
+# pythia.readString('ParticleDecays:tau0Max = 10')
+# pythia.readString('ParticleDecays:allowPhotonRadiation = on')
+
 
 ### Additional parameters
+
 pythia.readString("ParticleDecays:limitTau = on")
 pythia.readString("ParticleDecays:tauMax = 10")
 pythia.readString("6:onMode = on")
@@ -101,12 +114,13 @@ pythia.readString("-6:onMode = on")
 pythia.readString("StringZ:rFactB = 0.855")
 pythia.readString("Main:timesAllowErrors = 500")
 pythia.readString("PartonLevel:MPI = on")
-pythia.readString("24:mayDecay = on")
+pythia.readString("HadronLevel:all = on")
 pythia.readString("Random:setSeed = on")
-pythia.readString("Random:seed = 2")
+pythia.readString(f"Random:seed = {int(LHE)}")
 
 # MiNNLO parameter
 pythia.readString("SpaceShower:dipoleRecoil = on")
+
 
 # Initialize, incoming pp beams are default.
 pythia.init()
@@ -131,7 +145,7 @@ def pseudorapidity(px, py, pz):
 # num events to process
 N = NUM
 max_jets = 20
-theta = 0 # for hvq 
+theta = 0 # for hvq
 
 # Begin event loop. Generate event.
 # Skip if error. List first one.
@@ -154,8 +168,8 @@ for i, event in enumerate(lhe):
         break
 
 if len(wgts_list) <= N:
-    print(f'less then {NUM} events in LHE, using all LHE events')
     N = len(lhe)
+
 
 for iEvent in range(N):
     if not pythia.next():
@@ -233,81 +247,3 @@ print(f'{np.shape(nJets) = }')
 jets_4vectors = np.array(jets_4vectors)
 np.save(f'./output/MiNNLO/jet_4vectors_MiNNLO_{LHE}.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
-
-
-
-
-
-
-
-
-# Define jet clustering parameters
-R = 0.4  # Jet radius
-min_pT = 30.0
-max_eta = 2.4
-jet_def = pythia8.SlowJet(-1, R, min_pT, max_eta)
-
-#pseudrapidity function
-def pseudorapidity(px, py, pz):
-    p = np.sqrt(np.power(px, 2) + np.power(py, 2) + np.power(pz, 2))
-    if (p-pz) == 0.0:
-        raise Exception("Error calculating pseudorapidity (divide by zero)")
-    elif ((p+pz)/(p-pz)) <= 0.0:
-        raise Exception("Error calculating pseudorapidity (log of negative number)")
-    else:
-        pseudorapidity = 0.5*np.log((p+pz)/(p-pz))
-        return pseudorapidity
-
-# num events to process
-N = NUM
-max_jets = 20
-
-# Begin event loop. Generate event.
-# Skip if error. List first one.
-
-# Initialize arrays to store jet multiplicities
-nJets = []
-jets_4vectors = []
-
-for iEvent in range(0, N):
-    if not pythia.next(): 
-        continue
-
-    # jet multiplicity
-    # Find number of jets with given conditions.
-    jet_def.analyze(pythia.event)
-
-    nJet = jet_def.sizeJet()
-    nJets.append(nJet)
-
-    # Extract the 4-vectors for each jet
-    event_jets = []
-    for i in range(max_jets):
-        if i < nJet:
-       	    pT = jet_def.pT(i)
-            p = jet_def.p(i)
-            px = p.px()
-            py = p.py()
-            pz = p.pz()
-            eta = pseudorapidity(px, py, pz)
-            phi = jet_def.phi(i)
-            mass = jet_def.m(i)
-            energy = p.e()
-            rapidity = jet_def.y(i)
-            jet_4vector = [pT, rapidity, phi, mass, eta, energy]
-        else:
-            jet_4vector = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        event_jets.append(jet_4vector)
-
-    jets_4vectors.append(event_jets)
-
-# End of event loop. Statistics. Histogram. Done.
-pythia.stat()
-
-np.save(f'./output/jet_multiplicity_MiNNLO_{LHE}.npy', nJets)
-
-print(np.shape(nJets))
-
-np.save(f'./output/jet_4vectors_MiNNLO_{LHE}.npy', jets_4vectors)
-
-print(np.shape(jets_4vectors))

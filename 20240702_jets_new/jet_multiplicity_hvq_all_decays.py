@@ -244,4 +244,3 @@ print(f'{np.shape(nJets) = }')
 jets_4vectors = np.array(jets_4vectors)
 np.save(f'./output/hvq/jet_4vectors_hvq_all_decays_{LHE}.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
-
