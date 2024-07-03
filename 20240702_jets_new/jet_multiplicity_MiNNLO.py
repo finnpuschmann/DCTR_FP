@@ -50,7 +50,7 @@ import uproot_methods
 import pythia8
 pythia = pythia8.Pythia()
 
-lhe_file = f'/nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{int(LHE):.04d}.lhe'
+lhe_file = f'/nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{int(LHE):04d}.lhe'
 
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
 pythia.readString(f"Beams:LHEF = {lhe_file}") # the LHEF to read from
