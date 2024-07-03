@@ -32,14 +32,14 @@ sys.path.insert(0, lib)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="How many events to shower and get jets for")
     # LHE arg
-    # parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 100. Default = '100'", type = str, default = '100')
+    parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 50. Default = '1'", type = str, default = '1')
     # NUM arg
     parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 100000", type = int, default = 100000)
     args = parser.parse_args()
-    # LHE = args.lhe
+    LHE = args.lhe
     NUM = args.num
 else:
-    # LHE = '100'
+    LHE = '1'
     NUM = 100000
 
 # import pdb to debug
@@ -50,7 +50,7 @@ import uproot_methods
 import pythia8
 pythia = pythia8.Pythia()
 
-lhe_file = f'/nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/dileptoninc/pwgevents.lhe'
+lhe_file = f'/nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/Results{LHE}/pwgevents.lhe'
 
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
 pythia.readString(f"Beams:LHEF = {lhe_file}") # the LHEF to read from
@@ -116,7 +116,7 @@ pythia.readString("Main:timesAllowErrors = 500")
 pythia.readString("PartonLevel:MPI = on")
 pythia.readString("HadronLevel:all = on")
 pythia.readString("Random:setSeed = on")
-pythia.readString("Random:seed = 1")
+pythia.readString(f"Random:seed = {int(LHE)}")
 
 
 # Initialize, incoming pp beams are default.
@@ -142,7 +142,7 @@ def pseudorapidity(px, py, pz):
 # num events to process
 N = NUM
 max_jets = 20
-theta = 0 # for hvq 
+theta = 0 # for hvq
 
 # Begin event loop. Generate event.
 # Skip if error. List first one.
@@ -165,8 +165,8 @@ for i, event in enumerate(lhe):
         break
 
 if len(wgts_list) <= N:
-    print(f'less then {NUM} events in LHE, using all LHE events')
     N = len(lhe)
+
 
 for iEvent in range(N):
     if not pythia.next():
@@ -233,15 +233,15 @@ pythia.stat()
 
 # save shower
 P0 = np.array(P0)
-np.save(f'./output/hvq/converted_lhe_hvq_dileptonic.npy', P0)
+np.save(f'./output/hvq/converted_lhe_hvq_all_decays_{LHE}.npy', P0)
 print(f'{np.shape(P0) = }')
 
 # save multiplicity and jet observables
 nJets = np.array(nJets)
-np.save(f'./output/hvq/jet_multiplicity_hvq_dileptonic.npy', nJets)
+np.save(f'./output/hvq/jet_multiplicity_hvq_all_decays_{LHE}.npy', nJets)
 print(f'{np.shape(nJets) = }')
 
 jets_4vectors = np.array(jets_4vectors)
-np.save(f'./output/hvq/jet_4vectors_hvq_dileptonic.npy', jets_4vectors)
+np.save(f'./output/hvq/jet_4vectors_hvq_all_decays_{LHE}.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
 
