@@ -32,15 +32,15 @@ sys.path.insert(0, lib)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Which LHE File to Open")
     # LHE arg
-    parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 100. Default = '100'", type = str, default = '100')
+    parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 1000. Default = '100'", type = str, default = '1')
     # NUM arg
-    parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 100000", type = int, default = 100000)
+    parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 100000", type = int, default = 10000)
     args = parser.parse_args()
     LHE = args.lhe
     NUM = args.num
 else:
-    LHE = '100'
-    NUM = 100000
+    LHE = '1'
+    NUM = 10000
 
 # import pdb to debug
 import pdb
@@ -50,7 +50,7 @@ import uproot_methods
 import pythia8
 pythia = pythia8.Pythia()
 
-lhe_file = f'/nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{LHE}.lhe'
+lhe_file = f'/nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{int(LHE):.04d}.lhe'
 
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
 pythia.readString(f"Beams:LHEF = {lhe_file}") # the LHEF to read from
