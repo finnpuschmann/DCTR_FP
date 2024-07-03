@@ -18,56 +18,46 @@ import sys
 import argparse
 import numpy as np
 
-# madgraph import
-from madgraph.various.lhe_parser import EventFile
-
 cfg = open("Makefile.inc")
 lib = "../lib"
 for line in cfg:
     if line.startswith("PREFIX_LIB="): lib = line[11:-1]; break
 sys.path.insert(0, lib)
 
-
 # parse cli arguments
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="How many events to shower and get jets for")
+    parser = argparse.ArgumentParser(description="Which LHE File to Open")
     # LHE arg
-    # parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 100. Default = '100'", type = str, default = '100')
+    parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 100. Default = '100'", type = str, default = '100')
     # NUM arg
     parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 100000", type = int, default = 100000)
     args = parser.parse_args()
-    # LHE = args.lhe
+    LHE = args.lhe
     NUM = args.num
 else:
-    # LHE = '100'
+    LHE = '100'
     NUM = 100000
 
 # import pdb to debug
 import pdb
-import uproot_methods
 
 # Import the Pythia module.
 import pythia8
 pythia = pythia8.Pythia()
-
-lhe_file = f'/nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/dileptoninc/pwgevents.lhe'
-
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
-pythia.readString(f"Beams:LHEF = {lhe_file}") # the LHEF to read from
-print(f'Using LHE File: {lhe_file}')
+pythia.readString(f'Beams:LHEF = /nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{LHE}.lhe') # the LHEF to read from
+print(f'Using LHE File: /nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{LHE}.lhe"')
 
-# Veto Settings # # Veto Settings # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8PowhegEmissionVetoSettings_cfi.py
-pythia.readString("SpaceShower:pTmaxMatch = 1")
-pythia.readString("TimeShower:pTmaxMatch = 1")
+# Veto Settings
+pythia.readString("SpaceShower:pTmaxMatch = 2")
+pythia.readString("TimeShower:pTmaxMatch = 2")
 
-'''
 pythia.readString('POWHEG:veto = 1')
 pythia.readString('POWHEG:pTdef = 1')
 pythia.readString('POWHEG:emitted = 0')
 pythia.readString('POWHEG:pTemt = 0')
 pythia.readString('POWHEG:pThard = 0')
 pythia.readString('POWHEG:vetoCount = 100')
-'''
 
 # CP5 tune # https://github.com/cms-sw/cmssw/blob/1234e950f3ee35b6f39abdeba60b2d1a53c0c891/Configuration/Generator/python/MCTunes2017/PythiaCP5Settings_cfi.py#L4
 pythia.readString("Tune:pp = 14")
@@ -94,19 +84,16 @@ pythia.readString("PDF:pSet = 20")
 pythia.readString("HadronLevel:all = on")
 
 # Common settings CFI # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8CommonSettings_cfi.py
-
-# pythia.readString('Tune:preferLHAPDF = 2')
-# pythia.readString('Main:timesAllowErrors = 10000')
-# pythia.readString('Check:epTolErr = 0.01')
-# pythia.readString('Beams:setProductionScalesFromLHEF = off')
-# pythia.readString('SLHA:minMassSM = 1000.')
-# pythia.readString('ParticleDecays:limitTau0 = on')
-# pythia.readString('ParticleDecays:tau0Max = 10')
-# pythia.readString('ParticleDecays:allowPhotonRadiation = on')
-
+pythia.readString('Tune:preferLHAPDF = 2')
+pythia.readString('Main:timesAllowErrors = 10000')
+pythia.readString('Check:epTolErr = 0.01')
+pythia.readString('Beams:setProductionScalesFromLHEF = off') # possibly incorrect according to Simone
+pythia.readString('SLHA:minMassSM = 1000.')
+pythia.readString('ParticleDecays:limitTau0 = on')
+pythia.readString('ParticleDecays:tau0Max = 10')
+pythia.readString('ParticleDecays:allowPhotonRadiation = on')
 
 ### Additional parameters
-
 pythia.readString("ParticleDecays:limitTau = on")
 pythia.readString("ParticleDecays:tauMax = 10")
 pythia.readString("6:onMode = on")
@@ -114,10 +101,12 @@ pythia.readString("-6:onMode = on")
 pythia.readString("StringZ:rFactB = 0.855")
 pythia.readString("Main:timesAllowErrors = 500")
 pythia.readString("PartonLevel:MPI = on")
-pythia.readString("HadronLevel:all = on")
+pythia.readString("24:mayDecay = on")
 pythia.readString("Random:setSeed = on")
-pythia.readString("Random:seed = 1")
+pythia.readString("Random:seed = 2")
 
+# MiNNLO parameter
+pythia.readString("SpaceShower:dipoleRecoil = on")
 
 # Initialize, incoming pp beams are default.
 pythia.init()
@@ -142,7 +131,6 @@ def pseudorapidity(px, py, pz):
 # num events to process
 N = NUM
 max_jets = 20
-theta = 0 # for hvq 
 
 # Begin event loop. Generate event.
 # Skip if error. List first one.
@@ -151,61 +139,16 @@ theta = 0 # for hvq
 nJets = []
 jets_4vectors = []
 
-# init particle vector array
-P0 = []
-
-# use madgraph lhe_parser EventFile, because I don't know how to get event weights from pythia
-lhe = EventFile(lhe_file)
-
-# check that number of events in lhe file is >= N, since there were missmathces in the past
-wgts_list = []
-for i, event in enumerate(lhe):
-    wgts_list.append(event.wgt)
-    if i >= N:
-        break
-
-if len(wgts_list) <= N:
-    print(f'less then {NUM} events in LHE, using all LHE events')
-    N = len(lhe)
-
-for iEvent in range(N):
-    if not pythia.next():
+for iEvent in range(0, N):
+    if not pythia.next(): 
         continue
-    # showering
-    partVec = []
-    TT = []
-    top = None
-    antitop = None
-    for particle in pythia.event:
-        ##selecting only last top
-        if particle.id() == 6:
-            top = particle
-        if particle.id() == -6:
-            antitop = particle
-
-    patop = uproot_methods.TLorentzVector.from_ptetaphim(antitop.pT(), antitop.eta(), antitop.phi(), antitop.m())
-    ptop = uproot_methods.TLorentzVector.from_ptetaphim(top.pT(), top.eta(), top.phi(), top.m())
-
-    p_tt = ptop + patop
-
-
-    wgt = wgts_list[iEvent]
-
-                # [pt, y, phi, mass, eta, E, PID, w, theta]
-                # [0 , 1, 2  , 3   , 4  , 5, 6  , 7, 8    ]
-    partVec.append([p_tt.pt, p_tt.rapidity, p_tt.phi, p_tt.mass, p_tt.eta, p_tt.E, 0, wgt, theta])
-
-    partVec.append([ptop.pt, ptop.rapidity, ptop.phi, ptop.mass, ptop.eta, ptop.E, 6, wgt, theta])
-    partVec.append([patop.pt, patop.rapidity, patop.phi, patop.mass, patop.eta, patop.E, -6, wgt, theta])
-
-    P0.append(partVec)
 
     # jet multiplicity
     # Find number of jets with given conditions.
     jet_def.analyze(pythia.event)
 
     nJet = jet_def.sizeJet()
-    nJets.append([nJet, wgt])
+    nJets.append(nJet)
 
     # Extract the 4-vectors for each jet
     event_jets = []
@@ -231,16 +174,10 @@ for iEvent in range(N):
 # End of event loop. Statistics. Histogram. Done.
 pythia.stat()
 
-# save shower
-P0 = np.array(P0)
-np.save(f'./output/hvq/converted_lhe_hvq_dileptonic.npy', P0)
-print(f'{np.shape(P0) = }')
+np.save(f'./output/jet_multiplicity_MiNNLO_{LHE}.npy', nJets)
 
-# save multiplicity and jet observables
-nJets = np.array(nJets)
-np.save(f'./output/hvq/jet_multiplicity_hvq_dileptonic.npy', nJets)
-print(f'{np.shape(nJets) = }')
+print(np.shape(nJets))
 
-jets_4vectors = np.array(jets_4vectors)
-np.save(f'./output/hvq/jet_4vectors_hvq_dileptonic.npy', jets_4vectors)
-print(f'{np.shape(jets_4vectors) = }')
+np.save(f'./output/jet_4vectors_MiNNLO_{LHE}.npy', jets_4vectors)
+
+print(np.shape(jets_4vectors))
