@@ -131,6 +131,136 @@ def pseudorapidity(px, py, pz):
 # num events to process
 N = NUM
 max_jets = 20
+theta = 0 # for hvq 
+
+# Begin event loop. Generate event.
+# Skip if error. List first one.
+
+# Initialize arrays to store jet multiplicities
+nJets = []
+jets_4vectors = []
+
+# init particle vector array
+P0 = []
+
+# use madgraph lhe_parser EventFile, because I don't know how to get event weights from pythia
+lhe = EventFile(lhe_file)
+
+# check that number of events in lhe file is >= N, since there were missmathces in the past
+wgts_list = []
+for i, event in enumerate(lhe):
+    wgts_list.append(event.wgt)
+    if i >= N:
+        break
+
+if len(wgts_list) <= N:
+    print(f'less then {NUM} events in LHE, using all LHE events')
+    N = len(lhe)
+
+for iEvent in range(N):
+    if not pythia.next():
+        continue
+    # showering
+    partVec = []
+    TT = []
+    top = None
+    antitop = None
+    for particle in pythia.event:
+        ##selecting only last top
+        if particle.id() == 6:
+            top = particle
+        if particle.id() == -6:
+            antitop = particle
+
+    patop = uproot_methods.TLorentzVector.from_ptetaphim(antitop.pT(), antitop.eta(), antitop.phi(), antitop.m())
+    ptop = uproot_methods.TLorentzVector.from_ptetaphim(top.pT(), top.eta(), top.phi(), top.m())
+
+    p_tt = ptop + patop
+
+
+    wgt = wgts_list[iEvent]
+
+                # [pt, y, phi, mass, eta, E, PID, w, theta]
+                # [0 , 1, 2  , 3   , 4  , 5, 6  , 7, 8    ]
+    partVec.append([p_tt.pt, p_tt.rapidity, p_tt.phi, p_tt.mass, p_tt.eta, p_tt.E, 0, wgt, theta])
+
+    partVec.append([ptop.pt, ptop.rapidity, ptop.phi, ptop.mass, ptop.eta, ptop.E, 6, wgt, theta])
+    partVec.append([patop.pt, patop.rapidity, patop.phi, patop.mass, patop.eta, patop.E, -6, wgt, theta])
+
+    P0.append(partVec)
+
+    # jet multiplicity
+    # Find number of jets with given conditions.
+    jet_def.analyze(pythia.event)
+
+    nJet = jet_def.sizeJet()
+    nJets.append([nJet, wgt])
+
+    # Extract the 4-vectors for each jet
+    event_jets = []
+    for i in range(max_jets):
+        if i < nJet:
+       	    pT = jet_def.pT(i)
+            p = jet_def.p(i)
+            px = p.px()
+            py = p.py()
+            pz = p.pz()
+            eta = pseudorapidity(px, py, pz)
+            phi = jet_def.phi(i)
+            mass = jet_def.m(i)
+            energy = p.e()
+            rapidity = jet_def.y(i)
+            jet_4vector = [pT, rapidity, phi, mass, eta, energy]
+        else:
+            jet_4vector = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        event_jets.append(jet_4vector)
+
+    jets_4vectors.append(event_jets)
+
+# End of event loop. Statistics. Histogram. Done.
+pythia.stat()
+
+# save shower
+P0 = np.array(P0)
+np.save(f'./output/MiNNLO/converted_lhe_MiNNLO_{LHE}.npy', P0)
+print(f'{np.shape(P0) = }')
+
+# save multiplicity and jet observables
+nJets = np.array(nJets)
+np.save(f'./output/MiNNLO/jet_multiplicity_MiNNLO_{LHE}.npy', nJets)
+print(f'{np.shape(nJets) = }')
+
+jets_4vectors = np.array(jets_4vectors)
+np.save(f'./output/MiNNLO/jet_4vectors_MiNNLO_{LHE}.npy', jets_4vectors)
+print(f'{np.shape(jets_4vectors) = }')
+
+
+
+
+
+
+
+
+# Define jet clustering parameters
+R = 0.4  # Jet radius
+min_pT = 30.0
+max_eta = 2.4
+jet_def = pythia8.SlowJet(-1, R, min_pT, max_eta)
+
+#pseudrapidity function
+def pseudorapidity(px, py, pz):
+    p = np.sqrt(np.power(px, 2) + np.power(py, 2) + np.power(pz, 2))
+    if (p-pz) == 0.0:
+        raise Exception("Error calculating pseudorapidity (divide by zero)")
+    elif ((p+pz)/(p-pz)) <= 0.0:
+        raise Exception("Error calculating pseudorapidity (log of negative number)")
+    else:
+        pseudorapidity = 0.5*np.log((p+pz)/(p-pz))
+        return pseudorapidity
+
+# num events to process
+N = NUM
+max_jets = 20
 
 # Begin event loop. Generate event.
 # Skip if error. List first one.
