@@ -457,9 +457,9 @@ if __name__ == '__main__':
     hist_list_pt10 = np.load('./plots/up/40M_50iter_10bin_pt_tt_hist_list.npy', allow_pickle=True)
 
     plot_ratio_bootstrapped(hist_comp_pt10, hist_list_pt10, label_list, loc1 = 'upper left',
-            arg_index = 0, part_index = 0, y_scale = 'log', ratio_ylim=[0.90, 1.10])
+            arg_index = 0, part_index = 0, y_scale = 'log', ratio_ylim=[0.85, 1.15])
     plot_ratio_bootstrapped_ratio_only(hist_comp_pt10, hist_list_pt10, label_list, loc1 = 'upper left',
-            arg_index = 0, part_index = 0, y_scale = 'log', ratio_ylim=[0.90, 1.10])
+            arg_index = 0, part_index = 0, y_scale = 'log', ratio_ylim=[0.85, 1.15])
 
     # eta(tt) for 11 bins
     hist_comp_eta11 = np.load('./plots/up/40M_50iter_11bin_eta_tt_hist_comp.npy', allow_pickle=True)
@@ -477,7 +477,7 @@ if __name__ == '__main__':
     hist_list_pt18 = np.load('./plots/up/40M_50iter_18bin_pt_tt_hist_list.npy', allow_pickle=True)
 
     plot_ratio_bootstrapped(hist_comp_pt18, hist_list_pt18, label_list, loc1 = 'upper left',
-            arg_index = 0, part_index = 0, y_scale = 'log', ratio_ylim=[0.90, 1.10])
+            arg_index = 0, part_index = 0, y_scale = 'log', ratio_ylim=[0.85, 1.15])
 
     plot_ratio_bootstrapped_ratio_only(hist_comp_pt18, hist_list_pt18, label_list, loc1 = 'upper left',
-            arg_index = 0, part_index = 0, y_scale = 'log', ratio_ylim=[0.90, 1.10])
+            arg_index = 0, part_index = 0, y_scale = 'log', ratio_ylim=[0.85, 1.15])
