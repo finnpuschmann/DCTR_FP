@@ -1274,11 +1274,11 @@ def plot_ratio(args, arg_index = 0, part_index = 0, title = None, x_label = None
 
 
 pythia_text = r'$POWHEG \; pp \to  t\bar{t}$'
-def make_legend(ax, title):
-    leg = ax.legend(frameon=False)
-    leg.set_title(title, prop={'size':18})
+def make_legend(ax, title, loc='best', font_size = 20):
+    leg = ax.legend(frameon=False, loc=loc)
+    leg.set_title(title, prop={"size": f'{int(font_size)}'})
     for i, _ in enumerate(leg.texts):
-        leg.texts[i].set_fontsize(16)
+        leg.texts[i].set_fontsize(int(font_size))
     leg._legend_box.align = "left"
     plt.tight_layout()
 
@@ -1477,138 +1477,6 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
 
     out_hists = np.array(out_hists, dtype=object)
     np.save(f'{save_folder}/{save_prefix}_{obs}_{part}_histograms.npy', out_hists)
-
-    plt.show()
-
-
-def plot_ratio_cms_from_hists(
-    in_hists, label_list, arg_index = 0, part_index = 0,
-    ratio_ylim=[0.9,1.1], pythia_text = r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA',
-    figsize=(8,10), y_scale=None, hep_text = 'Simulation Preliminary', center_mass_energy = '(13 TeV)',
-    part_label=None, arg_label=None, unit=None, inv_unit=None, save_prefix = 'plot'):
-
-    try:
-        n_list, uncert_nrm_list, bin_edges = in_hists
-    except:
-        print('in_hists not in right form. Needs to be in_hists = [n_list, uncert_nrm_list, bin_edges]')
-        return
-
-    # make sure each hist has a label
-    assert len(label_list) == len(n_list), 'differnt number of labels and histograms!'
-
-    # different order then plot_ratio_cms() functions, for easier looping # swapped 10a and 11a
-    plt_style_10a = {'color':'black',   'linestyle':'-' }
-    plt_style_11a = {'color':'Green',   'linestyle':'--'}
-    plt_style_12a = {'color':'#FC5A50', 'linestyle':':' }
-    plt_style_13a = {'color':'blue',    'linestyle':':' }
-
-
-    # binning: prio: passed bins, calculated bins from quantiles, linear bins from start, stop, div
-    start = copy(bin_edges[0])
-    stop = copy(bin_edges[-1])
-
-    # Create figure with two subplots
-    fig, axes = plt.subplots(nrows=2, figsize=figsize, gridspec_kw={'height_ratios': [2, 1]})
-    fig.tight_layout(pad=1)
-
-    # First subplot
-    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.0
-
-    ratio_list = []
-
-    for i, label in enumerate(label_list):
-        if i == 0:
-            axes[0].step(bin_edges, n_list[i], label = label, where='post', linewidth=3, **plt_style_10a)
-        elif i % 3 == 0:
-            axes[0].step(bin_edges, n_list[i], label = label, where='post', linewidth=3, **plt_style_13a)
-        elif i % 2 == 0:
-            axes[0].step(bin_edges, n_list[i], label = label, where='post', linewidth=3, **plt_style_12a)
-        else:
-            axes[0].step(bin_edges, n_list[i], label = label, where='post', linewidth=3, **plt_style_11a)
-
-        # Calculate the ratios of histograms
-        ratio = n_list[i] / n_list[0] # comparing to first passed hist
-        ratio_list.append(ratio)
-
-    # labels and titles
-    make_legend(axes[0], pythia_text)
-
-    if part_label is None:
-        part = particles.get(part_index)
-    else:
-        part = part_label
-
-    if arg_label is None:
-        obs = args_dict.get(arg_index)
-    else:
-        obs = arg_label
-
-    if unit is None:
-        inv_unit = inverse_units.get(arg_index)
-        unit = args_units.get(arg_index)
-    else:
-        inv_unit = inv_unit
-        unit = unit
-
-    # Constructing the label using Python string formatting
-    label = r'$1$/$\sigma \frac{d\sigma}{d %s(%s)}$ %s' % (obs, part, inv_unit)
-
-    axes[0].set_ylabel(label)
-
-    if y_scale == 'log':
-        axes[0].set_yscale('log')
-    else:
-        axes[0].set_ylim(bottom=0)
-    axes[0].grid(True)
-
-    # Second subplot
-    for i, label in enumerate(label_list):
-        if i == 0:
-            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], linewidth=1.5, **plt_style_10a)
-            axes[1].plot([start, stop], [1,1], label=label, linewidth=2, **plt_style_10a)
-        elif i % 3 == 0:
-            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], linewidth=1.5, **plt_style_13a)
-            axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=2, **plt_style_13a)
-        elif i % 2 == 0:
-            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], linewidth=1.5, **plt_style_12a)
-            axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=2, **plt_style_12a)
-        else:
-            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], linewidth=1.5, **plt_style_11a)
-            axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=2, **plt_style_11a)
-
-
-    axes[1].set_xlabel(fr'${obs}({part}){unit}$')
-    axes[1].set_ylabel('Ratio(/NNLO)')
-    axes[1].grid(True)
-
-    # print(f'uncertainty NLO: {uncert_nrm_list[0]}')
-    plt.subplots_adjust(hspace=0.2)
-    plt.subplots_adjust(left=0.2, right=0.95, bottom=0.1, top=0.95)
-    axes[1].set_ylim(ratio_ylim)
-
-    axes[0].set_xlim([start,stop])
-    axes[1].set_xlim([start,stop])
-    axes[1].legend(fontsize=13)
-
-    #hep.cms.label(ax=axes[0], data=False, paper=False, lumi=None, fontsize=20, loc=0)
-    hep.cms.text(hep_text, loc=0, fontsize=20, ax=axes[0])
-    axes[0].text(1.0, 1.05, center_mass_energy, ha="right", va="top", fontsize=20, transform=axes[0].transAxes)
-
-    # Save the figure
-    if part_index == 0:
-        save_folder = './plots/tt-pair'
-    elif part_index == 1:
-        save_folder = './plots/top'
-    else:
-        save_folder = './plots/anti-top'
-    # make save_folder directory, if it does not exist
-    os.makedirs(save_folder, exist_ok=True)
-
-    # adjust strings for named files
-    obs = obs.replace('\\', '').replace('{', '').replace('}', '').replace('_','').replace(' ','-').lower()
-    part = part.replace('\\', '').replace('{', '').replace('}', '').replace('bar', '').lower()
-
-    plt.savefig(f'{save_folder}/{save_prefix}_{obs}_{part}.pdf')
 
     plt.show()
 
@@ -2000,7 +1868,7 @@ def plot_ratio_cms_2(args, arg_index = 0, part_index = 0, title = None, x_label 
         out_hists = [dense_list, uncert_nrm_list, bin_edges]
     else:
         out_hists = [n_list, uncert_nrm_list, bin_edges]
-        
+
     out_hists = np.array(out_hists, dtype=object)
     np.save(f'{save_folder}/{save_prefix}_{obs}_{part}_histograms.npy', out_hists)
 
@@ -2008,40 +1876,17 @@ def plot_ratio_cms_2(args, arg_index = 0, part_index = 0, title = None, x_label 
     plt.show()
 
 
-def plot_ratio_bootstrapped(hist_comp, hist_list, label_list, 
-        ratio_ylim=[0.80, 1.20], denominator = 'Up', 
-        pythia_text = r'$POWHEG \; pp \to t\bar{t}$',
-        hep_text = 'Simulation Preliminary',
-        center_mass_energy = '(13 TeV)',
-        save_prefix = '40M_50iter',
-        arg_index = 0, part_index = 0,
-        figsize=(8,10), y_scale=None, 
-        part_label=None, arg_label=None, 
-        unit=None, inv_unit=None):
+def plot_ratio_cms_from_hists(
+        in_hists, label_list, arg_index = 0, part_index = 0, loc0 = 'best', loc1 = 'best', font_size = 20,
+        ratio_ylim=[0.9,1.1], pythia_text = r'$POWHEG \; pp \to  t\bar{t}$ + PYTHIA', ylim_min = None, ylim_max = None,
+        figsize=(8,10), y_scale=None, hep_text = 'Simulation Preliminary', center_mass_energy = '(13 TeV)',
+        part_label=None, arg_label=None, unit=None, inv_unit=None, save_prefix = 'plot'):
 
     try:
-        n_list, ratio_std, bin_edges = hist_comp
+        n_list, uncert_nrm_list, bin_edges = in_hists
     except:
-        print('hist_comp not in right form. Needs to be hist_comp = [n_list, ratio_std, bin_edges]')
+        print('in_hists not in right form. Needs to be in_hists = [n_list, uncert_nrm_list, bin_edges]')
         return
-    
-    # get names of particle and observables
-    if part_label is None:
-        part = particles.get(part_index)
-    else:
-        part = part_label
-
-    if arg_label is None:
-        obs = args_dict.get(arg_index)
-    else:
-        obs = arg_label
-
-    if unit is None:
-        inv_unit = inverse_units.get(arg_index)
-        unit = args_units.get(arg_index)
-    else:
-        inv_unit = inv_unit
-        unit = unit
 
     # make sure each hist has a label
     assert len(label_list) == len(n_list), 'differnt number of labels and histograms!'
@@ -2052,17 +1897,17 @@ def plot_ratio_bootstrapped(hist_comp, hist_list, label_list,
     plt_style_12a = {'color':'#FC5A50', 'linestyle':':' }
     plt_style_13a = {'color':'blue',    'linestyle':':' }
 
-    font = {'size':16}
-    rc('font', **font)
+
+    # binning: prio: passed bins, calculated bins from quantiles, linear bins from start, stop, div
+    start = copy(bin_edges[0])
+    stop = copy(bin_edges[-1])
 
     # Create figure with two subplots
-    fig, axes = plt.subplots(nrows=2, figsize=(8,11), gridspec_kw={'height_ratios': [2, 1]})
+    fig, axes = plt.subplots(nrows=2, figsize=figsize, gridspec_kw={'height_ratios': [2, 1]})
     fig.tight_layout(pad=1)
 
     # First subplot
     bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.0
-    start = bin_edges[0]
-    stop  = bin_edges[-1]
 
     ratio_list = []
 
@@ -2080,13 +1925,29 @@ def plot_ratio_bootstrapped(hist_comp, hist_list, label_list,
         ratio = n_list[i] / n_list[0] # comparing to first passed hist
         ratio_list.append(ratio)
 
-
     # labels and titles
-    make_legend(axes[0], pythia_text)
+    make_legend(axes[0], pythia_text, loc0, int(font_size))
+
+    if part_label is None:
+        part = particles.get(part_index)
+    else:
+        part = part_label
+
+    if arg_label is None:
+        obs = args_dict.get(arg_index)
+    else:
+        obs = arg_label
+
+    if unit is None:
+        inv_unit = inverse_units.get(arg_index)
+        unit = args_units.get(arg_index)
+    else:
+        inv_unit = inv_unit
+        unit = unit
 
     # Constructing the label using Python string formatting
-    label = r'$1$/$\sigma \frac{d\sigma}{d %s(%s)}$ %s' % (obs, part, inv_unit)
-
+    #label = r'$1$/$\sigma \frac{d\sigma}{d %s(%s)}$ %s' % (obs, part, inv_unit)
+    label = r'$1 / \sigma \dfrac{d\sigma}{d %s(%s)}$ %s' % (obs, part, inv_unit)
     axes[0].set_ylabel(label)
 
     if y_scale == 'log':
@@ -2095,24 +1956,29 @@ def plot_ratio_bootstrapped(hist_comp, hist_list, label_list,
         axes[0].set_ylim(bottom=0)
     axes[0].grid(True)
 
+    if ylim_min is not None:
+        axes[0].set_ylim(bottom=ylim_min)
+    if ylim_max is not None:
+        axes[0].set_ylim(top=ylim_max)
+
     # Second subplot
     for i, label in enumerate(label_list):
-        if i == 0:       # 0 | target
+        if i == 0:
+            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], linewidth=1.5, **plt_style_10a)
             axes[1].plot([start, stop], [1,1], label=label, linewidth=2, **plt_style_10a)
-        elif i % 3 == 0: # 3, 6, 9, ...
+        elif i % 3 == 0:
+            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], linewidth=1.5, **plt_style_13a)
             axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=2, **plt_style_13a)
-        elif i % 2 == 0: # 2, 4, 8, ...
+        elif i % 2 == 0:
+            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], linewidth=1.5, **plt_style_12a)
             axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=2, **plt_style_12a)
-        elif i == 1:     # 1 meann
-            axes[1].plot(bin_centers, ratio_list[i][:-1], label = f'{label} + (mean)', linewidth=2, **plt_style_11a)
-            axes[1].fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.6, label = f'{label} (std)', **plt_style_11a) 
-    
-    # plot all resulting hists in hist_list faintly
-    for hist in hist_list:
-        axes[1].plot(bin_centers, hist/target_hist[:-1], linewidth=1, alpha = 0.3, color = 'grey')
-    
+        else:
+            axes[1].errorbar(bin_centers, ratio_list[i][:-1], yerr=uncert_nrm_list[i][:-1], linewidth=1.5, **plt_style_11a)
+            axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=2, **plt_style_11a)
+
+
     axes[1].set_xlabel(fr'${obs}({part}){unit}$')
-    axes[1].set_ylabel(f'Ratio(/{denominator})')
+    axes[1].set_ylabel('Ratio(/NNLO)')
     axes[1].grid(True)
 
     # print(f'uncertainty NLO: {uncert_nrm_list[0]}')
@@ -2122,7 +1988,7 @@ def plot_ratio_bootstrapped(hist_comp, hist_list, label_list,
 
     axes[0].set_xlim([start,stop])
     axes[1].set_xlim([start,stop])
-    axes[1].legend(fontsize=13)
+    axes[1].legend(fontsize=13, loc = loc1)
 
     #hep.cms.label(ax=axes[0], data=False, paper=False, lumi=None, fontsize=20, loc=0)
     hep.cms.text(hep_text, loc=0, fontsize=20, ax=axes[0])
@@ -2138,27 +2004,19 @@ def plot_ratio_bootstrapped(hist_comp, hist_list, label_list,
     # make save_folder directory, if it does not exist
     os.makedirs(save_folder, exist_ok=True)
 
-    # title for corr matrix plot before adjusting the strings
-    corr_titel = fr'Reweighted {denominator} ${obs}({part})$ Correlation between Bins for 50 Training runs'
-    
     # adjust strings for named files
     obs = obs.replace('\\', '').replace('{', '').replace('}', '').replace('_','').replace(' ','-').lower()
     part = part.replace('\\', '').replace('{', '').replace('}', '').replace('bar', '').lower()
-    denominator = denominator.lower()
 
-    bin_str = f'{len(bin_centers)}bin'
-    
-    plt.savefig(f'{save_folder}/{denominator}/{save_prefix}_{bin_str}_{obs}_{part}.pdf')
-    # plt.show()
-
-    # calculate and save correlation matrix
-    corr_matrix = weighted_corr(hist_list, weights = [1]*len(hist_list))
-    plot_square_matrix_heatmap(corr_matrix, title = corr_titel, 
-                               savefig = f'{save_folder}/{denominator}/corr_matrix_{save_prefix}_{bin_str}_{obs}_{part}.pdf')
+    plt.savefig(f'{save_folder}/{save_prefix}_{obs}_{part}.pdf')
+    # plt.clf()
+    plt.show()
 
 
-def plot_ratio_bootstrapped(in_hists, hist_list, label_list, 
-        ratio_ylim=[0.80, 1.20], denominator = 'Up', 
+def plot_ratio_bootstrapped(in_hists, hist_list, label_list,
+        ratio_ylim=[0.80, 1.20], denominator = 'Up',
+        loc0 = 'best', loc1 = 'best', font_size = 20,
+        ylim_min = None, ylim_max = None,
         pythia_text = r'$POWHEG \; pp \to t\bar{t}$',
         hep_text = 'Simulation Preliminary',
         center_mass_energy = '(13 TeV)',
@@ -2203,7 +2061,7 @@ def plot_ratio_bootstrapped(in_hists, hist_list, label_list,
     plt_style_12a = {'color':'#FC5A50', 'linestyle':':' }
     plt_style_13a = {'color':'blue',    'linestyle':':' }
 
-    font = {'size':16}
+    font = {'size': font_size}
     rc('font', **font)
 
     # Create figure with two subplots
@@ -2233,7 +2091,7 @@ def plot_ratio_bootstrapped(in_hists, hist_list, label_list,
 
 
     # labels and titles
-    make_legend(axes[0], pythia_text)
+    make_legend(axes[0], pythia_text, loc0, font_size)
 
     # Constructing the label using Python string formatting
     label = r'$1$/$\sigma \frac{d\sigma}{d %s(%s)}$ %s' % (obs, part, inv_unit)
@@ -2246,6 +2104,12 @@ def plot_ratio_bootstrapped(in_hists, hist_list, label_list,
         axes[0].set_ylim(bottom=0)
     axes[0].grid(True)
 
+    if ylim_min is not None:
+        axes[0].set_ylim(bottom=ylim_min)
+    if ylim_max is not None:
+        axes[0].set_ylim(top=ylim_max)
+
+
     # Second subplot
     for i, label in enumerate(label_list):
         if i == 0:       # 0 | target
@@ -2257,7 +2121,7 @@ def plot_ratio_bootstrapped(in_hists, hist_list, label_list,
         else:            # 1 | mean
             axes[1].plot(bin_centers, ratio_list[i][:-1], label = f'{label}', linewidth=3, **plt_style_12a, zorder=50)
             axes[1].fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.5, label = f'{label.replace("mean", "std")}', color='#FC5A50', zorder=0)
-            axes[1].fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.1, color='#FC5A50', zorder=120) # draw again on top with less alpha
+            axes[1].fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.2, color='#FC5A50', zorder=120) # draw again on top with less alpha
     
     # plot all resulting hists in hist_list faintly
     if plot_all == True:
@@ -2275,11 +2139,11 @@ def plot_ratio_bootstrapped(in_hists, hist_list, label_list,
 
     axes[0].set_xlim([start,stop])
     axes[1].set_xlim([start,stop])
-    axes[1].legend(fontsize=13)
+    axes[1].legend(fontsize=13, loc=loc1)
 
     #hep.cms.label(ax=axes[0], data=False, paper=False, lumi=None, fontsize=20, loc=0)
     hep.cms.text(hep_text, loc=0, fontsize=20, ax=axes[0])
-    axes[0].text(1.0, 1.05, center_mass_energy, ha="right", va="top", fontsize=20, transform=axes[0].transAxes)
+    axes[0].text(1.0, 1.05, center_mass_energy, ha="right", va="top", fontsize=font_size, transform=axes[0].transAxes)
 
     # title for corr matrix plot before adjusting the strings
     corr_titel = fr'Reweighted {denominator} ${obs}({part})$ Correlation between Bins'
@@ -2301,14 +2165,156 @@ def plot_ratio_bootstrapped(in_hists, hist_list, label_list,
     part = part.replace('\\', '').replace('{', '').replace('}', '').replace('bar', '').lower()
 
     bin_str = f'{len(bin_centers)}bin'
+    plt.tight_layout()
     
     plt.savefig(f'{save_folder}/{save_prefix}_{bin_str}_{obs}_{part}.pdf')
     plt.show()
-
+    
+    plt.clf()
     # calculate and save correlation matrix
     corr_matrix = weighted_corr(hist_list, weights = [1]*len(hist_list))
     plot_square_matrix_heatmap(corr_matrix, title = corr_titel, vmin=-1, vmax=1,
                                savefig = f'{save_folder}/{save_prefix}_{bin_str}_{obs}_{part}_corr_matrix.pdf')
+
+
+def plot_ratio_bootstrapped_ratio_only(in_hists, hist_list, label_list,
+        ratio_ylim=[0.80, 1.20], denominator = 'Up',
+        loc0 = 'best', loc1 = 'best', font_size = 20,
+        ylim_min = None, ylim_max = None,
+        pythia_text = r'$POWHEG \; pp \to t\bar{t}$',
+        hep_text = 'Simulation Preliminary',
+        center_mass_energy = '(13 TeV)',
+        save_prefix = '40M_50iter',
+        arg_index = 0, part_index = 0,
+        figsize=(8,5), y_scale=None, 
+        part_label=None, arg_label=None, 
+        unit=None, inv_unit=None, plot_all=True):
+
+    try:
+        n_list, ratio_std, bin_edges = in_hists
+    except:
+        print('in_hists not in right form. Needs to be in_hists = [n_list, ratio_std, bin_edges]')
+        return
+    
+    # n_list = [target_hist, mean_hist, nominal_hist]
+    
+    # get names of particle and observables
+    if part_label is None:
+        part = particles.get(part_index)
+    else:
+        part = part_label
+
+    if arg_label is None:
+        obs = args_dict.get(arg_index)
+    else:
+        obs = arg_label
+
+    if unit is None:
+        inv_unit = inverse_units.get(arg_index)
+        unit = args_units.get(arg_index)
+    else:
+        inv_unit = inv_unit
+        unit = unit
+
+    # make sure each hist has a label
+    assert len(label_list) == len(n_list), 'differnt number of labels and histograms!'
+
+    # different order then plot_ratio_cms() functions, for easier looping # swapped 10a and 11a
+    plt_style_10a = {'color':'black',   'linestyle':'-' }
+    plt_style_11a = {'color':'Green',   'linestyle':'--'}
+    plt_style_12a = {'color':'#FC5A50', 'linestyle':':' }
+    plt_style_13a = {'color':'blue',    'linestyle':':' }
+
+    font = {'size': font_size}
+    rc('font', **font)
+
+    # Create figure with two subplots
+    fig, axes = plt.subplots(nrows=1, figsize=figsize)
+    fig.tight_layout(pad=1)
+
+    # First subplot
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2.0
+    start = bin_edges[0]
+    stop  = bin_edges[-1]
+
+    ratio_list = []
+
+    for i, label in enumerate(label_list):
+
+        # Calculate the ratios of histograms
+        ratio = n_list[i] / n_list[0] # comparing to first passed hist
+        ratio_list.append(ratio)
+
+
+    # labels and titles
+    make_legend(axes, pythia_text, loc0, font_size)
+
+    # Constructing the label using Python string formatting
+    label = r'$1$/$\sigma \frac{d\sigma}{d %s(%s)}$ %s' % (obs, part, inv_unit)
+
+    axes.set_ylabel(label)
+
+
+    # Second subplot
+    for i, label in enumerate(label_list):
+        if i == 0:       # 0 | target
+            axes.plot([start, stop], [1,1], label=label, linewidth=3, **plt_style_10a, zorder=100)
+        elif i % 3 == 0: # 3, 6, 9, ...
+            axes.plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=3, **plt_style_13a, zorder=30)
+        elif i % 2 == 0: # 2, 4, 8, ...
+            axes.plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=3, **plt_style_11a, zorder=2)
+        else:            # 1 | mean
+            axes.plot(bin_centers, ratio_list[i][:-1], label = f'{label}', linewidth=3, **plt_style_12a, zorder=50)
+            axes.fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.5, label = f'{label.replace("mean", "std")}', color='#FC5A50', zorder=0)
+            axes.fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.2, color='#FC5A50', zorder=120) # draw again on top with less alpha
+    
+    # plot all resulting hists in hist_list faintly
+    if plot_all == True:
+        for hist in hist_list:
+            axes.plot(bin_centers, hist/n_list[0][:-1], linewidth=1, alpha = 0.3, color = 'grey', zorder=5)
+    
+    axes.set_xlabel(fr'${obs}({part}){unit}$')
+    axes.set_ylabel(f'Ratio(/{denominator})')
+    axes.grid(True)
+
+    # print(f'uncertainty NLO: {uncert_nrm_list[0]}')
+    plt.subplots_adjust(hspace=0.2)
+    plt.subplots_adjust(left=0.2, right=0.95, bottom=0.1, top=0.95)
+    axes.set_ylim(ratio_ylim)
+
+    axes.set_xlim([start,stop])
+    axes.legend(fontsize=13, loc=loc1)
+
+    #hep.cms.label(ax=axes[0], data=False, paper=False, lumi=None, fontsize=20, loc=0)
+    hep.cms.text(hep_text, loc=0, fontsize=font_size, ax=axes)
+    axes.text(1.0, 1.10, center_mass_energy, ha="right", va="top", fontsize=font_size, transform=axes.transAxes)
+
+    # title for corr matrix plot before adjusting the strings
+    corr_titel = fr'Reweighted {denominator} ${obs}({part})$ Correlation between Bins'
+    
+    denominator = denominator.lower()
+    
+    # Save the figure
+    if part_index == 0:
+        save_folder = f'./plots/{denominator}/tt-pair'
+    elif part_index == 1:
+        save_folder = f'./plots/{denominator}/top'
+    else:
+        save_folder = f'./plots/{denominator}/anti-top'
+    # make save_folder directory, if it does not exist
+    os.makedirs(save_folder, exist_ok=True)
+ 
+    # adjust strings for named files
+    obs = obs.replace('\\', '').replace('{', '').replace('}', '').replace('_','').replace(' ','-').lower()
+    part = part.replace('\\', '').replace('{', '').replace('}', '').replace('bar', '').lower()
+
+    bin_str = f'{len(bin_centers)}bin'
+
+    plt.tight_layout()
+    
+    plt.savefig(f'{save_folder}/{save_prefix}_{bin_str}_{obs}_{part}_ratio_only.pdf')
+    # plt.clf()
+    plt.show()
 
 
 # covariance matrix using weighted samples
@@ -2383,6 +2389,8 @@ def plot_square_matrix_heatmap(matrix, title, variable_labels = None, vmin=None,
     # Label y-axis with variable names
     plt.yticks(ticks=np.arange(len(variable_labels)), labels=variable_labels)
     plt.ylabel('bin number')  # Label y-axis
+
+    plt.tight_layout()
 
     plt.savefig(savefig)
     # plt.clf()
