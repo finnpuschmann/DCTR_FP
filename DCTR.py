@@ -1471,9 +1471,10 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
 
     # save histograms and uncertainties for easier plotting in the future, without reacalculating hists
     if density is True:
-        out_hists = [n_list, uncert_nrm_list, bin_edges]
-    else:
         out_hists = [dense_list, uncert_nrm_list, bin_edges]
+    else:
+        out_hists = [n_list, uncert_nrm_list, bin_edges]
+
     out_hists = np.array(out_hists, dtype=object)
     np.save(f'{save_folder}/{save_prefix}_{obs}_{part}_histograms.npy', out_hists)
 
@@ -1805,9 +1806,10 @@ def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label 
 
     # save histograms and uncertainties for easier plotting in the future, without reacalculating hists
     if density is True:
-        out_hists = [n_list, uncert_nrm_list, bin_edges]
-    else:
         out_hists = [dense_list, uncert_nrm_list, bin_edges]
+    else:
+        out_hists = [n_list, uncert_nrm_list, bin_edges]
+    
     out_hists = np.array(out_hists, dtype=object)
     np.save(f'{save_folder}/{save_prefix}_{obs}_{part}_histograms.npy', out_hists)
 
@@ -1995,9 +1997,10 @@ def plot_ratio_cms_2(args, arg_index = 0, part_index = 0, title = None, x_label 
 
     # save histograms and uncertainties for easier plotting in the future, without reacalculating hists
     if density is True:
-        out_hists = [n_list, uncert_nrm_list, bin_edges]
-    else:
         out_hists = [dense_list, uncert_nrm_list, bin_edges]
+    else:
+        out_hists = [n_list, uncert_nrm_list, bin_edges]
+        
     out_hists = np.array(out_hists, dtype=object)
     np.save(f'{save_folder}/{save_prefix}_{obs}_{part}_histograms.npy', out_hists)
 
