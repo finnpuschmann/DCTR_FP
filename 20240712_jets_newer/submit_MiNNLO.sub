@@ -1,0 +1,15 @@
+executable              = submit_MiNNLO.sh
+arguments               = $(Process)
+
+log                     = submit_MiNNLO_$(Process).log
+output                  = submit_MiNNLO_$(Process).out
+error                   = submit_MiNNLO_$(Process).err
+
+should_transfer_files   = Yes
+when_to_transfer_output = ON_EXIT
+
+request_cpus            = 1
+request_memory          = 4G
+request_disk            = 4G
+
+queue from seq 1 15

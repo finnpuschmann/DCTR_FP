@@ -181,6 +181,7 @@ if len(wgts_list) <= N:
     print(f'less then {NUM} events in LHE, using all LHE events')
     N = len(wgts_list)
 
+
 for iEvent in range(N):
     if not pythia.next():
         continue
@@ -246,17 +247,18 @@ pythia.stat()
 
 # save shower
 import os
-os.makedirs('./output/hvq/', exist_ok=True)
+dir = f'./output/hvq/minPT_{int(MIN_PT)}'
+os.makedirs(dir, exist_ok=True)
 
 P0 = np.array(P0)
-np.save(f'./output/hvq/converted_lhe_hvq_dileptonic_minPT_{MIN_PT:.1f}.npy', P0)
+np.save(f'./output/hvq/converted_lhe_hvq_dileptonic_minPT_{int(MIN_PT)}.npy', P0)
 print(f'{np.shape(P0) = }')
 
 # save multiplicity and jet observables
 nJets = np.array(nJets)
-np.save(f'./output/hvq/jet_multiplicity_hvq_dileptonic_minPT_{MIN_PT:.1f}.npy', nJets)
+np.save(f'./output/hvq/jet_multiplicity_hvq_dileptonic_minPT_{int(MIN_PT)}.npy', nJets)
 print(f'{np.shape(nJets) = }')
 
 jets_4vectors = np.array(jets_4vectors)
-np.save(f'./output/hvq/jet_4vectors_hvq_dileptonic_minPT_{MIN_PT:.1f}.npy', jets_4vectors)
+np.save(f'./output/hvq/jet_4vectors_hvq_dileptonic_minPT_{int(MIN_PT)}.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')

@@ -245,16 +245,18 @@ for iEvent in range(N):
 pythia.stat()
 
 import os
-os.makedirs('./output/MiNNLO/', exist_ok=True)
+
+dir = f'./output/MiNNLO/minPT_{int(MIN_PT)}'
+os.makedirs(dir, exist_ok=True)
 
 # save shower
 P0 = np.array(P0)
-np.save(f'./output/MiNNLO/converted_lhe_MiNNLO_{LHE}_minPT_{MIN_PT:.1f}.npy', P0)
+np.save(f'{dir}/converted_lhe_MiNNLO_{LHE}_minPT_{int(MIN_PT)}.npy', P0)
 print(f'{np.shape(P0) = }')
 
 # save multiplicity and jet observables
-np.save(f'./output/MiNNLO/jet_multiplicity_MiNNLO_{LHE}_minPT_{MIN_PT:.1f}.npy', nJets)
+np.save(f'{dir}/jet_multiplicity_MiNNLO_{LHE}_minPT_{int(MIN_PT)}.npy', nJets)
 print(f'{np.shape(nJets) = }')
 
-np.save(f'./output/MiNNLO/jet_4vectors_MiNNLO_{LHE}_minPT_{MIN_PT:.1f}.npy', jets_4vectors)
+np.save(f'{dir}/jet_4vectors_MiNNLO_{LHE}_minPT_{int(MIN_PT)}.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
