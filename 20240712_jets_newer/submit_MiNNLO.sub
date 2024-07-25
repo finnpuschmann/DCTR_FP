@@ -2,17 +2,11 @@ executable              = submit_MiNNLO.sh
 
 arguments               = $(Process)
 
-log                     = logs/submit_MiNNLO_$(LHE).log
-output                  = logs/submit_MiNNLO_$(LHE).out
-error                   = logs/submit_MiNNLO_$(LHE).err
-
-+MySingularityImage = "/cvmfs/unpacked.cern.ch/registry.hub.docker.com/cmssw/cc7:amd64"
-
-should_transfer_files   = Yes
-when_to_transfer_output = ON_EXIT
+log                     = logs/submit_MiNNLO_$(Process).log
+output                  = logs/submit_MiNNLO_$(Process).out
+error                   = logs/submit_MiNNLO_$(Process).err
 
 request_cpus            = 1
 request_memory          = 4G
-request_disk            = 4G
 
-queue 15
+queue 100

@@ -18,6 +18,13 @@ import sys
 import argparse
 import numpy as np
 
+# deprecated 
+# import uproot_methods
+import vector as uproot_methods # so we can keep using the code as is
+
+# Import the Pythia module.
+import pythia8
+
 # madgraph import
 from madgraph.various.lhe_parser import EventFile
 
@@ -33,9 +40,9 @@ if __name__ == "__main__":
     # LHE arg
     # parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 100. Default = '100'", type = str, default = '100')
     # NUM arg
-    parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 100000", type = int, default = 100000)
+    parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 1000000", type = int, default = 1000000)
     # MIN_PT arg
-    parser.add_argument("-p", "--pt", help="Float. Minimum pt for jet finding algorithm. Default = 30.0", type = float, default = 30.0)
+    parser.add_argument("-p", "--pt", "min_pt", help="Float. Minimum pt for jet finding algorithm. Default = 30.0", type = float, default = 30.0)
 
     args = parser.parse_args()
     # LHE = args.lhe
@@ -43,15 +50,11 @@ if __name__ == "__main__":
     MIN_PT = args.pt
 else:
     # LHE = '100'
-    NUM = 100000
+    NUM = 1000000
     MIN_PT = 30.0
 
-# import pdb to debug
-import pdb
-import uproot_methods
 
-# Import the Pythia module.
-import pythia8
+# start pythia
 pythia = pythia8.Pythia()
 
 lhe_file = f'/nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/dileptoninc/pwgevents.lhe'
@@ -67,6 +70,7 @@ pythia.readString("TimeShower:pTmaxMatch = 1")
 pythia.readString('POWHEG:veto = 1')
 pythia.readString('POWHEG:pTdef = 1')
 pythia.readString('POWHEG:emitted = 0')
+
 pythia.readString('POWHEG:pTemt = 0')
 pythia.readString('POWHEG:pThard = 0')
 pythia.readString('POWHEG:vetoCount = 100')
@@ -98,16 +102,16 @@ pythia.readString("PDF:pSet = 20")
 pythia.readString("HadronLevel:all = off")
 
 # Common settings CFI # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8CommonSettings_cfi.py
-
-# pythia.readString('Tune:preferLHAPDF = 2')
-# pythia.readString('Main:timesAllowErrors = 10000')
-# pythia.readString('Check:epTolErr = 0.01')
-# pythia.readString('Beams:setProductionScalesFromLHEF = off')
-# pythia.readString('SLHA:minMassSM = 1000.')
-# pythia.readString('ParticleDecays:limitTau0 = on')
-# pythia.readString('ParticleDecays:tau0Max = 10')
-# pythia.readString('ParticleDecays:allowPhotonRadiation = on')
-
+'''
+pythia.readString('Tune:preferLHAPDF = 2')
+pythia.readString('Main:timesAllowErrors = 10000')
+pythia.readString('Check:epTolErr = 0.01')
+pythia.readString('Beams:setProductionScalesFromLHEF = off')
+pythia.readString('SLHA:minMassSM = 1000.')
+pythia.readString('ParticleDecays:limitTau0 = on')
+pythia.readString('ParticleDecays:tau0Max = 10')
+pythia.readString('ParticleDecays:allowPhotonRadiation = on')
+'''
 
 ### Additional parameters
 
@@ -202,11 +206,10 @@ for iEvent in range(N):
 
     p_tt = ptop + patop
 
-
     wgt = wgts_list[iEvent]
 
-                # [pt, y, phi, mass, eta, E, PID, w, theta]
-                # [0 , 1, 2  , 3   , 4  , 5, 6  , 7, 8    ]
+        # [pt, y, phi, mass, eta, E, PID, w, theta]
+        # [0 , 1, 2  , 3   , 4  , 5, 6  , 7, 8    ]
     partVec.append([p_tt.pt, p_tt.rapidity, p_tt.phi, p_tt.mass, p_tt.eta, p_tt.E, 0, wgt, theta])
 
     partVec.append([ptop.pt, ptop.rapidity, ptop.phi, ptop.mass, ptop.eta, ptop.E, 6, wgt, theta])
@@ -262,3 +265,4 @@ print(f'{np.shape(nJets) = }')
 jets_4vectors = np.array(jets_4vectors)
 np.save(f'./output/hvq/jet_4vectors_hvq_dileptonic_minPT_{int(MIN_PT)}.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
+

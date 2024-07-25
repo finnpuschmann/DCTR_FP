@@ -18,6 +18,13 @@ import sys
 import argparse
 import numpy as np
 
+# deprecated 
+# import uproot_methods
+import vector as uproot_methods # so we can keep using the code as is
+
+# Import the Pythia module.
+import pythia8
+
 # madgraph import
 from madgraph.various.lhe_parser import EventFile
 
@@ -35,7 +42,7 @@ if __name__ == "__main__":
     # NUM arg
     parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 10000", type = int, default = 10000)
     # MIN_PT arg
-    parser.add_argument("-p", "--pt", help="Float. Minimum pt for jet finding algorithm. Default = 30.0", type = float, default = 30.0)
+    parser.add_argument("-p", "--pt", "min_pt", help="Float. Minimum pt for jet finding algorithm. Default = 30.0", type = float, default = 30.0)
 
     args = parser.parse_args()
     LHE = args.lhe
@@ -46,12 +53,8 @@ else:
     NUM = 10000
     MIN_PT = 30.0
 
-# import pdb to debug
-import pdb
-import uproot_methods
 
-# Import the Pythia module.
-import pythia8
+# start pythia
 pythia = pythia8.Pythia()
 
 lhe_file = f'/nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{LHE}.lhe'
@@ -98,16 +101,16 @@ pythia.readString("PDF:pSet = 20")
 pythia.readString("HadronLevel:all = off")
 
 # Common settings CFI # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8CommonSettings_cfi.py
-
-# pythia.readString('Tune:preferLHAPDF = 2')
-# pythia.readString('Main:timesAllowErrors = 10000')
-# pythia.readString('Check:epTolErr = 0.01')
-# pythia.readString('Beams:setProductionScalesFromLHEF = off')
-# pythia.readString('SLHA:minMassSM = 1000.')
-# pythia.readString('ParticleDecays:limitTau0 = on')
-# pythia.readString('ParticleDecays:tau0Max = 10')
-# pythia.readString('ParticleDecays:allowPhotonRadiation = on')
-
+'''
+pythia.readString('Tune:preferLHAPDF = 2')
+pythia.readString('Main:timesAllowErrors = 10000')
+pythia.readString('Check:epTolErr = 0.01')
+pythia.readString('Beams:setProductionScalesFromLHEF = off')
+pythia.readString('SLHA:minMassSM = 1000.')
+pythia.readString('ParticleDecays:limitTau0 = on')
+pythia.readString('ParticleDecays:tau0Max = 10')
+pythia.readString('ParticleDecays:allowPhotonRadiation = on')
+'''
 
 ### Additional parameters
 
@@ -204,8 +207,8 @@ for iEvent in range(N):
 
     wgt = wgts_list[iEvent]
 
-                # [pt, y, phi, mass, eta, E, PID, w, theta]
-                # [0 , 1, 2  , 3   , 4  , 5, 6  , 7, 8    ]
+        # [pt, y, phi, mass, eta, E, PID, w, theta]
+        # [0 , 1, 2  , 3   , 4  , 5, 6  , 7, 8    ]
     partVec.append([p_tt.pt, p_tt.rapidity, p_tt.phi, p_tt.mass, p_tt.eta, p_tt.E, 0, wgt, theta])
 
     partVec.append([ptop.pt, ptop.rapidity, ptop.phi, ptop.mass, ptop.eta, ptop.E, 6, wgt, theta])
@@ -260,3 +263,4 @@ print(f'{np.shape(nJets) = }')
 
 np.save(f'{dir}/jet_4vectors_MiNNLO_{LHE}_minPT_{int(MIN_PT)}.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
+
