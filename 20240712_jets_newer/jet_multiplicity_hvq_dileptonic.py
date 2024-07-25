@@ -18,9 +18,8 @@ import sys
 import argparse
 import numpy as np
 
-# deprecated 
-# import uproot_methods
-import vector as uproot_methods # so we can keep using the code as is
+# import uproot_methods # deprecated 
+import vector
 
 # Import the Pythia module.
 import pythia8
@@ -200,9 +199,13 @@ for iEvent in range(N):
             top = particle
         if particle.id() == -6:
             antitop = particle
-
-    patop = uproot_methods.TLorentzVector.from_ptetaphim(antitop.pT(), antitop.eta(), antitop.phi(), antitop.m())
-    ptop = uproot_methods.TLorentzVector.from_ptetaphim(top.pT(), top.eta(), top.phi(), top.m())
+    
+    # deprecated
+    # patop = uproot_methods.TLorentzVector.from_ptetaphim(antitop.pT(), antitop.eta(), antitop.phi(), antitop.m())
+    # ptop = uproot_methods.TLorentzVector.from_ptetaphim(top.pT(), top.eta(), top.phi(), top.m())
+    
+    patop = vector.obj(pt = antitop.pT(), eta = antitop.eta(), phi = antitop.phi(), mass = antitop.m())
+    ptop  = vector.obj(pt = top.pT(),     eta = top.eta(),     phi = top.phi(),     mass = top.m())
 
     p_tt = ptop + patop
 
