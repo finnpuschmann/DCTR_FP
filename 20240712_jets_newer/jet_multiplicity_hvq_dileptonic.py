@@ -40,7 +40,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # LHE = args.lhe
     NUM = args.num
-    MIN_PT = args.min_pt
+    MIN_PT = args.pt
 else:
     # LHE = '100'
     NUM = 100000
@@ -122,7 +122,7 @@ pythia.readString("PartonLevel:MPI = off")
 # pythia.readString("HadronLevel:all = on")
 pythia.readString("HadronLevel:all = off")
 pythia.readString("Random:setSeed = on")
-pythia.readString(f"Random:seed = {int(LHE)}")
+pythia.readString("Random:seed = 2")
 
 # MiNNLO parameter
 # pythia.readString("SpaceShower:dipoleRecoil = on") # MiNNLO ONLY!!

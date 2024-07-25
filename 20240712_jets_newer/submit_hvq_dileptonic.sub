@@ -1,0 +1,16 @@
+executable              = submit_hvq_dileptonic.sh
+
+log                     = logs/submit_hvq_dileptonic.log
+output                  = logs/submit_hvq_dileptonic.out
+error                   = logs/submit_hvq_dileptonic.err
+
++MySingularityImage = "/cvmfs/unpacked.cern.ch/registry.hub.docker.com/cmssw/cc7:amd64"
+
+should_transfer_files   = Yes
+when_to_transfer_output = ON_EXIT
+
+request_cpus            = 1
+request_memory          = 8G
+request_disk            = 8G
+
+queue

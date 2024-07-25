@@ -1016,7 +1016,6 @@ Also includes functions for plotting the ratio of X0 and X2 compared to X1, i.e.
 
 
 # Global plot settings
-# Global plot settings
 from matplotlib import rc
 import matplotlib.font_manager
 import mplhep as hep
@@ -1281,7 +1280,6 @@ def make_legend(ax, title, loc='best', font_size = 20):
         leg.texts[i].set_fontsize(int(font_size))
     leg._legend_box.align = "left"
     plt.tight_layout()
-
 
 
 def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '(13 TeV)', part_label=None, arg_label=None, unit=None, inv_unit=None, save_prefix = 'plot'):
