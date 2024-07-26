@@ -41,12 +41,12 @@ if __name__ == "__main__":
     # NUM arg
     parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 10000", type = int, default = 10000)
     # MIN_PT arg
-    parser.add_argument("-p", "--pt", "min_pt", help="Float. Minimum pt for jet finding algorithm. Default = 30.0", type = float, default = 30.0)
+    parser.add_argument("-p", "--pt", help="Float. Minimum pt for jet finding algorithm. Default = 30.0", type = float, default = 30.0)
 
     args = parser.parse_args()
     LHE = args.lhe
     NUM = args.num
-    MIN_PT = args.min_pt
+    MIN_PT = args.pt
 else:
     LHE = '1000'
     NUM = 10000
@@ -56,10 +56,14 @@ else:
 # start pythia
 pythia = pythia8.Pythia()
 
-lhe_file = f'/nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{LHE}.lhe'
+lhe_file = f'/nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_beta1/decay-ll/pwgevents-{int(LHE):04d}.lhe'
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
 pythia.readString(f'Beams:LHEF = {lhe_file}') # the LHEF to read from
 print(f'Using LHE File: {lhe_file}')
+
+# use the hard processes from lhe file
+# https://pythia.org/latest-manual/HadronLevelStandalone.html
+# pythia.readString('ProcessLevel:all = off')
 
 # Veto Settings # # Veto Settings # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8PowhegEmissionVetoSettings_cfi.py
 pythia.readString("SpaceShower:pTmaxMatch = 1")
@@ -96,8 +100,13 @@ pythia.readString("SigmaTotal:mode = 0")
 pythia.readString("SigmaTotal:sigmaEl = 21.89")
 pythia.readString("SigmaTotal:sigmaTot = 100.309")
 pythia.readString("PDF:pSet = 20")
+
 # pythia.readString("HadronLevel:all = on")
-pythia.readString("HadronLevel:all = off")
+# on by default
+# If off then stop the generation after the hard process and parton-level activity has been generated, but before the hadron-level steps.
+# https://pythia.org/latest-manual/MasterSwitches.html
+# pythia.readString("HadronLevel:all = off")
+
 
 # Common settings CFI # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8CommonSettings_cfi.py
 '''
@@ -119,10 +128,7 @@ pythia.readString("6:onMode = on")
 pythia.readString("-6:onMode = on")
 pythia.readString("StringZ:rFactB = 0.855")
 pythia.readString("Main:timesAllowErrors = 500")
-# pythia.readString("PartonLevel:MPI = on")
-pythia.readString("PartonLevel:MPI = off")
-# pythia.readString("HadronLevel:all = on")
-pythia.readString("HadronLevel:all = off")
+
 pythia.readString("Random:setSeed = on")
 pythia.readString(f"Random:seed = {int(LHE)}")
 
@@ -130,9 +136,15 @@ pythia.readString(f"Random:seed = {int(LHE)}")
 pythia.readString("SpaceShower:dipoleRecoil = on")
 
 # turn off parton settings 
-pythia.readString("PartonLevel:FSR = off")
-pythia.readString("PartonLevel:all = off")
+# pythia.readString("PartonLevel:MPI = on")
+# pythia.readString("PartonLevel:MPI = off") # multiparton interaction
+# pythia.readString("PartonLevel:FSR = off") # final state radiation
 
+
+# this is why events were empty
+# If off then stop the generation after the hard process has been generated, but before the parton-level and hadron-level steps. The process record is filled, but the event one is then not.
+# https://pythia.org/latest-manual/MasterSwitches.html
+# pythia.readString("PartonLevel:all = off")
 
 # Initialize, incoming pp beams are default.
 pythia.init()
@@ -191,7 +203,7 @@ for iEvent in range(N):
     partVec = []
     TT = []
     top = None
-    antitop = None  
+    antitop = None
     for particle in pythia.event:
         # selecting only last top
         if particle.id() == 6:
@@ -202,7 +214,7 @@ for iEvent in range(N):
     # deprecated
     # patop = uproot_methods.TLorentzVector.from_ptetaphim(antitop.pT(), antitop.eta(), antitop.phi(), antitop.m())
     # ptop = uproot_methods.TLorentzVector.from_ptetaphim(top.pT(), top.eta(), top.phi(), top.m())
-    
+
     patop = vector.obj(pt = antitop.pT(), eta = antitop.eta(), phi = antitop.phi(), mass = antitop.m())
     ptop  = vector.obj(pt = top.pT(),     eta = top.eta(),     phi = top.phi(),     mass = top.m())
 
@@ -257,13 +269,12 @@ os.makedirs(dir, exist_ok=True)
 
 # save shower
 P0 = np.array(P0)
-np.save(f'{dir}/converted_lhe_MiNNLO_{LHE}_minPT_{int(MIN_PT)}.npy', P0)
+np.save(f'{dir}/converted_lhe_MiNNLO_{LHE}_minPT_{int(MIN_PT)}_FSR_MPI_HadronAll_ProcessAll.npy', P0)
 print(f'{np.shape(P0) = }')
 
 # save multiplicity and jet observables
-np.save(f'{dir}/jet_multiplicity_MiNNLO_{LHE}_minPT_{int(MIN_PT)}.npy', nJets)
+np.save(f'{dir}/jet_multiplicity_MiNNLO_{LHE}_minPT_{int(MIN_PT)}_FSR_MPI_HadronAll_ProcessAll.npy', nJets)
 print(f'{np.shape(nJets) = }')
 
-np.save(f'{dir}/jet_4vectors_MiNNLO_{LHE}_minPT_{int(MIN_PT)}.npy', jets_4vectors)
+np.save(f'{dir}/jet_4vectors_MiNNLO_{LHE}_minPT_{int(MIN_PT)}_FSR_MPI_HadronAll_ProcessAll.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
-
