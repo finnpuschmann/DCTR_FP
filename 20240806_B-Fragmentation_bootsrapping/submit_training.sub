@@ -1,0 +1,13 @@
+executable              = submit_training.sh
+
+arguments               = $(Process)
+
+log                     = logs/submit_training_$(Process).log
+output                  = logs/submit_training_$(Process).out
+error                   = logs/submit_training_$(Process).err
+
+request_cpus            = 1
+request_gpus            = 1
+request_memory          = 16G
+
+queue 10
