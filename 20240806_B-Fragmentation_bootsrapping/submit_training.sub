@@ -9,5 +9,6 @@ error                   = logs/submit_training_$(Process).err
 request_cpus            = 1
 request_gpus            = 1
 request_memory          = 16G
++RequestRuntime         = 20000
 
 queue 10

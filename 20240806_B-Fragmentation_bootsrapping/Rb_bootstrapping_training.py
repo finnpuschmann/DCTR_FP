@@ -10,6 +10,7 @@ import gc
 # standard numerical library imports
 import numpy as np
 import scipy as sp
+import matplotlib as plt
 
 # tensorflow and keras imports
 import tensorflow as tf
@@ -39,42 +40,42 @@ if __name__ == "__main__":
     # prcocess_id arg
     parser.add_argument("-p", "--process", help="Int. ID of Which process is running, when running multiple in parallel", default = 1)
     args = parser.parse_args()
-    ITER = args.iter
-    PROCESS = args.process
+    ITER = int(args.iter)
+    PROCESS = int(args.process)
 else:
     ITER = 5
     PROCESS = 1
 
 memory=8192*0.9
-gpus = tf.config.list_physical_devices('GPU')
-tf.config.set_visible_devices(gpus[0], 'GPU')
-tf.config.experimental.set_virtual_device_configuration(gpus[0],[tf.config.experimental.VirtualDeviceConfiguration(memory_limit=memory)])
-logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+# gpus = tf.config.list_physical_devices('GPU')
+# tf.config.set_visible_devices(gpus[0], 'GPU')
+# tf.config.experimental.set_virtual_device_configuration(gpus[0],[tf.config.experimental.VirtualDeviceConfiguration(memory_limit=memory)])
+# logical_gpus = tf.config.experimental.list_logical_devices('GPU')
 
 # define training iter function and helpful setup_nn function
 def setup_nn(Phi_sizes = (100,100,128), F_sizes = (100,100,100), input_dim=1, patience = 15, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal', out_dir = './saved_models'):
 
     dctr = PFN(input_dim = input_dim,
-               Phi_sizes = Phi_sizes, 
+               Phi_sizes = Phi_sizes,
                F_sizes   = F_sizes,
                summary   = False)
 
     os.makedirs(os.path.dirname(f'{out_dir}/{save_label}.h5'), exist_ok=True) # create output dir, if it doesn't exist
-    
+
     checkpoint = keras.callbacks.ModelCheckpoint(f'{out_dir}/{save_label}.h5',
                                                     monitor='val_loss',
                                                     verbose=2,
                                                     save_best_only=True,
                                                     mode='min')
-    
+
     CSVLogger = keras.callbacks.CSVLogger(f'{out_dir}/{save_label}_loss.csv', append=False)
-    
+
     EarlyStopping = keras.callbacks.EarlyStopping(monitor='val_loss',
                                                   min_delta=0,
                                                   patience=patience,
                                                   verbose=1,
                                                   restore_best_weights=True)
-    
+
     callbacks = [checkpoint, CSVLogger, EarlyStopping]
 
     return dctr, callbacks
@@ -126,13 +127,13 @@ def train_single_iteration(X0, X1, iteration, num_events = int(4e6), batch_size 
     
     dctr.save(f'{out_dir}/{save_label}_iter_{iteration:02d}.h5')
     
-    plt.figure(figsize=(6,5))
-    plt.plot(history.history['loss'],     label = 'loss')
-    plt.plot(history.history['val_loss'], label = 'val loss')
-    plt.legend(loc=0)
-    plt.ylabel('loss')
-    plt.xlabel('Epochs')
-    plt.savefig(f'{out_dir}/{save_label}_iter_{iteration:02d}_history.pdf')
+    # plt.figure(figsize=(6,5))
+    # plt.plot(history.history['loss'],     label = 'loss')
+    # plt.plot(history.history['val_loss'], label = 'val loss')
+    # plt.legend(loc=0)
+    # plt.ylabel('loss')
+    # plt.xlabel('Epochs')
+    # plt.savefig(f'{out_dir}/{save_label}_iter_{iteration:02d}_history.pdf')
 
     del history, dctr, callbacks, X_train, X_val, Y_train, Y_val # delete vars to free memory
     K.clear_session()
@@ -143,7 +144,7 @@ def train_single_iteration(X0, X1, iteration, num_events = int(4e6), batch_size 
 # data_dir = '../../Data'
 
 # NAF
-data_dir = '/nfs/dust/cms/user/puschman/pythia8307/examples/output'
+data_dir = '/nfs/dust/cms/user/puschman/pythia8309/examples/output'
 
 
 # X0: Rb 1.056
@@ -204,8 +205,18 @@ X1_tot = np.array(X1_tot)
 
 # TRAINING
 
-# NUM iterations with 4M random samples per iter
+# want:
+# 1:       1 ->   ITER
+# 2:  ITER+1 -> 2*ITER
+# 3:2*ITER+1 -> 3*ITER, etc.
 
-for i in range(PROCESS, PROCESS + ITER + 1):
-    train_single_iteration(X0_tot, X1_tot, iteration=i)
+begin = ITER*(PROCESS-1) + 1
+end   = ITER*PROCESS     + 1 # +1 since last index not included, since counting starts at 0
 
+# training with 4M events each
+for i in range(begin, end):
+    train_single_iteration(X0_tot, X1_tot, iteration=i, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal_4M')
+
+# training with 1M events
+for i in range(begin, end):
+    train_single_iteration(X0_tot, X1_tot, iteration=i, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal_1M', num_events = int(1e6))
