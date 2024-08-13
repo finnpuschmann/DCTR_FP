@@ -9,4 +9,4 @@ error                   = logs/submit_hvq_dileptonic_$(Process).err
 request_cpus            = 1
 request_memory          = 16G
 
-queue 3
+queue 20

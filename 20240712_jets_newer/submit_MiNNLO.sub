@@ -9,4 +9,4 @@ error                   = logs/submit_MiNNLO_$(Process).err
 request_cpus            = 1
 request_memory          = 4G
 
-queue 100
+queue 1000

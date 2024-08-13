@@ -41,7 +41,7 @@ if __name__ == "__main__":
     # NUM arg
     parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 10000", type = int, default = 10000)
     # MIN_PT arg
-    parser.add_argument("-p", "--pt", help="Float. Minimum pt for jet finding algorithm. Default = 30.0", type = float, default = 30.0)
+    parser.add_argument("-p", "--pt", help="Float. Minimum pt for jet finding algorithm. Default = 15.0", type = float, default = 15.0)
 
     args = parser.parse_args()
     LHE = args.lhe
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 else:
     LHE = '1000'
     NUM = 10000
-    MIN_PT = 30.0
+    MIN_PT = 15.0
 
 
 # start pythia
@@ -60,10 +60,6 @@ lhe_file = f'/nfs/dust/cms/user/amoroso/powheg/POWHEG-BOX-V2/ttJ_MiNNLOPS_v1.0_b
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
 pythia.readString(f'Beams:LHEF = {lhe_file}') # the LHEF to read from
 print(f'Using LHE File: {lhe_file}')
-
-# use the hard processes from lhe file
-# https://pythia.org/latest-manual/HadronLevelStandalone.html
-# pythia.readString('ProcessLevel:all = off')
 
 # Veto Settings # # Veto Settings # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8PowhegEmissionVetoSettings_cfi.py
 pythia.readString("SpaceShower:pTmaxMatch = 1")
@@ -264,17 +260,18 @@ pythia.stat()
 
 import os
 
-dir = f'./output/MiNNLO/minPT_{int(MIN_PT)}'
+dir = f'./output/MiNNLO}'
 os.makedirs(dir, exist_ok=True)
 
 # save shower
 P0 = np.array(P0)
-np.save(f'{dir}/converted_lhe_MiNNLO_{LHE}_minPT_{int(MIN_PT)}_FSR_MPI_HadronAll_ProcessAll.npy', P0)
+np.save(f'{dir}/converted_lhe_MiNNLO_10K_{LHE}.npy', P0)
 print(f'{np.shape(P0) = }')
 
 # save multiplicity and jet observables
-np.save(f'{dir}/jet_multiplicity_MiNNLO_{LHE}_minPT_{int(MIN_PT)}_FSR_MPI_HadronAll_ProcessAll.npy', nJets)
+np.save(f'{dir}/jet_multiplicity_MiNNLO_10K_{LHE}.npy', nJets)
 print(f'{np.shape(nJets) = }')
 
-np.save(f'{dir}/jet_4vectors_MiNNLO_{LHE}_minPT_{int(MIN_PT)}_FSR_MPI_HadronAll_ProcessAll.npy', jets_4vectors)
+np.save(f'{dir}/jet_4vectors_MiNNLO_{LHE}_10K_{LHE}.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
+

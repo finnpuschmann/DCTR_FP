@@ -37,35 +37,31 @@ sys.path.insert(0, lib)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="How many events to shower and get jets for")
     # LHE arg
-    # parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 100. Default = '100'", type = str, default = '100')
+    parser.add_argument("-l", "--lhe", help="String. Which hvq LHE File to open. Values between 1 and 20. Default = '1'", type = str, default = '1')
     # NUM arg
     parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 1000000", type = int, default = 1000000)
     # MIN_PT arg
-    parser.add_argument("-p", "--pt", "--min_pt", help="Float. Minimum pt for jet finding algorithm. Default = 30.0", type = float, default = 30.0)
+    parser.add_argument("-p", "--pt", "--min_pt", help="Float. Minimum pt for jet finding algorithm. Default = 15.0", type = float, default = 15.0)
 
     args = parser.parse_args()
-    # LHE = args.lhe
+    LHE = args.lhe
     NUM = args.num
     MIN_PT = args.pt
 else:
-    # LHE = '100'
+    LHE = '1'
     NUM = 1000000
-    MIN_PT = 30.0
+    MIN_PT = 15.0
 
 
 # start pythia
 pythia = pythia8.Pythia()
 
-lhe_file = f'/nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/dileptoninc/pwgevents.lhe'
+lhe_file = f'/nfs/dust/cms/user/vaguglie/simSetup/Box2/POWHEG-BOX-V2/hvq/testrun-tdec-lhc/Hdamp13TeV/BaseNom/dileptoninc/Results{LHE}/pwgevents.lhe'
 pythia.readString("Beams:frameType = 4") # read info from a LHEF
 pythia.readString(f'Beams:LHEF = {lhe_file}') # the LHEF to read from
 print(f'Using LHE File: {lhe_file}')
 
-# use the hard processes from lhe file
-# https://pythia.org/latest-manual/HadronLevelStandalone.html
-# pythia.readString('ProcessLevel:all = off')
-
-# Veto Settings # # Veto Settings # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8PowhegEmissionVetoSettings_cfi.py
+# Veto Settings # https://github.com/cms-sw/cmssw/blob/master/Configuration/Generator/python/Pythia8PowhegEmissionVetoSettings_cfi.py
 pythia.readString("SpaceShower:pTmaxMatch = 1")
 pythia.readString("TimeShower:pTmaxMatch = 1")
 
@@ -130,7 +126,7 @@ pythia.readString("StringZ:rFactB = 0.855")
 pythia.readString("Main:timesAllowErrors = 500")
 
 pythia.readString("Random:setSeed = on")
-pythia.readString(f"Random:seed = 2")
+pythia.readString(f"Random:seed = {LHE}")
 
 # MiNNLO parameter
 # pythia.readString("SpaceShower:dipoleRecoil = on") # off for hvq
@@ -264,19 +260,20 @@ pythia.stat()
 
 import os
 
-dir = f'./output/hvq/minPT_{int(MIN_PT)}'
+dir = f'./output/hvq'
 os.makedirs(dir, exist_ok=True)
 
 # save shower
 P0 = np.array(P0)
-np.save(f'./output/hvq/converted_lhe_hvq_dileptonic_minPT_{int(MIN_PT)}_FSR_MPI_HadronAll_ProcessAll.npy', P0)
+np.save(f'./output/hvq/converted_lhe_hvq_dileptonic_1M_{LHE}.npy', P0)
 print(f'{np.shape(P0) = }')
 
 # save multiplicity and jet observables
 nJets = np.array(nJets)
-np.save(f'./output/hvq/jet_multiplicity_hvq_dileptonic_minPT_{int(MIN_PT)}_FSR_MPI_HadronAll_ProcessAll.npy', nJets)
+np.save(f'./output/hvq/jet_multiplicity_hvq_dileptonic_1M_{LHE}.npy', nJets)
 print(f'{np.shape(nJets) = }')
 
 jets_4vectors = np.array(jets_4vectors)
-np.save(f'./output/hvq/jet_4vectors_hvq_dileptonic_minPT_{int(MIN_PT)}_FSR_MPI_HadronAll_ProcessAll.npy', jets_4vectors)
+np.save(f'./output/hvq/jet_4vectors_hvq_dileptonic_1M_{LHE}.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
+
