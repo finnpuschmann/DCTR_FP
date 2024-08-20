@@ -637,7 +637,7 @@ def setup_nn(input_dim=5, Phi_sizes = (100,100,128), F_sizes = (100,100,100),
     if reduceLR == True:
         reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor=monitor, mode=mode, factor=0.6, patience=int(0.4*patience), verbose=1)
     else: 
-        reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor=monitor, mode=mode, factor=1, patience=int(patience), verbose=0)
+        reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(monitor=monitor, mode=mode, factor=0.999999, patience=int(patience), verbose=0)
     
     callbacks = [checkpoint, EarlyStopping, learn_schedule, reduce_lr] # csv_logger
     
