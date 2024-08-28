@@ -166,8 +166,8 @@ mode='min', savePath=currentPath, saveLabel='DCTR_training', summary=False, verb
 pos_rwgt, cb = DCTR.setup_nn(
     patience=15,
     loss = loss,
-    use_scheduler=False, 
-    reduceLR = False,
+    use_scheduler=False,
+    reduceLR=True,
     saveLabel=f'DCTR_NNLO_{loss}_pos_rwgt_{run}_batchsize_{batch_size}',
     savePath='./saved_models/',
     summary=False
