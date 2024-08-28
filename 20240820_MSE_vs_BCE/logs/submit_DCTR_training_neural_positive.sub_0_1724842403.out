@@ -1,0 +1,3 @@
+Configured CUDA from: /cvmfs/sft.cern.ch/lcg/releases/cuda/12.4-4899e/x86_64-el9-gcc11-opt
+GPUs available for tensorflow:
+[PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')]
