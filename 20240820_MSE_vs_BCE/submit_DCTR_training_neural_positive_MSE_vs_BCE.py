@@ -20,15 +20,17 @@ from sklearn.model_selection import train_test_split
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Which Parallel Process is running?")
     # process_id arg
-    parser.add_argument("-p", "--pid", "--process_id", help="Int. Process ID for parallel computing. Default: 1", type = int, default = 1)
+    parser.add_argument('--pid', '--process_id', 
+        help="Int. Process ID for parallel computing. Default: 1", 
+        type = int, default = 1)
     args = parser.parse_args()
-    process_id = args.p
+    process_id = args.pid
 else:
     process_id = 1
 
 
 # # load data
-
+print('loading data')
 # directory with pre converted lhe files as numpy arrays
 data_dir = '../../Data' # modify as needed
 
@@ -44,28 +46,28 @@ data_dir = '../../Data' # modify as needed
 # POWHEG hvq
 x0_nrm = []
 x0_nrm = np.load(f'{data_dir}/POWHEG_hvq/showered/normed_lhe_01.npy')[:9543943] # 9543943 num of NNLO samples
-print(f'POWHEG hvq x0_nrm.shape:     {x0_nrm.shape}')
+# print(f'POWHEG hvq x0_nrm.shape:     {x0_nrm.shape}')
 
 # plotting data; different from training data; for calculating stats
 x0_plt = []
 x0_plt = np.load(f'{data_dir}/POWHEG_hvq/showered/converted_lhe_02.npy')[:9543943]
-print(f'POWHEG hvq x0_plt.shape:     {x0_plt.shape}')
+# print(f'POWHEG hvq x0_plt.shape:     {x0_plt.shape}')
 
 x0_plt_nrm = []
 x0_plt_nrm = np.load(f'{data_dir}/POWHEG_hvq/showered/normed_lhe_02.npy')[:9543943]
-print(f'POWHEG hvq x0_plt_nrm.shape: {x0_plt_nrm.shape}')
+# print(f'POWHEG hvq x0_plt_nrm.shape: {x0_plt_nrm.shape}')
 
 
 # MiNNLO x1
 # training data
 x1_nrm = []
 x1_nrm = np.load(f'{data_dir}/MiNNLO/showered/normed_lhe.npy')
-print(f'MiNNLO all particles x1_nrm.shape: {x1_nrm.shape}')
+# print(f'MiNNLO all particles x1_nrm.shape: {x1_nrm.shape}')
 
 # plotting data
 x1_plt = []
 x1_plt = np.load(f'{data_dir}/MiNNLO/showered/converted_lhe.npy')
-print(f'MiNNLO all particles x1_plt.shape: {x1_plt.shape}')
+# print(f'MiNNLO all particles x1_plt.shape: {x1_plt.shape}')
 
 # get normalized event generator weights | all weigths = +/-1
 x0_wgt = x0_nrm[:, 0, 7].copy()
@@ -77,6 +79,7 @@ x1_plt_wgt = x1_plt[:, 0, 7].copy()
 
 
 # prep data
+print('preparing data')
 # delete eta (pseudorapidity) and Energy -> Train only with [pt, y, phi, m, PID]
 
 # delete energy
@@ -91,7 +94,8 @@ x1_nrm = np.delete(x1_nrm, 4, -1)
 
 
 K.clear_session()
-print(gc.collect()) # cpu gabage collection to free up memory from discarded temp arrays
+gc.collect() # cpu gabage collection to free up memory from discarded temp arrays
+
 
 
 # neural positive reweigher for MiNNLO X1
@@ -110,7 +114,8 @@ del y
 del wgt
 
 K.clear_session()
-print(gc.collect()) # cpu gabage collection to free up memory from discarded temp arrays
+gc.collect() # cpu gabage collection to free up memory from discarded temp arrays
+
 
 # neural positive training:
 # compare MSE vs CCE neural positive training
@@ -146,6 +151,8 @@ else:
 batch_id = int((p_id-1)/runs)
 batch_size = 8192*batch_sizes[batch_id]
 
+
+print('setting up neural network and starting training')
 
 # set up NN and CallBacks
 # defaults:

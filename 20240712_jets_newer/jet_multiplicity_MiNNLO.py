@@ -260,7 +260,7 @@ pythia.stat()
 
 import os
 
-dir = f'./output/MiNNLO}'
+dir = f'./output/MiNNLO'
 os.makedirs(dir, exist_ok=True)
 
 # save shower
