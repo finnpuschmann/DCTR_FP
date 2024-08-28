@@ -6,8 +6,8 @@ log                     = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).log
 output                  = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).out
 error                   = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).err
 
-request_cpus            = 4
-request_gpus            = 1
+request_cpus            = 8
+
 request_memory          = 32G
 +RequestRuntime         = 30000
 

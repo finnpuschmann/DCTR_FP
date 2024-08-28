@@ -18,6 +18,7 @@ from sklearn.model_selection import train_test_split
 
 # parse cli arguments
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Which Parallel Process is running?")
     # process_id arg
     parser.add_argument("-p", "--pid", "--process_id", help="Int. Process ID for parallel computing. Default: 1", type = int, default = 1)
     args = parser.parse_args()
