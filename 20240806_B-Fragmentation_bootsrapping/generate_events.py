@@ -96,7 +96,7 @@ pythia.readString("PartonLevel:MPI = off")
 pythia.readString("24:mayDecay = off")
 #pythia.readString("TimeShower:alphaSvalue = 0.1365")
 pythia.readString("Random:setSeed = on")
-pythia.readString("Random:seed = 2")
+pythia.readString(f"Random:seed = {seed}")
 
 
 
@@ -313,7 +313,7 @@ Pall = np.array(AllP4)
 # save to disk
 num = f'{int(N/1e6)}M'
 
-dir = f'./output/B-Fragmentation_Rb_{Rb}'
+dir = f'./output/B-Fragmentation_Rb_{Rb}_v2'
 os.makedirs(dir, exist_ok=True)
 
 np.savez(f'{dir}/bootstrapping_Xb_multC_multNeutra_listBtop_listBextra-Rb_{Rb}_{num}_seed{seed}_CP5.npz', a=P0, b=P1, c=P2, d=P3, e=P4)
