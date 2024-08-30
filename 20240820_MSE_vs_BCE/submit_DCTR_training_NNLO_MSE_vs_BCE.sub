@@ -1,4 +1,4 @@
-executable              = submit_DCTR_training_neural_positive.sh
+executable              = submit_DCTR_training_NNLO_MSE_vs_BCE.sh
 
 arguments               = $(Process)
 
@@ -8,7 +8,8 @@ error                   = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).err
 
 request_cpus            = 4
 request_gpus            = 1
-request_memory          = 32G
-+RequestRuntime         = 30000
 
-queue 2
+request_memory          = 32G
++RequestRuntime         = 100000
+
+queue 24
