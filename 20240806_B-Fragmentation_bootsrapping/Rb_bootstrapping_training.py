@@ -46,14 +46,15 @@ else:
     ITER = 5
     PROCESS = 1
 
-memory=8192*0.9
-# gpus = tf.config.list_physical_devices('GPU')
+# memory=8192*0.9
+print(tf.config.list_physical_devices('GPU'))
+
 # tf.config.set_visible_devices(gpus[0], 'GPU')
 # tf.config.experimental.set_virtual_device_configuration(gpus[0],[tf.config.experimental.VirtualDeviceConfiguration(memory_limit=memory)])
 # logical_gpus = tf.config.experimental.list_logical_devices('GPU')
 
 # define training iter function and helpful setup_nn function
-def setup_nn(Phi_sizes = (100,100,128), F_sizes = (100,100,100), input_dim=1, patience = 15, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal', out_dir = './saved_models'):
+def setup_nn(Phi_sizes = (100,100,128), F_sizes = (100,100,100), input_dim=1, patience = 15, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal_v2', out_dir = './saved_models'):
 
     dctr = PFN(input_dim = input_dim,
                Phi_sizes = Phi_sizes,
@@ -81,7 +82,7 @@ def setup_nn(Phi_sizes = (100,100,128), F_sizes = (100,100,100), input_dim=1, pa
     return dctr, callbacks
 
 
-def train_single_iteration(X0, X1, iteration, num_events = int(4e6), batch_size = 1000, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal', out_dir = './saved_models'):
+def train_single_iteration(X0, X1, iteration, num_events = int(4e6), batch_size = 1000, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal_v2', out_dir = './saved_models'):
     K.clear_session()
     gc.collect() # collect garbage to free memory
     
@@ -154,69 +155,63 @@ data_dir = '/nfs/dust/cms/user/puschman/pythia8309/examples/output'
 
 X0 = []
 for i in range(1, 13):
-    dataset = np.load(f'{data_dir}/B-Fragmentation_Rb_1.056/bootstrapping_Xb_multC_multNeutra_listBtop_listBextra-Rb_1.056_1M_seed{i}_CP5.npz')
+    dataset = np.load(f'{data_dir}/B-Fragmentation_Rb_1.056_v2/bootstrapping_Xb_multC_multNeutra_listBtop_listBextra-Rb_1.056_1M_seed{i}_CP5.npz')
     # print(dataset.files)
     X0.extend(dataset['a'])
 
 X0 = np.array(X0)
-# print(X0.shape)
+print(f'{X0.shape = })
 
 X1 = []
 for i in range(1, 13):
-    dataset = np.load(f'{data_dir}/B-Fragmentation_Rb_0.855/bootstrapping_Xb_multC_multNeutra_listBtop_listBextra-Rb_0.855_1M_seed{i}_CP5.npz')
+    dataset = np.load(f'{data_dir}/B-Fragmentation_Rb_0.855_v2/bootstrapping_Xb_multC_multNeutra_listBtop_listBextra-Rb_0.855_1M_seed{i}_CP5.npz')
     # print(dataset.files)
     X1.extend(dataset['a'])
 
 X1 = np.array(X1)
-# print(X1.shape)
+print(f'{X1.shape = })
 
 # process data
+print('processing parity')
 X0_pari = []
 X0_dispari = []
 X1_pari = []
 X1_dispari = []
 
-
+# X0
 for i, _ in enumerate(X0):
     if i % 2 == 0:
         X0_pari.append(X0[i])
     else:
         X0_dispari.append(X0[i])
 
+X0_tot = []
+for i, _ in enumerate(X0_pari):
+    X0_tot.append([[X0_pari[i]], [X0_dispari[i]]])
+X0_tot = np.array(X0_tot)
+print(f'{X0_tot.shape = })
 
+# X1
 for i, _ in enumerate(X1):
     if i % 2 == 0:
         X1_pari.append(X1[i])
     else:
         X1_dispari.append(X1[i])
 
-
-X0_tot = []
-for i, _ in enumerate(X0_pari):
-    X0_tot.append([[X0_pari[i]], [X0_dispari[i]]])
-X0_tot = np.array(X0_tot)
-
-
 X1_tot = []
 for i, _ in enumerate(X1_pari):
     X1_tot.append([[X1_pari[i]], [X1_dispari[i]]])
 X1_tot = np.array(X1_tot)
+print(f'{X1_tot.shape = })
 
 
 # TRAINING
-
-# want:
-# 1:       1 ->   ITER
-# 2:  ITER+1 -> 2*ITER
-# 3:2*ITER+1 -> 3*ITER, etc.
-
 begin = ITER*(PROCESS-1) + 1
 end   = ITER*PROCESS     + 1 # +1 since last index not included, since counting starts at 0
+print(f'begin training of {ITER} iterations with 4M and 1M random samples')
 
-# training with 4M events each
 for i in range(begin, end):
-    train_single_iteration(X0_tot, X1_tot, iteration=i, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal_4M')
-
-# training with 1M events
-for i in range(begin, end):
-    train_single_iteration(X0_tot, X1_tot, iteration=i, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal_1M', num_events = int(1e6))
+    # 4M random events per class
+    train_single_iteration(X0_tot, X1_tot, iteration=i, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal_4M_v2')
+    # 1M random events per class
+    train_single_iteration(X0_tot, X1_tot, iteration=i, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal_1M_v2', num_events = int(1e6))

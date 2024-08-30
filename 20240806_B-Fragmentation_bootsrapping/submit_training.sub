@@ -6,9 +6,9 @@ log                     = logs/submit_training_$(Process).log
 output                  = logs/submit_training_$(Process).out
 error                   = logs/submit_training_$(Process).err
 
-request_cpus            = 1
+request_cpus            = 4
 request_gpus            = 1
 request_memory          = 16G
-+RequestRuntime         = 20000
++RequestRuntime         = 40000
 
 queue 10
