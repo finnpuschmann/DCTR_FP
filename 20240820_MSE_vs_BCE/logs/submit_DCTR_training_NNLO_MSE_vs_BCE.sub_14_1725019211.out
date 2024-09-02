@@ -1,0 +1,1109 @@
+Configured CUDA from: /cvmfs/sft.cern.ch/lcg/releases/cuda/12.4-4899e/x86_64-el9-gcc11-opt
+GPUs available for tensorflow:
+[PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')]
+loading data
+preparing data
+Epoch 1/100
+
+Epoch 1: val_loss improved from inf to 0.60017, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 13s - loss: 0.6107 - acc: 0.5277 - val_loss: 0.6002 - val_acc: 0.5362 - lr: 0.0010 - 13s/epoch - 29ms/step
+Epoch 2/100
+
+Epoch 2: val_loss improved from 0.60017 to 0.59765, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 11s - loss: 0.5984 - acc: 0.5393 - val_loss: 0.5977 - val_acc: 0.5333 - lr: 0.0010 - 11s/epoch - 26ms/step
+Epoch 3/100
+
+Epoch 3: val_loss improved from 0.59765 to 0.59667, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 11s - loss: 0.5968 - acc: 0.5437 - val_loss: 0.5967 - val_acc: 0.5485 - lr: 0.0010 - 11s/epoch - 26ms/step
+Epoch 4/100
+
+Epoch 4: val_loss improved from 0.59667 to 0.59608, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5960 - acc: 0.5459 - val_loss: 0.5961 - val_acc: 0.5499 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 5/100
+
+Epoch 5: val_loss improved from 0.59608 to 0.59519, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5953 - acc: 0.5472 - val_loss: 0.5952 - val_acc: 0.5477 - lr: 0.0010 - 12s/epoch - 26ms/step
+Epoch 6/100
+
+Epoch 6: val_loss improved from 0.59519 to 0.59474, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5948 - acc: 0.5478 - val_loss: 0.5947 - val_acc: 0.5452 - lr: 0.0010 - 12s/epoch - 28ms/step
+Epoch 7/100
+
+Epoch 7: val_loss improved from 0.59474 to 0.59463, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5945 - acc: 0.5480 - val_loss: 0.5946 - val_acc: 0.5452 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 8/100
+
+Epoch 8: val_loss improved from 0.59463 to 0.59427, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5942 - acc: 0.5483 - val_loss: 0.5943 - val_acc: 0.5551 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 9/100
+
+Epoch 9: val_loss improved from 0.59427 to 0.59422, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5940 - acc: 0.5486 - val_loss: 0.5942 - val_acc: 0.5468 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 10/100
+
+Epoch 10: val_loss improved from 0.59422 to 0.59414, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5939 - acc: 0.5487 - val_loss: 0.5941 - val_acc: 0.5460 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 11/100
+
+Epoch 11: val_loss improved from 0.59414 to 0.59410, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5938 - acc: 0.5490 - val_loss: 0.5941 - val_acc: 0.5409 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 12/100
+
+Epoch 12: val_loss improved from 0.59410 to 0.59398, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5938 - acc: 0.5487 - val_loss: 0.5940 - val_acc: 0.5498 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 13/100
+
+Epoch 13: val_loss did not improve from 0.59398
+437/437 - 10s - loss: 0.5937 - acc: 0.5491 - val_loss: 0.5941 - val_acc: 0.5420 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 14/100
+
+Epoch 14: val_loss improved from 0.59398 to 0.59395, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5937 - acc: 0.5491 - val_loss: 0.5939 - val_acc: 0.5472 - lr: 0.0010 - 12s/epoch - 28ms/step
+Epoch 15/100
+
+Epoch 15: val_loss improved from 0.59395 to 0.59379, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5937 - acc: 0.5493 - val_loss: 0.5938 - val_acc: 0.5469 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 16/100
+
+Epoch 16: val_loss did not improve from 0.59379
+437/437 - 10s - loss: 0.5936 - acc: 0.5494 - val_loss: 0.5938 - val_acc: 0.5462 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 17/100
+
+Epoch 17: val_loss did not improve from 0.59379
+437/437 - 10s - loss: 0.5936 - acc: 0.5493 - val_loss: 0.5939 - val_acc: 0.5532 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 18/100
+
+Epoch 18: val_loss did not improve from 0.59379
+437/437 - 10s - loss: 0.5935 - acc: 0.5495 - val_loss: 0.5939 - val_acc: 0.5564 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 19/100
+
+Epoch 19: val_loss improved from 0.59379 to 0.59372, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5935 - acc: 0.5494 - val_loss: 0.5937 - val_acc: 0.5519 - lr: 0.0010 - 12s/epoch - 28ms/step
+Epoch 20/100
+
+Epoch 20: val_loss did not improve from 0.59372
+437/437 - 10s - loss: 0.5935 - acc: 0.5496 - val_loss: 0.5938 - val_acc: 0.5559 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 21/100
+
+Epoch 21: val_loss did not improve from 0.59372
+
+Epoch 21: ReduceLROnPlateau reducing learning rate to 0.0006000000284984708.
+437/437 - 10s - loss: 0.5935 - acc: 0.5496 - val_loss: 0.5938 - val_acc: 0.5409 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 22/100
+
+Epoch 22: val_loss improved from 0.59372 to 0.59359, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5933 - acc: 0.5501 - val_loss: 0.5936 - val_acc: 0.5519 - lr: 6.0000e-04 - 12s/epoch - 27ms/step
+Epoch 23/100
+
+Epoch 23: val_loss did not improve from 0.59359
+437/437 - 10s - loss: 0.5933 - acc: 0.5500 - val_loss: 0.5936 - val_acc: 0.5515 - lr: 6.0000e-04 - 10s/epoch - 23ms/step
+Epoch 24/100
+
+Epoch 24: val_loss improved from 0.59359 to 0.59355, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5933 - acc: 0.5500 - val_loss: 0.5936 - val_acc: 0.5503 - lr: 6.0000e-04 - 12s/epoch - 27ms/step
+Epoch 25/100
+
+Epoch 25: val_loss did not improve from 0.59355
+437/437 - 10s - loss: 0.5933 - acc: 0.5501 - val_loss: 0.5936 - val_acc: 0.5509 - lr: 6.0000e-04 - 10s/epoch - 23ms/step
+Epoch 26/100
+
+Epoch 26: val_loss did not improve from 0.59355
+437/437 - 10s - loss: 0.5933 - acc: 0.5502 - val_loss: 0.5936 - val_acc: 0.5499 - lr: 6.0000e-04 - 10s/epoch - 24ms/step
+Epoch 27/100
+
+Epoch 27: val_loss did not improve from 0.59355
+437/437 - 10s - loss: 0.5932 - acc: 0.5502 - val_loss: 0.5937 - val_acc: 0.5476 - lr: 6.0000e-04 - 10s/epoch - 24ms/step
+Epoch 28/100
+
+Epoch 28: val_loss improved from 0.59355 to 0.59352, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+
+Epoch 28: ReduceLROnPlateau reducing learning rate to 0.0003600000170990825.
+437/437 - 12s - loss: 0.5932 - acc: 0.5503 - val_loss: 0.5935 - val_acc: 0.5489 - lr: 6.0000e-04 - 12s/epoch - 28ms/step
+Epoch 29/100
+
+Epoch 29: val_loss improved from 0.59352 to 0.59348, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5931 - acc: 0.5505 - val_loss: 0.5935 - val_acc: 0.5470 - lr: 3.6000e-04 - 12s/epoch - 27ms/step
+Epoch 30/100
+
+Epoch 30: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5931 - acc: 0.5506 - val_loss: 0.5935 - val_acc: 0.5484 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 31/100
+
+Epoch 31: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5931 - acc: 0.5506 - val_loss: 0.5935 - val_acc: 0.5503 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 32/100
+
+Epoch 32: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5930 - acc: 0.5506 - val_loss: 0.5936 - val_acc: 0.5518 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 33/100
+
+Epoch 33: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5930 - acc: 0.5505 - val_loss: 0.5936 - val_acc: 0.5533 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 34/100
+
+Epoch 34: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5930 - acc: 0.5507 - val_loss: 0.5936 - val_acc: 0.5526 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 35/100
+
+Epoch 35: val_loss did not improve from 0.59348
+
+Epoch 35: ReduceLROnPlateau reducing learning rate to 0.00021600000327453016.
+437/437 - 10s - loss: 0.5930 - acc: 0.5507 - val_loss: 0.5936 - val_acc: 0.5523 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 36/100
+
+Epoch 36: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5929 - acc: 0.5509 - val_loss: 0.5935 - val_acc: 0.5522 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 37/100
+
+Epoch 37: val_loss improved from 0.59348 to 0.59348, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_1_batchsize_32768.tf
+437/437 - 12s - loss: 0.5929 - acc: 0.5509 - val_loss: 0.5935 - val_acc: 0.5505 - lr: 2.1600e-04 - 12s/epoch - 28ms/step
+Epoch 38/100
+
+Epoch 38: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5929 - acc: 0.5510 - val_loss: 0.5935 - val_acc: 0.5486 - lr: 2.1600e-04 - 10s/epoch - 23ms/step
+Epoch 39/100
+
+Epoch 39: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5928 - acc: 0.5510 - val_loss: 0.5935 - val_acc: 0.5485 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 40/100
+
+Epoch 40: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5928 - acc: 0.5509 - val_loss: 0.5936 - val_acc: 0.5515 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 41/100
+
+Epoch 41: val_loss did not improve from 0.59348
+
+Epoch 41: ReduceLROnPlateau reducing learning rate to 0.00012960000021848827.
+437/437 - 10s - loss: 0.5928 - acc: 0.5510 - val_loss: 0.5936 - val_acc: 0.5506 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 42/100
+
+Epoch 42: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5511 - val_loss: 0.5935 - val_acc: 0.5502 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 43/100
+
+Epoch 43: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5513 - val_loss: 0.5935 - val_acc: 0.5498 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 44/100
+
+Epoch 44: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5935 - val_acc: 0.5495 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 45/100
+
+Epoch 45: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5936 - val_acc: 0.5510 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 46/100
+
+Epoch 46: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5513 - val_loss: 0.5936 - val_acc: 0.5494 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 47/100
+
+Epoch 47: val_loss did not improve from 0.59348
+
+Epoch 47: ReduceLROnPlateau reducing learning rate to 7.775999838486313e-05.
+437/437 - 10s - loss: 0.5927 - acc: 0.5513 - val_loss: 0.5936 - val_acc: 0.5499 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 48/100
+
+Epoch 48: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5926 - acc: 0.5514 - val_loss: 0.5936 - val_acc: 0.5509 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 49/100
+
+Epoch 49: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5926 - acc: 0.5515 - val_loss: 0.5936 - val_acc: 0.5493 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 50/100
+
+Epoch 50: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5926 - acc: 0.5514 - val_loss: 0.5936 - val_acc: 0.5506 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 51/100
+
+Epoch 51: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5926 - acc: 0.5516 - val_loss: 0.5936 - val_acc: 0.5492 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 52/100
+
+Epoch 52: val_loss did not improve from 0.59348
+Restoring model weights from the end of the best epoch: 37.
+437/437 - 10s - loss: 0.5926 - acc: 0.5515 - val_loss: 0.5936 - val_acc: 0.5492 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 52: early stopping
+clearing keras session and collecting garbage
+finished training: loss = 'cce', run = 1, batch_size = 32768
+Epoch 1/100
+
+Epoch 1: val_loss improved from inf to 0.60000, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 13s - loss: 0.6085 - acc: 0.5260 - val_loss: 0.6000 - val_acc: 0.5320 - lr: 0.0010 - 13s/epoch - 29ms/step
+Epoch 2/100
+
+Epoch 2: val_loss improved from 0.60000 to 0.59689, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5979 - acc: 0.5414 - val_loss: 0.5969 - val_acc: 0.5471 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 3/100
+
+Epoch 3: val_loss improved from 0.59689 to 0.59569, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5958 - acc: 0.5460 - val_loss: 0.5957 - val_acc: 0.5538 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 4/100
+
+Epoch 4: val_loss improved from 0.59569 to 0.59466, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5948 - acc: 0.5472 - val_loss: 0.5947 - val_acc: 0.5502 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 5/100
+
+Epoch 5: val_loss improved from 0.59466 to 0.59445, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5944 - acc: 0.5481 - val_loss: 0.5944 - val_acc: 0.5481 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 6/100
+
+Epoch 6: val_loss improved from 0.59445 to 0.59435, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5942 - acc: 0.5487 - val_loss: 0.5944 - val_acc: 0.5528 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 7/100
+
+Epoch 7: val_loss improved from 0.59435 to 0.59405, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5940 - acc: 0.5490 - val_loss: 0.5941 - val_acc: 0.5495 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 8/100
+
+Epoch 8: val_loss did not improve from 0.59405
+437/437 - 10s - loss: 0.5939 - acc: 0.5491 - val_loss: 0.5941 - val_acc: 0.5522 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 9/100
+
+Epoch 9: val_loss improved from 0.59405 to 0.59404, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5938 - acc: 0.5494 - val_loss: 0.5940 - val_acc: 0.5464 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 10/100
+
+Epoch 10: val_loss improved from 0.59404 to 0.59393, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5937 - acc: 0.5494 - val_loss: 0.5939 - val_acc: 0.5519 - lr: 0.0010 - 12s/epoch - 28ms/step
+Epoch 11/100
+
+Epoch 11: val_loss did not improve from 0.59393
+437/437 - 10s - loss: 0.5937 - acc: 0.5496 - val_loss: 0.5940 - val_acc: 0.5479 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 12/100
+
+Epoch 12: val_loss improved from 0.59393 to 0.59390, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5936 - acc: 0.5497 - val_loss: 0.5939 - val_acc: 0.5529 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 13/100
+
+Epoch 13: val_loss improved from 0.59390 to 0.59377, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5936 - acc: 0.5498 - val_loss: 0.5938 - val_acc: 0.5481 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 14/100
+
+Epoch 14: val_loss improved from 0.59377 to 0.59372, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5936 - acc: 0.5498 - val_loss: 0.5937 - val_acc: 0.5508 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 15/100
+
+Epoch 15: val_loss did not improve from 0.59372
+437/437 - 10s - loss: 0.5935 - acc: 0.5498 - val_loss: 0.5938 - val_acc: 0.5510 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 16/100
+
+Epoch 16: val_loss did not improve from 0.59372
+437/437 - 10s - loss: 0.5935 - acc: 0.5498 - val_loss: 0.5938 - val_acc: 0.5501 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 17/100
+
+Epoch 17: val_loss improved from 0.59372 to 0.59370, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5935 - acc: 0.5497 - val_loss: 0.5937 - val_acc: 0.5501 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 18/100
+
+Epoch 18: val_loss improved from 0.59370 to 0.59369, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5935 - acc: 0.5499 - val_loss: 0.5937 - val_acc: 0.5458 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 19/100
+
+Epoch 19: val_loss did not improve from 0.59369
+
+Epoch 19: ReduceLROnPlateau reducing learning rate to 0.0006000000284984708.
+437/437 - 10s - loss: 0.5934 - acc: 0.5499 - val_loss: 0.5941 - val_acc: 0.5507 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 20/100
+
+Epoch 20: val_loss improved from 0.59369 to 0.59356, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5933 - acc: 0.5504 - val_loss: 0.5936 - val_acc: 0.5480 - lr: 6.0000e-04 - 12s/epoch - 27ms/step
+Epoch 21/100
+
+Epoch 21: val_loss improved from 0.59356 to 0.59354, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5933 - acc: 0.5503 - val_loss: 0.5935 - val_acc: 0.5489 - lr: 6.0000e-04 - 12s/epoch - 27ms/step
+Epoch 22/100
+
+Epoch 22: val_loss improved from 0.59354 to 0.59351, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5933 - acc: 0.5504 - val_loss: 0.5935 - val_acc: 0.5501 - lr: 6.0000e-04 - 12s/epoch - 28ms/step
+Epoch 23/100
+
+Epoch 23: val_loss did not improve from 0.59351
+437/437 - 10s - loss: 0.5932 - acc: 0.5505 - val_loss: 0.5937 - val_acc: 0.5496 - lr: 6.0000e-04 - 10s/epoch - 23ms/step
+Epoch 24/100
+
+Epoch 24: val_loss did not improve from 0.59351
+437/437 - 10s - loss: 0.5932 - acc: 0.5503 - val_loss: 0.5937 - val_acc: 0.5526 - lr: 6.0000e-04 - 10s/epoch - 24ms/step
+Epoch 25/100
+
+Epoch 25: val_loss did not improve from 0.59351
+437/437 - 10s - loss: 0.5932 - acc: 0.5504 - val_loss: 0.5935 - val_acc: 0.5511 - lr: 6.0000e-04 - 10s/epoch - 24ms/step
+Epoch 26/100
+
+Epoch 26: val_loss improved from 0.59351 to 0.59350, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+
+Epoch 26: ReduceLROnPlateau reducing learning rate to 0.0003600000170990825.
+437/437 - 12s - loss: 0.5932 - acc: 0.5504 - val_loss: 0.5935 - val_acc: 0.5497 - lr: 6.0000e-04 - 12s/epoch - 27ms/step
+Epoch 27/100
+
+Epoch 27: val_loss improved from 0.59350 to 0.59347, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5931 - acc: 0.5508 - val_loss: 0.5935 - val_acc: 0.5504 - lr: 3.6000e-04 - 12s/epoch - 27ms/step
+Epoch 28/100
+
+Epoch 28: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5931 - acc: 0.5506 - val_loss: 0.5935 - val_acc: 0.5483 - lr: 3.6000e-04 - 10s/epoch - 23ms/step
+Epoch 29/100
+
+Epoch 29: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5931 - acc: 0.5507 - val_loss: 0.5935 - val_acc: 0.5498 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 30/100
+
+Epoch 30: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5930 - acc: 0.5507 - val_loss: 0.5935 - val_acc: 0.5509 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 31/100
+
+Epoch 31: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5930 - acc: 0.5507 - val_loss: 0.5935 - val_acc: 0.5530 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 32/100
+
+Epoch 32: val_loss did not improve from 0.59347
+
+Epoch 32: ReduceLROnPlateau reducing learning rate to 0.00021600000327453016.
+437/437 - 10s - loss: 0.5930 - acc: 0.5507 - val_loss: 0.5935 - val_acc: 0.5515 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 33/100
+
+Epoch 33: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5929 - acc: 0.5509 - val_loss: 0.5935 - val_acc: 0.5517 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 34/100
+
+Epoch 34: val_loss improved from 0.59347 to 0.59347, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_2_batchsize_32768.tf
+437/437 - 12s - loss: 0.5929 - acc: 0.5510 - val_loss: 0.5935 - val_acc: 0.5528 - lr: 2.1600e-04 - 12s/epoch - 27ms/step
+Epoch 35/100
+
+Epoch 35: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5929 - acc: 0.5511 - val_loss: 0.5935 - val_acc: 0.5489 - lr: 2.1600e-04 - 10s/epoch - 23ms/step
+Epoch 36/100
+
+Epoch 36: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5929 - acc: 0.5511 - val_loss: 0.5935 - val_acc: 0.5536 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 37/100
+
+Epoch 37: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5929 - acc: 0.5512 - val_loss: 0.5935 - val_acc: 0.5506 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 38/100
+
+Epoch 38: val_loss did not improve from 0.59347
+
+Epoch 38: ReduceLROnPlateau reducing learning rate to 0.00012960000021848827.
+437/437 - 10s - loss: 0.5928 - acc: 0.5511 - val_loss: 0.5935 - val_acc: 0.5517 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 39/100
+
+Epoch 39: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5928 - acc: 0.5512 - val_loss: 0.5935 - val_acc: 0.5517 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 40/100
+
+Epoch 40: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5928 - acc: 0.5513 - val_loss: 0.5935 - val_acc: 0.5506 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 41/100
+
+Epoch 41: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5935 - val_acc: 0.5517 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 42/100
+
+Epoch 42: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5927 - acc: 0.5513 - val_loss: 0.5935 - val_acc: 0.5516 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 43/100
+
+Epoch 43: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5927 - acc: 0.5514 - val_loss: 0.5935 - val_acc: 0.5507 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 44/100
+
+Epoch 44: val_loss did not improve from 0.59347
+
+Epoch 44: ReduceLROnPlateau reducing learning rate to 7.775999838486313e-05.
+437/437 - 10s - loss: 0.5927 - acc: 0.5513 - val_loss: 0.5935 - val_acc: 0.5509 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 45/100
+
+Epoch 45: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5927 - acc: 0.5515 - val_loss: 0.5935 - val_acc: 0.5504 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 46/100
+
+Epoch 46: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5927 - acc: 0.5515 - val_loss: 0.5935 - val_acc: 0.5499 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 47/100
+
+Epoch 47: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5926 - acc: 0.5515 - val_loss: 0.5936 - val_acc: 0.5508 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 48/100
+
+Epoch 48: val_loss did not improve from 0.59347
+437/437 - 10s - loss: 0.5926 - acc: 0.5516 - val_loss: 0.5936 - val_acc: 0.5516 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 49/100
+
+Epoch 49: val_loss did not improve from 0.59347
+Restoring model weights from the end of the best epoch: 34.
+437/437 - 10s - loss: 0.5926 - acc: 0.5515 - val_loss: 0.5935 - val_acc: 0.5502 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 49: early stopping
+clearing keras session and collecting garbage
+finished training: loss = 'cce', run = 2, batch_size = 32768
+Epoch 1/100
+
+Epoch 1: val_loss improved from inf to 0.59922, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 13s - loss: 0.6066 - acc: 0.5273 - val_loss: 0.5992 - val_acc: 0.5351 - lr: 0.0010 - 13s/epoch - 30ms/step
+Epoch 2/100
+
+Epoch 2: val_loss improved from 0.59922 to 0.59631, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5975 - acc: 0.5412 - val_loss: 0.5963 - val_acc: 0.5465 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 3/100
+
+Epoch 3: val_loss improved from 0.59631 to 0.59534, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5956 - acc: 0.5458 - val_loss: 0.5953 - val_acc: 0.5520 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 4/100
+
+Epoch 4: val_loss improved from 0.59534 to 0.59476, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5948 - acc: 0.5474 - val_loss: 0.5948 - val_acc: 0.5449 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 5/100
+
+Epoch 5: val_loss improved from 0.59476 to 0.59450, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5944 - acc: 0.5479 - val_loss: 0.5945 - val_acc: 0.5462 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 6/100
+
+Epoch 6: val_loss improved from 0.59450 to 0.59428, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5942 - acc: 0.5483 - val_loss: 0.5943 - val_acc: 0.5498 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 7/100
+
+Epoch 7: val_loss improved from 0.59428 to 0.59420, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5940 - acc: 0.5487 - val_loss: 0.5942 - val_acc: 0.5532 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 8/100
+
+Epoch 8: val_loss did not improve from 0.59420
+437/437 - 10s - loss: 0.5939 - acc: 0.5489 - val_loss: 0.5943 - val_acc: 0.5416 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 9/100
+
+Epoch 9: val_loss improved from 0.59420 to 0.59394, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5939 - acc: 0.5488 - val_loss: 0.5939 - val_acc: 0.5505 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 10/100
+
+Epoch 10: val_loss did not improve from 0.59394
+437/437 - 10s - loss: 0.5937 - acc: 0.5491 - val_loss: 0.5941 - val_acc: 0.5454 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 11/100
+
+Epoch 11: val_loss improved from 0.59394 to 0.59384, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5937 - acc: 0.5491 - val_loss: 0.5938 - val_acc: 0.5484 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 12/100
+
+Epoch 12: val_loss did not improve from 0.59384
+437/437 - 10s - loss: 0.5937 - acc: 0.5493 - val_loss: 0.5939 - val_acc: 0.5558 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 13/100
+
+Epoch 13: val_loss improved from 0.59384 to 0.59372, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5936 - acc: 0.5495 - val_loss: 0.5937 - val_acc: 0.5467 - lr: 0.0010 - 12s/epoch - 28ms/step
+Epoch 14/100
+
+Epoch 14: val_loss did not improve from 0.59372
+437/437 - 10s - loss: 0.5936 - acc: 0.5495 - val_loss: 0.5939 - val_acc: 0.5554 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 15/100
+
+Epoch 15: val_loss did not improve from 0.59372
+437/437 - 10s - loss: 0.5936 - acc: 0.5494 - val_loss: 0.5940 - val_acc: 0.5518 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 16/100
+
+Epoch 16: val_loss did not improve from 0.59372
+437/437 - 10s - loss: 0.5936 - acc: 0.5495 - val_loss: 0.5938 - val_acc: 0.5517 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 17/100
+
+Epoch 17: val_loss did not improve from 0.59372
+437/437 - 10s - loss: 0.5935 - acc: 0.5496 - val_loss: 0.5938 - val_acc: 0.5507 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 18/100
+
+Epoch 18: val_loss did not improve from 0.59372
+437/437 - 10s - loss: 0.5935 - acc: 0.5498 - val_loss: 0.5938 - val_acc: 0.5504 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 19/100
+
+Epoch 19: val_loss did not improve from 0.59372
+
+Epoch 19: ReduceLROnPlateau reducing learning rate to 0.0006000000284984708.
+437/437 - 10s - loss: 0.5935 - acc: 0.5499 - val_loss: 0.5937 - val_acc: 0.5537 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 20/100
+
+Epoch 20: val_loss improved from 0.59372 to 0.59355, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5933 - acc: 0.5502 - val_loss: 0.5936 - val_acc: 0.5540 - lr: 6.0000e-04 - 12s/epoch - 27ms/step
+Epoch 21/100
+
+Epoch 21: val_loss did not improve from 0.59355
+437/437 - 10s - loss: 0.5933 - acc: 0.5503 - val_loss: 0.5936 - val_acc: 0.5501 - lr: 6.0000e-04 - 10s/epoch - 23ms/step
+Epoch 22/100
+
+Epoch 22: val_loss did not improve from 0.59355
+437/437 - 10s - loss: 0.5933 - acc: 0.5504 - val_loss: 0.5936 - val_acc: 0.5448 - lr: 6.0000e-04 - 10s/epoch - 24ms/step
+Epoch 23/100
+
+Epoch 23: val_loss did not improve from 0.59355
+437/437 - 10s - loss: 0.5932 - acc: 0.5501 - val_loss: 0.5937 - val_acc: 0.5456 - lr: 6.0000e-04 - 10s/epoch - 24ms/step
+Epoch 24/100
+
+Epoch 24: val_loss did not improve from 0.59355
+437/437 - 10s - loss: 0.5932 - acc: 0.5503 - val_loss: 0.5936 - val_acc: 0.5480 - lr: 6.0000e-04 - 10s/epoch - 24ms/step
+Epoch 25/100
+
+Epoch 25: val_loss improved from 0.59355 to 0.59355, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5932 - acc: 0.5503 - val_loss: 0.5936 - val_acc: 0.5522 - lr: 6.0000e-04 - 12s/epoch - 28ms/step
+Epoch 26/100
+
+Epoch 26: val_loss did not improve from 0.59355
+
+Epoch 26: ReduceLROnPlateau reducing learning rate to 0.0003600000170990825.
+437/437 - 10s - loss: 0.5932 - acc: 0.5504 - val_loss: 0.5936 - val_acc: 0.5464 - lr: 6.0000e-04 - 10s/epoch - 23ms/step
+Epoch 27/100
+
+Epoch 27: val_loss improved from 0.59355 to 0.59348, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5931 - acc: 0.5506 - val_loss: 0.5935 - val_acc: 0.5493 - lr: 3.6000e-04 - 12s/epoch - 27ms/step
+Epoch 28/100
+
+Epoch 28: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5930 - acc: 0.5507 - val_loss: 0.5936 - val_acc: 0.5474 - lr: 3.6000e-04 - 10s/epoch - 23ms/step
+Epoch 29/100
+
+Epoch 29: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5931 - acc: 0.5506 - val_loss: 0.5936 - val_acc: 0.5503 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 30/100
+
+Epoch 30: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5930 - acc: 0.5507 - val_loss: 0.5935 - val_acc: 0.5496 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 31/100
+
+Epoch 31: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5930 - acc: 0.5507 - val_loss: 0.5936 - val_acc: 0.5495 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 32/100
+
+Epoch 32: val_loss did not improve from 0.59348
+
+Epoch 32: ReduceLROnPlateau reducing learning rate to 0.00021600000327453016.
+437/437 - 10s - loss: 0.5930 - acc: 0.5506 - val_loss: 0.5936 - val_acc: 0.5502 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 33/100
+
+Epoch 33: val_loss improved from 0.59348 to 0.59348, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_3_batchsize_32768.tf
+437/437 - 12s - loss: 0.5929 - acc: 0.5508 - val_loss: 0.5935 - val_acc: 0.5487 - lr: 2.1600e-04 - 12s/epoch - 27ms/step
+Epoch 34/100
+
+Epoch 34: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5929 - acc: 0.5510 - val_loss: 0.5935 - val_acc: 0.5496 - lr: 2.1600e-04 - 10s/epoch - 23ms/step
+Epoch 35/100
+
+Epoch 35: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5929 - acc: 0.5510 - val_loss: 0.5935 - val_acc: 0.5488 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 36/100
+
+Epoch 36: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5928 - acc: 0.5509 - val_loss: 0.5935 - val_acc: 0.5501 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 37/100
+
+Epoch 37: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5928 - acc: 0.5510 - val_loss: 0.5935 - val_acc: 0.5476 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 38/100
+
+Epoch 38: val_loss did not improve from 0.59348
+
+Epoch 38: ReduceLROnPlateau reducing learning rate to 0.00012960000021848827.
+437/437 - 10s - loss: 0.5928 - acc: 0.5509 - val_loss: 0.5936 - val_acc: 0.5542 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 39/100
+
+Epoch 39: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5511 - val_loss: 0.5935 - val_acc: 0.5503 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 40/100
+
+Epoch 40: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5935 - val_acc: 0.5508 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 41/100
+
+Epoch 41: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5936 - val_acc: 0.5513 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 42/100
+
+Epoch 42: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5936 - val_acc: 0.5488 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 43/100
+
+Epoch 43: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5936 - val_acc: 0.5496 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 44/100
+
+Epoch 44: val_loss did not improve from 0.59348
+
+Epoch 44: ReduceLROnPlateau reducing learning rate to 7.775999838486313e-05.
+437/437 - 10s - loss: 0.5927 - acc: 0.5511 - val_loss: 0.5936 - val_acc: 0.5501 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 45/100
+
+Epoch 45: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5926 - acc: 0.5513 - val_loss: 0.5936 - val_acc: 0.5502 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 46/100
+
+Epoch 46: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5926 - acc: 0.5514 - val_loss: 0.5936 - val_acc: 0.5509 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 47/100
+
+Epoch 47: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5926 - acc: 0.5513 - val_loss: 0.5936 - val_acc: 0.5491 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 48/100
+
+Epoch 48: val_loss did not improve from 0.59348
+Restoring model weights from the end of the best epoch: 33.
+437/437 - 10s - loss: 0.5926 - acc: 0.5514 - val_loss: 0.5936 - val_acc: 0.5494 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 48: early stopping
+clearing keras session and collecting garbage
+finished training: loss = 'cce', run = 3, batch_size = 32768
+Epoch 1/100
+
+Epoch 1: val_loss improved from inf to 0.60046, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 13s - loss: 0.6145 - acc: 0.5277 - val_loss: 0.6005 - val_acc: 0.5295 - lr: 0.0010 - 13s/epoch - 30ms/step
+Epoch 2/100
+
+Epoch 2: val_loss improved from 0.60046 to 0.59756, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5988 - acc: 0.5394 - val_loss: 0.5976 - val_acc: 0.5419 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 3/100
+
+Epoch 3: val_loss improved from 0.59756 to 0.59614, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5967 - acc: 0.5447 - val_loss: 0.5961 - val_acc: 0.5443 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 4/100
+
+Epoch 4: val_loss improved from 0.59614 to 0.59510, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5955 - acc: 0.5466 - val_loss: 0.5951 - val_acc: 0.5494 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 5/100
+
+Epoch 5: val_loss improved from 0.59510 to 0.59494, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5949 - acc: 0.5478 - val_loss: 0.5949 - val_acc: 0.5487 - lr: 0.0010 - 12s/epoch - 28ms/step
+Epoch 6/100
+
+Epoch 6: val_loss improved from 0.59494 to 0.59467, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5946 - acc: 0.5481 - val_loss: 0.5947 - val_acc: 0.5469 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 7/100
+
+Epoch 7: val_loss improved from 0.59467 to 0.59467, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5944 - acc: 0.5486 - val_loss: 0.5947 - val_acc: 0.5457 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 8/100
+
+Epoch 8: val_loss improved from 0.59467 to 0.59431, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5942 - acc: 0.5488 - val_loss: 0.5943 - val_acc: 0.5512 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 9/100
+
+Epoch 9: val_loss improved from 0.59431 to 0.59413, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5940 - acc: 0.5491 - val_loss: 0.5941 - val_acc: 0.5515 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 10/100
+
+Epoch 10: val_loss improved from 0.59413 to 0.59406, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5939 - acc: 0.5491 - val_loss: 0.5941 - val_acc: 0.5548 - lr: 0.0010 - 12s/epoch - 28ms/step
+Epoch 11/100
+
+Epoch 11: val_loss did not improve from 0.59406
+437/437 - 10s - loss: 0.5938 - acc: 0.5491 - val_loss: 0.5941 - val_acc: 0.5512 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 12/100
+
+Epoch 12: val_loss improved from 0.59406 to 0.59398, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5938 - acc: 0.5490 - val_loss: 0.5940 - val_acc: 0.5511 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 13/100
+
+Epoch 13: val_loss improved from 0.59398 to 0.59391, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5938 - acc: 0.5492 - val_loss: 0.5939 - val_acc: 0.5479 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 14/100
+
+Epoch 14: val_loss improved from 0.59391 to 0.59386, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5937 - acc: 0.5494 - val_loss: 0.5939 - val_acc: 0.5494 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 15/100
+
+Epoch 15: val_loss did not improve from 0.59386
+437/437 - 10s - loss: 0.5937 - acc: 0.5493 - val_loss: 0.5940 - val_acc: 0.5449 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 16/100
+
+Epoch 16: val_loss did not improve from 0.59386
+437/437 - 10s - loss: 0.5936 - acc: 0.5492 - val_loss: 0.5939 - val_acc: 0.5512 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 17/100
+
+Epoch 17: val_loss improved from 0.59386 to 0.59370, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5936 - acc: 0.5494 - val_loss: 0.5937 - val_acc: 0.5489 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 18/100
+
+Epoch 18: val_loss did not improve from 0.59370
+437/437 - 10s - loss: 0.5936 - acc: 0.5494 - val_loss: 0.5938 - val_acc: 0.5528 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 19/100
+
+Epoch 19: val_loss did not improve from 0.59370
+437/437 - 10s - loss: 0.5936 - acc: 0.5494 - val_loss: 0.5937 - val_acc: 0.5494 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 20/100
+
+Epoch 20: val_loss did not improve from 0.59370
+437/437 - 10s - loss: 0.5935 - acc: 0.5495 - val_loss: 0.5937 - val_acc: 0.5477 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 21/100
+
+Epoch 21: val_loss improved from 0.59370 to 0.59368, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5935 - acc: 0.5495 - val_loss: 0.5937 - val_acc: 0.5509 - lr: 0.0010 - 12s/epoch - 28ms/step
+Epoch 22/100
+
+Epoch 22: val_loss did not improve from 0.59368
+437/437 - 10s - loss: 0.5935 - acc: 0.5495 - val_loss: 0.5937 - val_acc: 0.5540 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 23/100
+
+Epoch 23: val_loss did not improve from 0.59368
+
+Epoch 23: ReduceLROnPlateau reducing learning rate to 0.0006000000284984708.
+437/437 - 10s - loss: 0.5935 - acc: 0.5494 - val_loss: 0.5938 - val_acc: 0.5525 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 24/100
+
+Epoch 24: val_loss improved from 0.59368 to 0.59359, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5933 - acc: 0.5499 - val_loss: 0.5936 - val_acc: 0.5483 - lr: 6.0000e-04 - 12s/epoch - 27ms/step
+Epoch 25/100
+
+Epoch 25: val_loss did not improve from 0.59359
+437/437 - 10s - loss: 0.5933 - acc: 0.5500 - val_loss: 0.5936 - val_acc: 0.5558 - lr: 6.0000e-04 - 10s/epoch - 23ms/step
+Epoch 26/100
+
+Epoch 26: val_loss did not improve from 0.59359
+437/437 - 10s - loss: 0.5933 - acc: 0.5501 - val_loss: 0.5937 - val_acc: 0.5456 - lr: 6.0000e-04 - 10s/epoch - 24ms/step
+Epoch 27/100
+
+Epoch 27: val_loss did not improve from 0.59359
+437/437 - 10s - loss: 0.5932 - acc: 0.5500 - val_loss: 0.5936 - val_acc: 0.5506 - lr: 6.0000e-04 - 10s/epoch - 24ms/step
+Epoch 28/100
+
+Epoch 28: val_loss improved from 0.59359 to 0.59359, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5932 - acc: 0.5501 - val_loss: 0.5936 - val_acc: 0.5522 - lr: 6.0000e-04 - 12s/epoch - 28ms/step
+Epoch 29/100
+
+Epoch 29: val_loss did not improve from 0.59359
+437/437 - 10s - loss: 0.5932 - acc: 0.5502 - val_loss: 0.5936 - val_acc: 0.5492 - lr: 6.0000e-04 - 10s/epoch - 23ms/step
+Epoch 30/100
+
+Epoch 30: val_loss improved from 0.59359 to 0.59352, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+
+Epoch 30: ReduceLROnPlateau reducing learning rate to 0.0003600000170990825.
+437/437 - 12s - loss: 0.5932 - acc: 0.5500 - val_loss: 0.5935 - val_acc: 0.5524 - lr: 6.0000e-04 - 12s/epoch - 27ms/step
+Epoch 31/100
+
+Epoch 31: val_loss did not improve from 0.59352
+437/437 - 10s - loss: 0.5931 - acc: 0.5505 - val_loss: 0.5936 - val_acc: 0.5506 - lr: 3.6000e-04 - 10s/epoch - 23ms/step
+Epoch 32/100
+
+Epoch 32: val_loss improved from 0.59352 to 0.59351, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5931 - acc: 0.5504 - val_loss: 0.5935 - val_acc: 0.5505 - lr: 3.6000e-04 - 12s/epoch - 27ms/step
+Epoch 33/100
+
+Epoch 33: val_loss improved from 0.59351 to 0.59350, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5930 - acc: 0.5505 - val_loss: 0.5935 - val_acc: 0.5508 - lr: 3.6000e-04 - 12s/epoch - 28ms/step
+Epoch 34/100
+
+Epoch 34: val_loss did not improve from 0.59350
+437/437 - 10s - loss: 0.5930 - acc: 0.5506 - val_loss: 0.5935 - val_acc: 0.5496 - lr: 3.6000e-04 - 10s/epoch - 23ms/step
+Epoch 35/100
+
+Epoch 35: val_loss did not improve from 0.59350
+437/437 - 10s - loss: 0.5930 - acc: 0.5506 - val_loss: 0.5936 - val_acc: 0.5493 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 36/100
+
+Epoch 36: val_loss did not improve from 0.59350
+
+Epoch 36: ReduceLROnPlateau reducing learning rate to 0.00021600000327453016.
+437/437 - 10s - loss: 0.5930 - acc: 0.5505 - val_loss: 0.5935 - val_acc: 0.5496 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 37/100
+
+Epoch 37: val_loss improved from 0.59350 to 0.59348, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5929 - acc: 0.5507 - val_loss: 0.5935 - val_acc: 0.5495 - lr: 2.1600e-04 - 12s/epoch - 27ms/step
+Epoch 38/100
+
+Epoch 38: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5929 - acc: 0.5507 - val_loss: 0.5935 - val_acc: 0.5507 - lr: 2.1600e-04 - 10s/epoch - 23ms/step
+Epoch 39/100
+
+Epoch 39: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5929 - acc: 0.5508 - val_loss: 0.5935 - val_acc: 0.5507 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 40/100
+
+Epoch 40: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5929 - acc: 0.5508 - val_loss: 0.5936 - val_acc: 0.5517 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 41/100
+
+Epoch 41: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5929 - acc: 0.5509 - val_loss: 0.5935 - val_acc: 0.5505 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 42/100
+
+Epoch 42: val_loss improved from 0.59348 to 0.59348, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_4_batchsize_32768.tf
+437/437 - 12s - loss: 0.5928 - acc: 0.5509 - val_loss: 0.5935 - val_acc: 0.5500 - lr: 2.1600e-04 - 12s/epoch - 28ms/step
+Epoch 43/100
+
+Epoch 43: val_loss did not improve from 0.59348
+
+Epoch 43: ReduceLROnPlateau reducing learning rate to 0.00012960000021848827.
+437/437 - 10s - loss: 0.5928 - acc: 0.5509 - val_loss: 0.5935 - val_acc: 0.5486 - lr: 2.1600e-04 - 10s/epoch - 23ms/step
+Epoch 44/100
+
+Epoch 44: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5928 - acc: 0.5511 - val_loss: 0.5935 - val_acc: 0.5506 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 45/100
+
+Epoch 45: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5510 - val_loss: 0.5935 - val_acc: 0.5502 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 46/100
+
+Epoch 46: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5935 - val_acc: 0.5501 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 47/100
+
+Epoch 47: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5511 - val_loss: 0.5935 - val_acc: 0.5489 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 48/100
+
+Epoch 48: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5935 - val_acc: 0.5481 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 49/100
+
+Epoch 49: val_loss did not improve from 0.59348
+
+Epoch 49: ReduceLROnPlateau reducing learning rate to 7.775999838486313e-05.
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5935 - val_acc: 0.5493 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 50/100
+
+Epoch 50: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5935 - val_acc: 0.5500 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 51/100
+
+Epoch 51: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5926 - acc: 0.5513 - val_loss: 0.5935 - val_acc: 0.5491 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 52/100
+
+Epoch 52: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5926 - acc: 0.5512 - val_loss: 0.5935 - val_acc: 0.5486 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 53/100
+
+Epoch 53: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5926 - acc: 0.5512 - val_loss: 0.5936 - val_acc: 0.5499 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 54/100
+
+Epoch 54: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5926 - acc: 0.5513 - val_loss: 0.5935 - val_acc: 0.5503 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 55/100
+
+Epoch 55: val_loss did not improve from 0.59348
+
+Epoch 55: ReduceLROnPlateau reducing learning rate to 4.6655999904032795e-05.
+437/437 - 10s - loss: 0.5926 - acc: 0.5514 - val_loss: 0.5936 - val_acc: 0.5498 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 56/100
+
+Epoch 56: val_loss did not improve from 0.59348
+437/437 - 10s - loss: 0.5926 - acc: 0.5513 - val_loss: 0.5935 - val_acc: 0.5497 - lr: 4.6656e-05 - 10s/epoch - 24ms/step
+Epoch 57/100
+
+Epoch 57: val_loss did not improve from 0.59348
+Restoring model weights from the end of the best epoch: 42.
+437/437 - 10s - loss: 0.5926 - acc: 0.5514 - val_loss: 0.5936 - val_acc: 0.5505 - lr: 4.6656e-05 - 10s/epoch - 24ms/step
+Epoch 57: early stopping
+clearing keras session and collecting garbage
+finished training: loss = 'cce', run = 4, batch_size = 32768
+Epoch 1/100
+
+Epoch 1: val_loss improved from inf to 0.59979, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 13s - loss: 0.6100 - acc: 0.5257 - val_loss: 0.5998 - val_acc: 0.5389 - lr: 0.0010 - 13s/epoch - 29ms/step
+Epoch 2/100
+
+Epoch 2: val_loss improved from 0.59979 to 0.59692, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5981 - acc: 0.5425 - val_loss: 0.5969 - val_acc: 0.5464 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 3/100
+
+Epoch 3: val_loss improved from 0.59692 to 0.59579, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5961 - acc: 0.5459 - val_loss: 0.5958 - val_acc: 0.5457 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 4/100
+
+Epoch 4: val_loss improved from 0.59579 to 0.59503, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5951 - acc: 0.5473 - val_loss: 0.5950 - val_acc: 0.5487 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 5/100
+
+Epoch 5: val_loss improved from 0.59503 to 0.59460, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5947 - acc: 0.5479 - val_loss: 0.5946 - val_acc: 0.5482 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 6/100
+
+Epoch 6: val_loss did not improve from 0.59460
+437/437 - 10s - loss: 0.5943 - acc: 0.5481 - val_loss: 0.5947 - val_acc: 0.5381 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 7/100
+
+Epoch 7: val_loss improved from 0.59460 to 0.59426, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5942 - acc: 0.5483 - val_loss: 0.5943 - val_acc: 0.5511 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 8/100
+
+Epoch 8: val_loss did not improve from 0.59426
+437/437 - 10s - loss: 0.5940 - acc: 0.5486 - val_loss: 0.5943 - val_acc: 0.5513 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 9/100
+
+Epoch 9: val_loss improved from 0.59426 to 0.59415, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5939 - acc: 0.5488 - val_loss: 0.5942 - val_acc: 0.5536 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 10/100
+
+Epoch 10: val_loss improved from 0.59415 to 0.59399, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5938 - acc: 0.5491 - val_loss: 0.5940 - val_acc: 0.5452 - lr: 0.0010 - 12s/epoch - 28ms/step
+Epoch 11/100
+
+Epoch 11: val_loss improved from 0.59399 to 0.59392, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5938 - acc: 0.5493 - val_loss: 0.5939 - val_acc: 0.5513 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 12/100
+
+Epoch 12: val_loss did not improve from 0.59392
+437/437 - 10s - loss: 0.5937 - acc: 0.5492 - val_loss: 0.5940 - val_acc: 0.5534 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 13/100
+
+Epoch 13: val_loss did not improve from 0.59392
+437/437 - 10s - loss: 0.5936 - acc: 0.5495 - val_loss: 0.5940 - val_acc: 0.5440 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 14/100
+
+Epoch 14: val_loss improved from 0.59392 to 0.59373, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5936 - acc: 0.5495 - val_loss: 0.5937 - val_acc: 0.5524 - lr: 0.0010 - 12s/epoch - 28ms/step
+Epoch 15/100
+
+Epoch 15: val_loss did not improve from 0.59373
+437/437 - 10s - loss: 0.5936 - acc: 0.5495 - val_loss: 0.5939 - val_acc: 0.5532 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 16/100
+
+Epoch 16: val_loss did not improve from 0.59373
+437/437 - 10s - loss: 0.5936 - acc: 0.5495 - val_loss: 0.5938 - val_acc: 0.5461 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 17/100
+
+Epoch 17: val_loss did not improve from 0.59373
+437/437 - 10s - loss: 0.5935 - acc: 0.5495 - val_loss: 0.5938 - val_acc: 0.5478 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 18/100
+
+Epoch 18: val_loss did not improve from 0.59373
+437/437 - 10s - loss: 0.5935 - acc: 0.5496 - val_loss: 0.5939 - val_acc: 0.5491 - lr: 0.0010 - 10s/epoch - 24ms/step
+Epoch 19/100
+
+Epoch 19: val_loss improved from 0.59373 to 0.59370, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5935 - acc: 0.5495 - val_loss: 0.5937 - val_acc: 0.5468 - lr: 0.0010 - 12s/epoch - 27ms/step
+Epoch 20/100
+
+Epoch 20: val_loss did not improve from 0.59370
+
+Epoch 20: ReduceLROnPlateau reducing learning rate to 0.0006000000284984708.
+437/437 - 10s - loss: 0.5934 - acc: 0.5498 - val_loss: 0.5937 - val_acc: 0.5425 - lr: 0.0010 - 10s/epoch - 23ms/step
+Epoch 21/100
+
+Epoch 21: val_loss improved from 0.59370 to 0.59366, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5933 - acc: 0.5500 - val_loss: 0.5937 - val_acc: 0.5472 - lr: 6.0000e-04 - 12s/epoch - 27ms/step
+Epoch 22/100
+
+Epoch 22: val_loss improved from 0.59366 to 0.59359, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5933 - acc: 0.5502 - val_loss: 0.5936 - val_acc: 0.5505 - lr: 6.0000e-04 - 12s/epoch - 27ms/step
+Epoch 23/100
+
+Epoch 23: val_loss did not improve from 0.59359
+437/437 - 10s - loss: 0.5933 - acc: 0.5502 - val_loss: 0.5937 - val_acc: 0.5495 - lr: 6.0000e-04 - 10s/epoch - 23ms/step
+Epoch 24/100
+
+Epoch 24: val_loss improved from 0.59359 to 0.59358, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5933 - acc: 0.5500 - val_loss: 0.5936 - val_acc: 0.5486 - lr: 6.0000e-04 - 12s/epoch - 27ms/step
+Epoch 25/100
+
+Epoch 25: val_loss did not improve from 0.59358
+437/437 - 10s - loss: 0.5933 - acc: 0.5499 - val_loss: 0.5936 - val_acc: 0.5512 - lr: 6.0000e-04 - 10s/epoch - 23ms/step
+Epoch 26/100
+
+Epoch 26: val_loss did not improve from 0.59358
+437/437 - 10s - loss: 0.5932 - acc: 0.5501 - val_loss: 0.5936 - val_acc: 0.5445 - lr: 6.0000e-04 - 10s/epoch - 24ms/step
+Epoch 27/100
+
+Epoch 27: val_loss did not improve from 0.59358
+437/437 - 10s - loss: 0.5932 - acc: 0.5501 - val_loss: 0.5937 - val_acc: 0.5464 - lr: 6.0000e-04 - 10s/epoch - 24ms/step
+Epoch 28/100
+
+Epoch 28: val_loss did not improve from 0.59358
+
+Epoch 28: ReduceLROnPlateau reducing learning rate to 0.0003600000170990825.
+437/437 - 10s - loss: 0.5932 - acc: 0.5502 - val_loss: 0.5936 - val_acc: 0.5501 - lr: 6.0000e-04 - 10s/epoch - 24ms/step
+Epoch 29/100
+
+Epoch 29: val_loss improved from 0.59358 to 0.59350, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5931 - acc: 0.5505 - val_loss: 0.5935 - val_acc: 0.5522 - lr: 3.6000e-04 - 12s/epoch - 28ms/step
+Epoch 30/100
+
+Epoch 30: val_loss did not improve from 0.59350
+437/437 - 10s - loss: 0.5931 - acc: 0.5506 - val_loss: 0.5936 - val_acc: 0.5514 - lr: 3.6000e-04 - 10s/epoch - 23ms/step
+Epoch 31/100
+
+Epoch 31: val_loss did not improve from 0.59350
+437/437 - 10s - loss: 0.5931 - acc: 0.5506 - val_loss: 0.5935 - val_acc: 0.5506 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 32/100
+
+Epoch 32: val_loss did not improve from 0.59350
+437/437 - 10s - loss: 0.5930 - acc: 0.5505 - val_loss: 0.5936 - val_acc: 0.5549 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 33/100
+
+Epoch 33: val_loss did not improve from 0.59350
+437/437 - 10s - loss: 0.5930 - acc: 0.5505 - val_loss: 0.5935 - val_acc: 0.5523 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 34/100
+
+Epoch 34: val_loss did not improve from 0.59350
+
+Epoch 34: ReduceLROnPlateau reducing learning rate to 0.00021600000327453016.
+437/437 - 10s - loss: 0.5930 - acc: 0.5505 - val_loss: 0.5936 - val_acc: 0.5527 - lr: 3.6000e-04 - 10s/epoch - 24ms/step
+Epoch 35/100
+
+Epoch 35: val_loss did not improve from 0.59350
+437/437 - 10s - loss: 0.5929 - acc: 0.5507 - val_loss: 0.5935 - val_acc: 0.5526 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 36/100
+
+Epoch 36: val_loss did not improve from 0.59350
+437/437 - 10s - loss: 0.5929 - acc: 0.5509 - val_loss: 0.5935 - val_acc: 0.5494 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 37/100
+
+Epoch 37: val_loss improved from 0.59350 to 0.59349, saving model to ./saved_models/DCTR_NNLO_wgt_np_cce_loss_cce_5_batchsize_32768.tf
+437/437 - 12s - loss: 0.5929 - acc: 0.5509 - val_loss: 0.5935 - val_acc: 0.5491 - lr: 2.1600e-04 - 12s/epoch - 27ms/step
+Epoch 38/100
+
+Epoch 38: val_loss did not improve from 0.59349
+437/437 - 10s - loss: 0.5929 - acc: 0.5508 - val_loss: 0.5935 - val_acc: 0.5526 - lr: 2.1600e-04 - 10s/epoch - 23ms/step
+Epoch 39/100
+
+Epoch 39: val_loss did not improve from 0.59349
+437/437 - 10s - loss: 0.5928 - acc: 0.5509 - val_loss: 0.5935 - val_acc: 0.5488 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 40/100
+
+Epoch 40: val_loss did not improve from 0.59349
+437/437 - 10s - loss: 0.5928 - acc: 0.5509 - val_loss: 0.5935 - val_acc: 0.5502 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 41/100
+
+Epoch 41: val_loss did not improve from 0.59349
+437/437 - 10s - loss: 0.5928 - acc: 0.5509 - val_loss: 0.5936 - val_acc: 0.5495 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 42/100
+
+Epoch 42: val_loss did not improve from 0.59349
+437/437 - 10s - loss: 0.5928 - acc: 0.5510 - val_loss: 0.5936 - val_acc: 0.5492 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 43/100
+
+Epoch 43: val_loss did not improve from 0.59349
+
+Epoch 43: ReduceLROnPlateau reducing learning rate to 0.00012960000021848827.
+437/437 - 10s - loss: 0.5928 - acc: 0.5510 - val_loss: 0.5936 - val_acc: 0.5492 - lr: 2.1600e-04 - 10s/epoch - 24ms/step
+Epoch 44/100
+
+Epoch 44: val_loss did not improve from 0.59349
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5936 - val_acc: 0.5507 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 45/100
+
+Epoch 45: val_loss did not improve from 0.59349
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5936 - val_acc: 0.5499 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 46/100
+
+Epoch 46: val_loss did not improve from 0.59349
+437/437 - 10s - loss: 0.5927 - acc: 0.5512 - val_loss: 0.5936 - val_acc: 0.5508 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 47/100
+
+Epoch 47: val_loss did not improve from 0.59349
+437/437 - 10s - loss: 0.5927 - acc: 0.5513 - val_loss: 0.5935 - val_acc: 0.5485 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 48/100
+
+Epoch 48: val_loss did not improve from 0.59349
+437/437 - 10s - loss: 0.5927 - acc: 0.5513 - val_loss: 0.5937 - val_acc: 0.5513 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 49/100
+
+Epoch 49: val_loss did not improve from 0.59349
+
+Epoch 49: ReduceLROnPlateau reducing learning rate to 7.775999838486313e-05.
+437/437 - 10s - loss: 0.5927 - acc: 0.5513 - val_loss: 0.5936 - val_acc: 0.5506 - lr: 1.2960e-04 - 10s/epoch - 24ms/step
+Epoch 50/100
+
+Epoch 50: val_loss did not improve from 0.59349
+437/437 - 10s - loss: 0.5926 - acc: 0.5514 - val_loss: 0.5936 - val_acc: 0.5489 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 51/100
+
+Epoch 51: val_loss did not improve from 0.59349
+437/437 - 10s - loss: 0.5926 - acc: 0.5515 - val_loss: 0.5936 - val_acc: 0.5496 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 52/100
+
+Epoch 52: val_loss did not improve from 0.59349
+Restoring model weights from the end of the best epoch: 37.
+437/437 - 10s - loss: 0.5926 - acc: 0.5515 - val_loss: 0.5936 - val_acc: 0.5502 - lr: 7.7760e-05 - 10s/epoch - 24ms/step
+Epoch 52: early stopping
+clearing keras session and collecting garbage
+finished training: loss = 'cce', run = 5, batch_size = 32768

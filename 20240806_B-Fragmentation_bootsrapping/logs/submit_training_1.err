@@ -1,8 +1,5 @@
-2024-08-09 16:48:28.171034: E tensorflow/stream_executor/cuda/cuda_driver.cc:271] failed call to cuInit: CUDA_ERROR_SYSTEM_DRIVER_MISMATCH: system has unsupported display driver / cuda driver combination
-2024-08-09 16:48:28.171249: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:169] retrieving CUDA diagnostic information for host: batchg001.desy.de
-2024-08-09 16:48:28.171262: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:176] hostname: batchg001.desy.de
-2024-08-09 16:48:28.171673: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:200] libcuda reported version is: 560.28.3
-2024-08-09 16:48:28.171705: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:204] kernel reported version is: 555.42.6
-2024-08-09 16:48:28.171714: E tensorflow/stream_executor/cuda/cuda_diagnostics.cc:313] kernel version 555.42.6 does not match DSO version 560.28.3 -- cannot find working devices in this configuration
-2024-08-09 16:48:28.172880: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F FMA
-To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+which: no nvcc in (/cvmfs/sft.cern.ch/lcg/releases/cuda/12.4-4899e/x86_64-el9-gcc11-opt/bin:/cvmfs/sft.cern.ch/lcg/releases/LCG_106_cuda/cuda/12.4/x86_64-el9-gcc11-opt/bin:/cvmfs/sft.cern.ch/lcg/releases/gcc/11.3.0-de683/x86_64-el9/bin:/cvmfs/sft.cern.ch/lcg/releases/binutils/2.40-acaab/x86_64-el9/bin:/nfs/dust/cms/user/puschman/rivet/bin:/nfs/dust/cms/user/puschman/rivet/lib64/../bin:/nfs/dust/cms/user/puschman/tf_venv/bin:/cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.32.02/x86_64-almalinux9.4-gcc114-opt/bin:/cvmfs/sft.cern.ch/lcg/releases/LCG_106_cuda/CMake/3.26.2/x86_64-el9-gcc11-opt/bin:/cvmfs/sft.cern.ch/lcg/releases/gcc/11.3.0-de683/x86_64-el9/bin:/cvmfs/sft.cern.ch/lcg/releases/binutils/2.40-acaab/x86_64-el9/bin:/usr/share/Modules/bin:/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin)
+  File "/nfs/dust/cms/user/puschman/DCTR_Paper/DCTR_FP/20240806_B-Fragmentation_bootsrapping/./Rb_bootstrapping_training.py", line 163
+    print(f'{X0.shape = })
+                          ^
+SyntaxError: EOL while scanning string literal

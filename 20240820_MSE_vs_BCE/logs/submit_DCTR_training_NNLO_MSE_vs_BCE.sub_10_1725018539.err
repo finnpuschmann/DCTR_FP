@@ -1,0 +1,13 @@
+which: no nvcc in (/cvmfs/sft.cern.ch/lcg/releases/cuda/12.4-4899e/x86_64-el9-gcc11-opt/bin:/cvmfs/sft.cern.ch/lcg/releases/LCG_106_cuda/cuda/12.4/x86_64-el9-gcc11-opt/bin:/cvmfs/sft.cern.ch/lcg/releases/gcc/11.3.0-de683/x86_64-el9/bin:/cvmfs/sft.cern.ch/lcg/releases/binutils/2.40-acaab/x86_64-el9/bin:/nfs/dust/cms/user/puschman/rivet/bin:/nfs/dust/cms/user/puschman/rivet/lib64/../bin:/nfs/dust/cms/user/puschman/tf_venv/bin:/cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.32.02/x86_64-almalinux9.4-gcc114-opt/bin:/cvmfs/sft.cern.ch/lcg/releases/LCG_106_cuda/CMake/3.26.2/x86_64-el9-gcc11-opt/bin:/cvmfs/sft.cern.ch/lcg/releases/gcc/11.3.0-de683/x86_64-el9/bin:/cvmfs/sft.cern.ch/lcg/releases/binutils/2.40-acaab/x86_64-el9/bin:/usr/share/Modules/bin:/afs/desy.de/common/passwd:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/bin)
+2024-08-30 13:50:50.601610: E tensorflow/stream_executor/cuda/cuda_driver.cc:271] failed call to cuInit: CUDA_ERROR_UNKNOWN: unknown error
+2024-08-30 13:50:50.601862: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:169] retrieving CUDA diagnostic information for host: batchg005.desy.de
+2024-08-30 13:50:50.601875: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:176] hostname: batchg005.desy.de
+2024-08-30 13:50:50.601967: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:200] libcuda reported version is: 560.28.3
+2024-08-30 13:50:50.601995: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:204] kernel reported version is: 560.28.3
+2024-08-30 13:50:50.602002: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:310] kernel version seems to match DSO: 560.28.3
+Traceback (most recent call last):
+  File "/nfs/dust/cms/user/puschman/DCTR_Paper/DCTR_FP/20240820_MSE_vs_BCE/./submit_DCTR_training_NNLO_MSE_vs_BCE.py", line 106, in <module>
+    x1_rwgt_mse = np.load(f'{save_path}{mse_label}_X1_rwgt.npy')
+  File "/nfs/dust/cms/user/puschman/tf_venv/lib/python3.9/site-packages/numpy/lib/npyio.py", line 407, in load
+    fid = stack.enter_context(open(os_fspath(file), "rb"))
+FileNotFoundError: [Errno 2] No such file or directory: './saved_models/DCTR_NNLO_mse_pos_rwgt_2_batchsize_32768_X1_rwgt.npy'
