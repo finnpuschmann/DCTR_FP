@@ -160,7 +160,7 @@ for i in range(1, 13):
     X0.extend(dataset['a'])
 
 X0 = np.array(X0)
-print(f'{X0.shape = })
+print(f'{X0.shape = }')
 
 X1 = []
 for i in range(1, 13):
@@ -169,7 +169,7 @@ for i in range(1, 13):
     X1.extend(dataset['a'])
 
 X1 = np.array(X1)
-print(f'{X1.shape = })
+print(f'{X1.shape = }')
 
 # process data
 print('processing parity')
@@ -189,7 +189,7 @@ X0_tot = []
 for i, _ in enumerate(X0_pari):
     X0_tot.append([[X0_pari[i]], [X0_dispari[i]]])
 X0_tot = np.array(X0_tot)
-print(f'{X0_tot.shape = })
+print(f'{X0_tot.shape = }')
 
 # X1
 for i, _ in enumerate(X1):
@@ -202,7 +202,7 @@ X1_tot = []
 for i, _ in enumerate(X1_pari):
     X1_tot.append([[X1_pari[i]], [X1_dispari[i]]])
 X1_tot = np.array(X1_tot)
-print(f'{X1_tot.shape = })
+print(f'{X1_tot.shape = }')
 
 
 # TRAINING
@@ -211,7 +211,7 @@ end   = ITER*PROCESS     + 1 # +1 since last index not included, since counting 
 print(f'begin training of {ITER} iterations with 4M and 1M random samples')
 
 for i in range(begin, end):
-    # 4M random events per class
-    train_single_iteration(X0_tot, X1_tot, iteration=i, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal_4M_v2')
     # 1M random events per class
     train_single_iteration(X0_tot, X1_tot, iteration=i, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal_1M_v2', num_events = int(1e6))
+    # 4M random events per class
+    train_single_iteration(X0_tot, X1_tot, iteration=i, save_label = 'DCTR_pp_tt_1D_Rb_mine_xB_CP5_nominal_4M_v2')
