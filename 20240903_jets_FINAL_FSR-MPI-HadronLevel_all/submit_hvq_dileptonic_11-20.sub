@@ -1,0 +1,13 @@
+executable              = submit_hvq_dileptonic_11-20.sh
+
+arguments               = $(Process)
+
+log                     = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).log
+output                  = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).out
+error                   = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).err
+
+request_cpus            = 8
+request_memory          = 32G
++RequestRuntime         = 100000
+
+queue 10
