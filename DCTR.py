@@ -1319,11 +1319,6 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
     start = copy(bins[0])
     stop = copy(bins[-1])
     div = len(bins)
-
-    if overflow is True:
-        # include events past histogram edges in first/last bin
-        bins[0] = -np.inf
-        bins[-1] = np.inf
     
     n_list = [] # list of histogram bin counts
     n_sum_list = [] # list of total counts in all bins: used for normalizing
@@ -1334,20 +1329,32 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
     for i, (X, wgt, label) in enumerate(args):
         # check wheter full dataset is passed or 1D dataset, that can be plotted as is
         if X.ndim > 1:
-            n, bin_edges = np.histogram(X[:,part_index, arg_index], bins = bins, weights = wgt) # calculate histogram
+            if overflow is True:
+                # np.clip to set values outside of range to edge values
+                X_loc = np.clip(X[:,part_index, arg_index].copy(), bins[0], bins[-1])
+            else:
+                X_loc = X
+
+            n, bin_edges = np.histogram(X_loc[:,part_index, arg_index], bins = bins, weights = wgt) # calculate histogram
             if density is True:
-                dense_n, bin_edges = np.histogram(X[:,part_index, arg_index], bins = bins, weights = wgt, density=True)
+                dense_n, bin_edges = np.histogram(X_loc[:,part_index, arg_index], bins = bins, weights = wgt, density=True)
                 dense_n = np.append(dense_n, dense_n[-1])
                 dense_list.append(dense_n) # extend list by last element for plotting
             bin_indices = np.digitize(X[:,part_index, arg_index], bins = bins) # which bin did each event end up in
             
-        else: 
-            n, bin_edges = np.histogram(X, bins = bins, weights = wgt)
+        else:
+            if overflow is True:
+                # np.clip to set values outside of range to edge values
+                X_loc = np.clip(X.copy(), bins[0], bins[-1])
+            else:
+                X_loc = X
+
+            n, bin_edges = np.histogram(X_loc, bins = bins, weights = wgt)
             if density is True:
-                dense_n, bin_edges = np.histogram(X, bins = bins, weights = wgt, density=True)
+                dense_n, bin_edges = np.histogram(X_loc, bins = bins, weights = wgt, density=True)
                 dense_n = np.append(dense_n, dense_n[-1])
                 dense_list.append(dense_n) # extend list by last element for plotting
-            bin_indices = np.digitize(X, bins = bins) # which bin did each event end up in
+            bin_indices = np.digitize(X_loc, bins = bins) # which bin did each event end up in
         
 
         # statistics
