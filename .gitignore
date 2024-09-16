@@ -1,6 +1,13 @@
 # Data_dir too heavy for GitHub
 Data/
 
+# logs and log dir
+*/log/
+*/logs/
+*.out
+*.err
+*.log
+
 # .npz/.npy files
 *.npz
 *.npy

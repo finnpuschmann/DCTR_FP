@@ -1289,9 +1289,9 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
     except:
         print('args not in right form. Needs to be args = [(x1, x1_wgt, x1_label), (x0, x0_wgt, x0_label), (x0, x0_rwgt, x0_rwgt_label)]')
     
-    plt_style_10a = {'color':'Green', 'linewidth':3, 'linestyle':'--'} #, 'density':True, 'histtype':'step'}
+    plt_style_10a = {'color':'#5790fc', 'linewidth':3, 'linestyle':'--'} #, 'density':True, 'histtype':'step'}
     plt_style_11a = {'color':'black', 'linewidth':3, 'linestyle':'-'} #', 'density':True, 'histtype':'step'}
-    plt_style_12a = {'color':'#FC5A50', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
+    plt_style_12a = {'color':'#e42536', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
 
     # binning: prio: passed bins, calculated bins from quantiles, linear bins from start, stop, div
     if bins is not None: 
@@ -1434,12 +1434,22 @@ def plot_ratio_cms(args, arg_index = 0, part_index = 0, title = None, x_label = 
     axes[0].grid(True)
 
     # Second subplot
+    '''
+    plt_style_10a = {'color':'#5790fc', 'linewidth':3, 'linestyle':'--'} #, 'density':True, 'histtype':'step'}
+    plt_style_11a = {'color':'black', 'linewidth':3, 'linestyle':'-'} #', 'density':True, 'histtype':'step'}
+    plt_style_12a = {'color':'#e42536', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
+    '''
+
+    # rename x0_rwgt_label to match Valentina
+    if x0_rwgt_label == 'NLO (hvq) wgt.':
+        x0_rwgt_label = 'Reweighted NNLO'
+
     axes[1].errorbar(bin_centers, ratio_0[:-1], yerr=uncert_nrm_list[0][:-1], fmt='-', color='black')
-    axes[1].errorbar(bin_centers, ratio_1[:-1],   yerr=uncert_nrm_list[1][:-1], fmt='--', color='green')
-    axes[1].errorbar(bin_centers, ratio_2[:-1],    yerr=uncert_nrm_list[2][:-1], fmt=':', color='#FC5A50')
+    axes[1].errorbar(bin_centers, ratio_1[:-1],   yerr=uncert_nrm_list[1][:-1], fmt='--', color='#5790fc')
+    axes[1].errorbar(bin_centers, ratio_2[:-1],    yerr=uncert_nrm_list[2][:-1], fmt=':', color='#e42536')
     axes[1].plot([start, stop], [1,1], '-', color='black',  linewidth=3, label=x1_label)
-    axes[1].plot(bin_centers, ratio_1[:-1],  '--', color='green',  linewidth=3, label=x0_label)
-    axes[1].plot(bin_centers, ratio_2[:-1],    ':', color='#FC5A50',linewidth=3, label=x0_rwgt_label)
+    axes[1].plot(bin_centers, ratio_1[:-1],  '--', color='#5790fc',  linewidth=3, label=x0_label)
+    axes[1].plot(bin_centers, ratio_2[:-1],    ':', color='#e42536',linewidth=3, label=x0_rwgt_label)
     axes[1].set_xlabel(fr'${obs}({part}){unit}$')
     axes[1].set_ylabel(f'Ratio(/NNLO)')
     axes[1].grid(True)
@@ -1494,9 +1504,9 @@ def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label 
     except:
         print('args not in right form. Needs to be args = [(x1, x1_wgt, x1_label), (x0, x0_wgt, x0_label), (x0, x0_rwgt, x0_rwgt_label), (x0, x0_rwgt_alt, x0_rwgt_alt_label)]')
     
-    plt_style_10a = {'color':'Green', 'linewidth':3, 'linestyle':'--'} #, 'density':True, 'histtype':'step'}
+    plt_style_10a = {'color':'#e42536', 'linewidth':3, 'linestyle':'--'} #, 'density':True, 'histtype':'step'}
     plt_style_11a = {'color':'black', 'linewidth':3, 'linestyle':'-'} #', 'density':True, 'histtype':'step'}
-    plt_style_12a = {'color':'#FC5A50', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
+    plt_style_12a = {'color':'#e42536', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
     plt_style_13a = {'color':'blue', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
 
 
@@ -1638,12 +1648,12 @@ def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label 
 
     # Second subplot
     axes[1].errorbar(bin_centers, ratio_0[:-1], yerr=uncert_nrm_list[0][:-1], fmt='-', color='black')
-    axes[1].errorbar(bin_centers, ratio_1[:-1],   yerr=uncert_nrm_list[1][:-1], fmt='--', color='green')
-    axes[1].errorbar(bin_centers, ratio_2[:-1],    yerr=uncert_nrm_list[2][:-1], fmt=':', color='#FC5A50')
+    axes[1].errorbar(bin_centers, ratio_1[:-1],   yerr=uncert_nrm_list[1][:-1], fmt='--', color='#e42536')
+    axes[1].errorbar(bin_centers, ratio_2[:-1],    yerr=uncert_nrm_list[2][:-1], fmt=':', color='#e42536')
     axes[1].errorbar(bin_centers, ratio_3[:-1],    yerr=uncert_nrm_list[3][:-1], fmt=':', color='blue')
     axes[1].plot([start, stop], [1,1], '-', color='black',  linewidth=3, label=x1_label)
-    axes[1].plot(bin_centers, ratio_1[:-1],  '--', color='green',  linewidth=3, label=x0_label)
-    axes[1].plot(bin_centers, ratio_2[:-1],    ':', color='#FC5A50',linewidth=3, label=x0_rwgt_label)
+    axes[1].plot(bin_centers, ratio_1[:-1],  '--', color='#e42536',  linewidth=3, label=x0_label)
+    axes[1].plot(bin_centers, ratio_2[:-1],    ':', color='#e42536',linewidth=3, label=x0_rwgt_label)
     axes[1].plot(bin_centers, ratio_3[:-1],    ':', color='blue', linewidth=3, label=x0_rwgt_alt_label)
     axes[1].set_xlabel(fr'${obs}({part}){unit}$')
     axes[1].set_ylabel(f'Ratio(/NNLO)')
@@ -1690,7 +1700,7 @@ def plot_ratio_cms_4(args, arg_index = 0, part_index = 0, title = None, x_label 
     plt.show()
 
 
-def plot_ratio_cms_2(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '(13 TeV)', part_label=None, arg_label=None, unit=None, inv_unit=None, save_prefix = 'plot', color='green'):
+def plot_ratio_cms_2(args, arg_index = 0, part_index = 0, title = None, x_label = None, y_label = None, bins = None, start = None, stop = None, div = 35, ratio_ylim=[0.9,1.1], density=True, pythia_text = pythia_text, figsize=(8,10), y_scale=None, binning = 'linear', overflow=False, hep_text = 'Simulation Preliminary', center_mass_energy = '(13 TeV)', part_label=None, arg_label=None, unit=None, inv_unit=None, save_prefix = 'plot', color='#e42536'):
 
     try:
         [(x1, x1_wgt , x1_label), (x0, x0_wgt , x0_label)] = args
@@ -1699,7 +1709,7 @@ def plot_ratio_cms_2(args, arg_index = 0, part_index = 0, title = None, x_label 
     
     plt_style_10a = {'color':f'{color}', 'linewidth':3, 'linestyle':'--'} #, 'density':True, 'histtype':'step'}
     plt_style_11a = {'color':'black', 'linewidth':3, 'linestyle':'-'} #', 'density':True, 'histtype':'step'}
-    plt_style_12a = {'color':'#FC5A50', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
+    plt_style_12a = {'color':'#e42536', 'linewidth':3, 'linestyle':':'} #, 'density':True, 'histtype':'step'}
 
     # binning: prio: passed bins, calculated bins from quantiles, linear bins from start, stop, div
     if bins is not None: 
@@ -1898,8 +1908,8 @@ def plot_ratio_cms_from_hists(
 
     # different order then plot_ratio_cms() functions, for easier looping # swapped 10a and 11a
     plt_style_10a = {'color':'black',   'linestyle':'-' }
-    plt_style_11a = {'color':'Green',   'linestyle':'--'}
-    plt_style_12a = {'color':'#FC5A50', 'linestyle':':' }
+    plt_style_11a = {'color':'#e42536',   'linestyle':'--'}
+    plt_style_12a = {'color':'#e42536', 'linestyle':':' }
     plt_style_13a = {'color':'blue',    'linestyle':':' }
 
 
@@ -2062,8 +2072,8 @@ def plot_ratio_bootstrapped(in_hists, hist_list, label_list,
 
     # different order then plot_ratio_cms() functions, for easier looping # swapped 10a and 11a
     plt_style_10a = {'color':'black',   'linestyle':'-' }
-    plt_style_11a = {'color':'Green',   'linestyle':'--'}
-    plt_style_12a = {'color':'#FC5A50', 'linestyle':':' }
+    plt_style_11a = {'color':'#e42536',   'linestyle':'--'}
+    plt_style_12a = {'color':'#e42536', 'linestyle':':' }
     plt_style_13a = {'color':'blue',    'linestyle':':' }
 
     font = {'size': font_size}
@@ -2125,8 +2135,8 @@ def plot_ratio_bootstrapped(in_hists, hist_list, label_list,
             axes[1].plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=3, **plt_style_11a, zorder=2)
         else:            # 1 | mean
             axes[1].plot(bin_centers, ratio_list[i][:-1], label = f'{label}', linewidth=3, **plt_style_12a, zorder=50)
-            axes[1].fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.5, label = f'{label.replace("mean", "std")}', color='#FC5A50', zorder=0)
-            axes[1].fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.2, color='#FC5A50', zorder=120) # draw again on top with less alpha
+            axes[1].fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.5, label = f'{label.replace("mean", "std")}', color='#e42536', zorder=0)
+            axes[1].fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.2, color='#e42536', zorder=120) # draw again on top with less alpha
     
     # plot all resulting hists in hist_list faintly
     if plot_all == True:
@@ -2226,8 +2236,8 @@ def plot_ratio_bootstrapped_ratio_only(in_hists, hist_list, label_list,
 
     # different order then plot_ratio_cms() functions, for easier looping # swapped 10a and 11a
     plt_style_10a = {'color':'black',   'linestyle':'-' }
-    plt_style_11a = {'color':'Green',   'linestyle':'--'}
-    plt_style_12a = {'color':'#FC5A50', 'linestyle':':' }
+    plt_style_11a = {'color':'#e42536',   'linestyle':'--'}
+    plt_style_12a = {'color':'#e42536', 'linestyle':':' }
     plt_style_13a = {'color':'blue',    'linestyle':':' }
 
     font = {'size': font_size}
@@ -2270,8 +2280,8 @@ def plot_ratio_bootstrapped_ratio_only(in_hists, hist_list, label_list,
             axes.plot(bin_centers, ratio_list[i][:-1], label = label, linewidth=3, **plt_style_11a, zorder=2)
         else:            # 1 | mean
             axes.plot(bin_centers, ratio_list[i][:-1], label = f'{label}', linewidth=3, **plt_style_12a, zorder=50)
-            axes.fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.5, label = f'{label.replace("mean", "std")}', color='#FC5A50', zorder=0)
-            axes.fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.2, color='#FC5A50', zorder=120) # draw again on top with less alpha
+            axes.fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.5, label = f'{label.replace("mean", "std")}', color='#e42536', zorder=0)
+            axes.fill_between(bin_centers, (ratio_list[i]*(1+ratio_std))[:-1], (ratio_list[i]*(1-ratio_std))[:-1], alpha = 0.2, color='#e42536', zorder=120) # draw again on top with less alpha
     
     # plot all resulting hists in hist_list faintly
     if plot_all == True:

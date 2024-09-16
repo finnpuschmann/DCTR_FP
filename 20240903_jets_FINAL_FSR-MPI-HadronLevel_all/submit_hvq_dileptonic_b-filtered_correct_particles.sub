@@ -1,0 +1,14 @@
+executable              = submit_hvq_dileptonic_b-filtered_correct_particles.sh
+
+arguments               = $(Process)
+
+log                     = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).log
+output                  = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).out
+error                   = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).err
+
+request_cpus            = 8
+request_memory          = 16G
++RequestRuntime         = 100000
+
+queue 1000
+
