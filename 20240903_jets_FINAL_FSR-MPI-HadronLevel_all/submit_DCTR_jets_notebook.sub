@@ -1,0 +1,11 @@
+executable              = submit_DCTR_jets_notebook.sh
+
+log                     = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).log
+output                  = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).out
+error                   = logs/$(SUBMIT_FILE)_$(Process)_$(SUBMIT_TIME).err
+
+request_cpus            = 1
+request_memory          = 80G
+
+queue 1
+

@@ -43,7 +43,11 @@ if __name__ == "__main__":
     # NUM arg
     parser.add_argument("-n", "--num", help="Int. Number of events to shower. Default = 10000", type = int, default = 10000)
     # MIN_PT arg
+<<<<<<< HEAD
+    parser.add_argument("-p", "--pt", "--min_pt", help="Float. Minimum pt for jet finding algorithm. Default = 30", type = float, default = 30)
+=======
     parser.add_argument("-p", "--pt", "--min_pt", help="Float. Minimum pt for jet finding algorithm. Default = 15.0", type = float, default = 15.0)
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 
     args = parser.parse_args()
     LHE = args.lhe
@@ -52,7 +56,11 @@ if __name__ == "__main__":
 else:
     LHE = '1'
     NUM = 10000
+<<<<<<< HEAD
+    MIN_PT = 30
+=======
     MIN_PT = 15.0
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 
 
 # start pythia
@@ -197,7 +205,11 @@ def FindBquarks(particle, pdgid):
             # Move up the chain to the next particle (assuming mother1 is the relevant one)
             current = mother1  # Adjust based on how you want to prioritize mother1 or mother2
 
+<<<<<<< HEAD
+    return is_from_top, particle  # Return `current` which now represents the final b-quark
+=======
     return is_from_top, current  # Return `current` which now represents the final b-quark
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 
 
 def FindW(particle, pdgid):
@@ -227,7 +239,11 @@ def FindLepton(particle, sign):
             # Move up the chain to the next particle (assuming mother1 is the relevant one)
             current = mother1  # Adjust based on how you want to prioritize mother1 or mother2
 
+<<<<<<< HEAD
+    return is_from_W, particle  # Return `current` which now represents the final b-quark
+=======
     return is_from_W, current  # Return `current` which now represents the final b-quark
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 
 
 # num events to process
@@ -241,6 +257,10 @@ theta = 1 # for MiNNLO
 # Initialize arrays to store jet multiplicities
 nJets = []
 jets_4vectors = []
+<<<<<<< HEAD
+jets_4vectors_no_b = []
+=======
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 
 # init particle vector array
 P0 = []
@@ -415,7 +435,11 @@ for iEvent in range(N):
 
         delta_R_list.append([delta_R_0, delta_R_1])
 
+<<<<<<< HEAD
+    if not delta_R_list: # list is empty -> there are no jets
+=======
     if not delta_R_list: # there are no jets
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
         print(f'Event {iEvent} has no jets')
 
     else: # delta_R_list is not empty, proceed with checking the jets
@@ -428,7 +452,11 @@ for iEvent in range(N):
         if delta_R_list[min_index_0, 0] <= R: # R is defined with the jet as R = 0.4
             min_R_0 = delta_R_list[min_index_0, 0]
 
+<<<<<<< HEAD
+        if delta_R_list[min_index_1, 1] <= R:
+=======
         if delta_R_list[min_index_0, 0] <= R:
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
             min_R_1 = delta_R_list[min_index_1, 1]
       
         # check if both quarks have same jet with least delta_R
@@ -471,8 +499,14 @@ for iEvent in range(N):
     # sorting with highest index on top, so that when it is removed in that order, the lower indices are not changed
     b_jet_mask.sort(reverse = True)
     # remove b jets from rest of the jets
+<<<<<<< HEAD
+    event_jets_no_b = event_jets.copy()
+    for index in b_jet_mask:
+        event_jets_no_b = np.delete(event_jets_no_b, obj=index, axis=0)
+=======
     for index in b_jet_mask:
         event_jets = np.delete(event_jets, obj=index, axis=0)
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
     # print('finished b filtering:')
 
     # pad arrays to avoid jagged arrays
@@ -482,6 +516,17 @@ for iEvent in range(N):
             event_jets = [jet_4vector]
         event_jets = np.append(event_jets, [jet_4vector], axis=0)
 
+<<<<<<< HEAD
+    
+    # pad arrays to avoid jagged arrays
+    while len(event_jets_no_b) < max_jets:
+        jet_4vector = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        if len(event_jets_no_b) == 0: # np.append gives an error when event_jets doesn't have correct shape, therefore if empty needs to be initialized
+            event_jets_no_b = [jet_4vector]
+        event_jets_no_b = np.append(event_jets_no_b, [jet_4vector], axis=0)
+
+=======
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 
     # print(f'{iEvent = }')
     # print(f'{len(b_jets) = }')
@@ -493,16 +538,28 @@ for iEvent in range(N):
     # print(f'{iEvent = }')
     # print(f'{event_jets = }')
     jets_4vectors.append(event_jets)
+<<<<<<< HEAD
+    jets_4vectors_no_b.append(event_jets_no_b)
+=======
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
     b_jets_array.append(b_jets)
 
 
 # End of event loop. Statistics. Histogram. Done.
 pythia.stat()
 
+<<<<<<< HEAD
+print(f"{count} events didn't have two b quarks")
+
+import os
+
+dir = '/nfs/dust/cms/user/puschman/DCTR_Paper/Data/POWHEG_hvq/dileptonic/20240917'
+=======
 
 import os
 
 dir = '/nfs/dust/cms/user/puschman/DCTR_Paper/Data/POWHEG_hvq/dileptonic/20240916'
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 os.makedirs(dir, exist_ok=True)
 
 # save shower
@@ -515,10 +572,22 @@ nJets = np.array(nJets)
 np.save(f'{dir}/jet_multiplicity_hvq_dileptonic_10K_{LHE}_b-filtered.npy', nJets)
 print(f'{np.shape(nJets) = }')
 
+<<<<<<< HEAD
+# all jets incl b
+=======
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 jets_4vectors = np.array(jets_4vectors)
 np.save(f'{dir}/jet_4vectors_hvq_dileptonic_10K_{LHE}_b-filtered.npy', jets_4vectors)
 print(f'{np.shape(jets_4vectors) = }')
 
+<<<<<<< HEAD
+# all jets without b
+jets_4vectors_no_b = np.array(jets_4vectors_no_b)
+np.save(f'{dir}/jet_4vectors_no_b_hvq_dileptonic_10K_{LHE}_b-filtered.npy', jets_4vectors_no_b)
+print(f'{np.shape(jets_4vectors_no_b) = }')
+
+=======
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 # save W_boson array
 W_Bosons_array = np.array(W_Bosons_array)
 np.save(f'{dir}/W_Bosons_array_hvq_dileptonic_10K_{LHE}_b-filtered.npy', W_Bosons_array)

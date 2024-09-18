@@ -18,7 +18,11 @@ import sys
 import argparse
 import numpy as np
 
+<<<<<<< HEAD
+# import uproot_methods # deprecated 
+=======
 # import uproot_methods # deprecated
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 import vector
 
 # Import the Pythia module.
@@ -154,12 +158,15 @@ max_eta = 2.4
 jet_def = pythia8.SlowJet(-1, R, MIN_PT, max_eta)
 
 
+<<<<<<< HEAD
+=======
 def delta_R(delta_eta, delta_phi):
     if delta_phi > np.pi:
         delta_phi = 2*np.pi - delta_phi
     delta_R = np.sqrt(delta_eta**2 + delta_phi**2)
     return delta_R
 
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 #pseudrapidity function
 def pseudorapidity(px, py, pz):
     p = np.sqrt(np.power(px, 2) + np.power(py, 2) + np.power(pz, 2))
@@ -171,11 +178,21 @@ def pseudorapidity(px, py, pz):
         pseudorapidity = 0.5*np.log((p+pz)/(p-pz))
         return pseudorapidity
 
+<<<<<<< HEAD
+def delta_R(delta_eta, delta_phi):
+    delta_R = np.sqrt(delta_eta**2 + delta_phi**2)
+    return delta_R
+
+# num events to process
+N = NUM
+max_jets = 24
+=======
 
 
 # num events to process
 N = NUM
 max_jets = 20
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 theta = 0 # for hvq 
 
 # Begin event loop. Generate event.
@@ -201,7 +218,11 @@ for i, event in enumerate(lhe):
     if i >= N:
         break
 
+<<<<<<< HEAD
+if len(wgts_list) <= N:
+=======
 if len(wgts_list) < N:
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
     print(f'less then {NUM} events in LHE, using all LHE events')
     N = len(wgts_list)
 
@@ -260,13 +281,26 @@ for iEvent in range(N):
     W_and_lepton_array.append([p_W, p_lepton])
     b_quark_array.append(b_quarks)
 
+<<<<<<< HEAD
+    print(f'{len(b_quarks) = }')
+
+    # deprecated
+    # patop = uproot_methods.TLorentzVector.from_ptetaphim(antitop.pT(), antitop.eta(), antitop.phi(), antitop.m())
+    # ptop = uproot_methods.TLorentzVector.from_ptetaphim(top.pT(), top.eta(), top.phi(), top.m())
+=======
     # print(f'{len(b_quarks) = }')
     # print(f'{len(leptons)  = }')
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 
     patop = vector.obj(pt = antitop.pT(), eta = antitop.eta(), phi = antitop.phi(), mass = antitop.m())
     ptop  = vector.obj(pt = top.pT(),     eta = top.eta(),     phi = top.phi(),     mass = top.m())
 
+<<<<<<< HEAD
+    # p_W = vector.obj(pt = W_boson.pT(), eta = W_boson.eta(), phi = W_boson.phi(), mass = W_boson.m())
+    # p_lepton = vector.obj(pt = lepton.pT(), eta = lepton.eta(), phi = lepton.phi(), mass = lepton.m())
+=======
     p_W = vector.obj(pt = W_boson.pT(), eta = W_boson.eta(), phi = W_boson.phi(), mass = W_boson.m())
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 
     p_tt = ptop + patop
 
@@ -281,7 +315,11 @@ for iEvent in range(N):
 
     P0.append(partVec)
 
+<<<<<<< HEAD
+        # jet multiplicity
+=======
     # jet multiplicity
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
     # Find number of jets with given conditions.
     jet_def.analyze(pythia.event)
 
@@ -312,6 +350,28 @@ for iEvent in range(N):
     # print('before b-filtering')
     # print(f'{np.shape(event_jets) = }')
     # print(*event_jets, sep='\n')
+<<<<<<< HEAD
+
+    removed_counter = 0
+
+    for i, jet in enumerate(event_jets):
+        for b_quark in b_quarks:
+            del_eta = abs(jet[4] - b_quark[4])
+            del_phi = abs(jet[2] - b_quark[2])
+
+            del_R = delta_R(del_eta, del_phi)
+
+            if del_R <= R:
+                # print(f'found jet with {del_R = }, removing from event jets array and saving to separate b_jets array')
+                if len(event_jets) == 0:
+                    continue
+                else:
+                    b_jets.append(event_jets[i-removed_counter])
+                    event_jets = np.delete(event_jets, obj=(i-removed_counter), axis=0)
+                    removed_counter += 1
+    # print('finished b filtering:')
+
+=======
     delta_R_list = []
     min_R_0 = 1.0
     min_R_1 = 1.0
@@ -389,16 +449,23 @@ for iEvent in range(N):
     # print('finished b filtering:')
 
     # pad arrays to avoid jagged arrays 
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
     while len(event_jets) < max_jets:
         jet_4vector = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         if len(event_jets) == 0:
             event_jets = [jet_4vector]
         event_jets = np.append(event_jets, [jet_4vector], axis=0)
+<<<<<<< HEAD
+    while len(b_jets) < removed_counter:
+        jet_4vector = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        b_jets.append(jet_4vector)
+=======
 
 
     # print(f'{iEvent = }')
     # print(f'{len(b_jets) = }')
     # print(f'{len(b_quarks) = }')
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 
     # print('after b-filtering')
     # print(f'{np.shape(event_jets) = }')
@@ -408,14 +475,21 @@ for iEvent in range(N):
     jets_4vectors.append(event_jets)
     b_jets_array.append(b_jets)
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 # End of event loop. Statistics. Histogram. Done.
 pythia.stat()
 
 
 import os
 
+<<<<<<< HEAD
+dir = '/nfs/dust/cms/user/puschman/DCTR_Paper/Data/MiNNLO/showered/20240913'
+=======
 dir = '/nfs/dust/cms/user/puschman/DCTR_Paper/Data/MiNNLO/showered/20240915'
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 os.makedirs(dir, exist_ok=True)
 
 # save shower
@@ -443,6 +517,10 @@ np.save(f'{dir}/b_quarks_MiNNLO_10K_{LHE}_b-filtered.npy', b_quark_array)
 print(f'{np.shape(b_quark_array) = }')
 
 # save b_jets array
+<<<<<<< HEAD
+b_quark_array = np.array(b_jets_array, dtype=object)
+=======
 b_jets_array = np.array(b_jets_array)
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 np.save(f'{dir}/b_jets_MiNNLO_10K_{LHE}_b-filtered.npy', b_jets_array)
 print(f'{np.shape(b_jets_array) = }')

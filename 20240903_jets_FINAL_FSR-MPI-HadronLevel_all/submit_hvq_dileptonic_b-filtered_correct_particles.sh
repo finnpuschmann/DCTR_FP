@@ -10,5 +10,9 @@ export PATH=/nfs/dust/cms/user/puschman/pythia8309/lib:$PATH
 LHE=$(($@ + 1))
 
 # min pt 15
+<<<<<<< HEAD
+python ./jet_multiplicity_hvq_dileptonic_b-filtered_correct_particles.py -p 30.0 -l $LHE
+=======
 python ./jet_multiplicity_hvq_dileptonic_b-filtered_correct_particles.py -p 15.0 -l $LHE
+>>>>>>> e8dafdf0c6e30e46bc0ff90c25a9652ca55ebec8
 
