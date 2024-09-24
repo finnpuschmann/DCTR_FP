@@ -1,0 +1,13 @@
+executable              = submit_events.sh
+
+arguments               = $(Process)
+
+log                     = logs/submit_events_b-frag_$(Process).log
+output                  = logs/submit_events_b-frag_$(Process).out
+error                   = logs/submit_events_b-frag_$(Process).err
+
+request_cpus            = 4
+request_memory          = 20G
++RequestRuntime         = 20000
+
+queue 20
