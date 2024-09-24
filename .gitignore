@@ -8,9 +8,9 @@ Data/
 *.err
 *.log
 
-# .npz/.npy files
-*.npz
-*.npy
+# .npz/.npy files | using git lfs for these
+# *.npz
+# *.npy
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
